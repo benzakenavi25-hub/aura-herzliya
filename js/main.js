@@ -237,8 +237,8 @@
       // priority: opening frames → coarse pass across the whole film → the rest
       const order = [], seen = new Set();
       const push = (i) => { if (i >= 0 && i < n && !seen.has(i)) { seen.add(i); order.push(i); } };
-      for (let i = 0; i < 18; i++) push(i);
-      for (let i = 0; i < n; i += 12) push(i);
+      for (let i = 0; i < 12; i++) push(i);
+      for (let i = 0; i < n; i += 24) push(i);
       const gate = order.length;
       for (let i = 0; i < n; i++) push(i);
 
@@ -246,8 +246,14 @@
       const bar = $('#loaderBar'), pct = $('#loaderPct');
       return new Promise((resolve) => {
         const release = () => { if (!released) { released = true; resolve(); } };
+        // after the gate, the rest of the film waits for the first sign of intent (or idle time)
+        let resumed = false, parked = 0;
+        const resume = () => { if (resumed) return; resumed = true; const k = Math.max(parked, 4); parked = 0; for (let c = 0; c < k; c++) next(); };
+        ['scroll', 'wheel', 'touchstart', 'keydown', 'pointerdown'].forEach((ev) => addEventListener(ev, resume, { once: true, passive: true }));
+        setTimeout(resume, 6000);
         const next = () => {
           if (cursor >= order.length) return;
+          if (cursor >= gate && !resumed) { parked++; return; }
           const idx = order[cursor];
           const isGate = cursor < gate;
           cursor++;
@@ -384,6 +390,7 @@
     history.replaceState(null, '', id);
   }));
 
+
   // Active section in nav
   const navLinks = $$('.header__nav a');
   const io2 = new IntersectionObserver((entries) => {
@@ -391,10 +398,25 @@
       if (en.isIntersecting) navLinks.forEach((l) => l.setAttribute('aria-current', String(l.getAttribute('href') === '#' + en.target.id)));
     });
   }, { rootMargin: '-45% 0px -50% 0px' });
-  ['project', 'residences', 'specs', 'location', 'progress', 'gallery', 'contact'].forEach((id) => io2.observe($('#' + id)));
+  ['project', 'views', 'residences', 'floors', 'building', 'location', 'faq', 'contact'].forEach((id) => { const s = $('#' + id); if (s) io2.observe(s); });
+
+  // one rAF-throttled scroll loop shared by the scroll-linked sections below
+  const scrollJobs = new Set();
+  let ticking = false;
+  const runJobs = () => { ticking = false; scrollJobs.forEach((fn) => fn()); };
+  const requestJobs = () => { if (!ticking) { ticking = true; requestAnimationFrame(runJobs); } };
+  addEventListener('scroll', requestJobs, { passive: true });
+  addEventListener('resize', requestJobs);
+  // only run a job while its section is near the viewport
+  function whileVisible(el, fn, margin = '20% 0px') {
+    new IntersectionObserver(([en]) => {
+      if (en.isIntersecting) { scrollJobs.add(fn); fn(); } else scrollJobs.delete(fn);
+    }, { rootMargin: margin }).observe(el);
+  }
+  const desktopMQ = matchMedia('(min-width: 901px)');
 
   /* =======================================================
-     Reveals + count-up
+     Reveals
      ======================================================= */
   $$('[data-reveal-lines] > span').forEach((s) => { const inner = document.createElement('span'); inner.innerHTML = s.innerHTML; s.innerHTML = ''; s.appendChild(inner); });
   const io = new IntersectionObserver((entries) => {
@@ -402,50 +424,90 @@
       if (!en.isIntersecting) return;
       en.target.classList.add('is-in');
       io.unobserve(en.target);
-      $$('[data-count]', en.target).forEach(countUp);
     });
   }, { rootMargin: '0px 0px -12% 0px', threshold: 0.05 });
-  $$('[data-reveal], [data-reveal-lines]').forEach((el) => io.observe(el));
-  // Stagger siblings that enter together (stats, specs, timeline, gallery): 70 ms apart, capped.
-  ['.stats', '.specs__grid', '.timeline', '.gal'].forEach((sel) => {
-    $$(`${sel} > [data-reveal]`).forEach((el, n) => el.style.setProperty('--d', `${Math.min(n, 5) * 70}ms`));
-  });
-
-  function countUp(el) {
-    const end = +el.dataset.count;
-    if (reduced) { el.textContent = end; return; }
-    const dur = 1800, t0 = performance.now();
-    const step = (now) => {
-      const p = clamp((now - t0) / dur, 0, 1);
-      el.textContent = Math.round(end * (1 - Math.pow(1 - p, 4)));
-      if (p < 1) requestAnimationFrame(step);
-    };
-    el.textContent = '0';
-    requestAnimationFrame(step);
-  }
+  $$('[data-reveal], [data-reveal-lines], .img-reveal').forEach((el) => io.observe(el));
+  $$('.team__list > [data-reveal]').forEach((el, n) => el.style.setProperty('--d', `${n * 70}ms`));
 
   /* =======================================================
-     Residences — selector + schematic SVG plans
+     1 · Manifesto — the morning image opens from ~85% to full width
+     ======================================================= */
+  const mFig = $('#manifestoFig'), mFrame = $('.manifesto__frame');
+  if (mFig && !reduced) {
+    whileVisible(mFig, () => {
+      const r = mFig.getBoundingClientRect(), vh = innerHeight;
+      const p = clamp((vh - r.top) / (vh * 0.95), 0, 1);
+      const e = 1 - Math.pow(1 - p, 2);
+      const max = desktopMQ.matches ? 7.5 : 6;
+      mFrame.style.setProperty('--inset', `${(max * (1 - e)).toFixed(2)}%`);
+      mFrame.style.setProperty('--s', (1.08 - 0.08 * e).toFixed(4));
+    });
+  } else if (mFrame) { mFrame.style.setProperty('--inset', '0%'); mFrame.style.setProperty('--s', '1'); }
+
+  /* =======================================================
+     3 · The view from your floor (3 / 7 / 12)
+     ======================================================= */
+  const viewImgs = $$('.views__img');
+  const viewBtns = $$('.views__floors button');
+  const viewCap = $('#viewsCap');
+  const VIEW_CAPS = [
+    'בגובה הצמרות: גגות הרעפים של הפיתוח, הדקלים, והים שמציץ ביניהם.',
+    'מעל הגגות: רצועת החוף נפתחת, והמפרץ נמשך עד ההרים.',
+    'מעל הכול: אופק פתוח, המפרץ כולו, והשמש נוגעת במים.',
+  ];
+  let viewIdx = 0;
+  new IntersectionObserver(([en], obs) => {
+    if (!en.isIntersecting) return;
+    viewImgs.forEach((im) => { if (im.dataset.src) { im.srcset = im.dataset.srcset; im.src = im.dataset.src; delete im.dataset.src; } });
+    obs.disconnect();
+  }, { rootMargin: '800px 0px' }).observe($('#views'));
+  function setView(i) {
+    if (i === viewIdx) return;
+    const up = i > viewIdx;
+    const next = viewImgs[i], prev = viewImgs[viewIdx];
+    next.style.transition = 'none';
+    next.style.setProperty('--from', up ? '-1.8%' : '1.8%');
+    next.offsetWidth; next.style.transition = '';
+    prev.classList.remove('is-active'); next.classList.add('is-active');
+    viewIdx = i;
+    viewBtns.forEach((b) => b.setAttribute('aria-checked', String(+b.dataset.i === i)));
+    $('.views__floors').style.setProperty('--k', String(2 - i));
+    viewCap.classList.add('is-swap');
+    setTimeout(() => { viewCap.textContent = VIEW_CAPS[i]; viewCap.classList.remove('is-swap'); }, 220);
+  }
+  viewBtns.forEach((b) => {
+    b.addEventListener('click', () => setView(+b.dataset.i));
+    b.addEventListener('keydown', (e) => {
+      const k = { ArrowUp: 1, ArrowLeft: 1, ArrowDown: -1, ArrowRight: -1 }[e.key];
+      if (k) { e.preventDefault(); const n = clamp(viewIdx + k, 0, 2); setView(n); viewBtns.find((x) => +x.dataset.i === n).focus(); }
+    });
+  });
+
+  /* =======================================================
+     4 · Residences — image-led tabs; the plan lives in a dialog
      ======================================================= */
   const R = (x, y, w, h, label, area) => ({ x, y, w, h, label, area });
+  const srcs = (code, base = 'img/new/') => ({ src: `${base}${code}-1024.webp`, srcset: `${base}${code}-640.webp 640w, ${base}${code}-1024.webp 1024w, ${base}${code}-1672.webp 1672w` });
   const PLANS = [
     {
-      name: 'דירת 4 חדרים', short: '4 חדרים',
-      desc: 'בית מואר לזוג או למשפחה צעירה. הסלון והמרפסת פונים מערבה, אל הים, וחדרי השינה שקטים ומופנים אל הגינה.',
+      name: 'דירת 4 חדרים', apt: '4 חדרים',
+      img: srcs('P6'), alt: 'סלון דירת 4 חדרים: ספה בהירה, שולחן טרוורטין, פרקט אדרה ויציאה למרפסת מעוגלת מול הים',
+      desc: 'בית מואר לזוג או למשפחה צעירה. הסלון והמרפסת פונים מערבה אל הים, וחדרי השינה שקטים ומופנים אל הגינה.',
       facts: [['שטח הדירה', '118 מ״ר'], ['מרפסת שמש', '14 מ״ר'], ['חדרי רחצה', '2'], ['כיווני אוויר', '3'], ['קומות', '2 עד 6']],
       outer: [60, 40, 400, 280],
       outs: [R(20, 70, 40, 220, 'מרפסת', '14')],
       rooms: [
         R(60, 40, 190, 160, 'סלון ופינת אוכל', '42'), R(250, 40, 90, 100, 'מטבח', '13'),
-        R(340, 40, 120, 120, 'ממ״ד', '12'), R(250, 140, 90, 70, 'רחצה', ''),
+        R(340, 40, 120, 120, 'ממ״ד', '12'), R(250, 140, 90, 70, 'רחצה', '5'),
         R(340, 160, 120, 160, 'חדר', '13'), R(60, 200, 140, 120, 'יחידת הורים', '17'),
-        R(200, 200, 50, 120, 'רחצה', ''), R(250, 210, 90, 110, 'מבואה', ''),
+        R(200, 200, 50, 120, 'רחצת הורים', '5'), R(250, 210, 90, 110, 'מבואה', '9'),
       ],
       entry: [295, 320],
     },
     {
-      name: 'דירת 5 חדרים', short: '5 חדרים',
-      desc: 'חלל ציבורי רחב עם מטבח פתוח, יחידת הורים עם חדר ארונות, ושלושה חדרים נוספים. נוף פתוח לים מכל החלל המרכזי.',
+      name: 'דירת 5 חדרים', apt: '5 חדרים',
+      img: srcs('P2'), alt: 'מטבח ופינת אוכל בדירת 5 חדרים: אי שיש, ארונות אלון ושולחן ערוך מול חלון לים',
+      desc: 'חלל ציבורי רחב עם מטבח פתוח ואי שיש, יחידת הורים עם חדר ארונות, ושלושה חדרים נוספים. נוף פתוח לים מכל החלל המרכזי.',
       facts: [['שטח הדירה', '146 מ״ר'], ['מרפסת שמש', '18 מ״ר'], ['חדרי רחצה', '2 + שירותי אורחים'], ['כיווני אוויר', '3'], ['קומות', '3 עד 10']],
       outer: [40, 40, 440, 280],
       outs: [R(8, 60, 32, 240, 'מרפסת', '18')],
@@ -453,14 +515,15 @@
         R(40, 40, 200, 150, 'סלון', '38'), R(240, 40, 110, 110, 'מטבח ופינת אוכל', '20'),
         R(350, 40, 130, 110, 'ממ״ד', '12'), R(350, 150, 130, 90, 'חדר', '11'),
         R(350, 240, 130, 80, 'חדר', '11'), R(40, 190, 150, 130, 'יחידת הורים', '18'),
-        R(190, 190, 50, 70, 'רחצה', ''), R(190, 260, 50, 60, 'ארונות', ''),
-        R(240, 150, 60, 70, 'רחצה', ''), R(300, 150, 50, 70, 'כביסה', ''),
-        R(240, 220, 110, 100, 'מבואה', ''),
+        R(190, 190, 50, 70, 'רחצת הורים', '5'), R(190, 260, 50, 60, 'חדר ארונות', '4'),
+        R(240, 150, 60, 70, 'רחצה', '5'), R(300, 150, 50, 70, 'כביסה', '3'),
+        R(240, 220, 110, 100, 'מבואה', '10'),
       ],
       entry: [295, 320],
     },
     {
-      name: 'דירת גן · מיני פנטהאוז', short: 'גן / מיני פנטהאוז',
+      name: 'דירת גן · מיני פנטהאוז', apt: 'גן / מיני פנטהאוז',
+      img: srcs('P5'), alt: 'סלון דירת הגן נפתח אל גינה פרטית עם עצי זית, לבנדר ושולחן אבן, והים מעבר לחומה',
       desc: 'בקומת הקרקע עם גינה פרטית, או בקומה 11 עם מרפסת גג רחבה. אותו תכנון, שני אופני חיים — בשניהם החוץ הוא חלק מהבית.',
       facts: [['שטח הדירה', '168 מ״ר'], ['גינה / מרפסת גג', '85 מ״ר'], ['חדרי רחצה', '2 + שירותי אורחים'], ['כיווני אוויר', '4'], ['קומות', 'קרקע · 11']],
       outer: [150, 40, 330, 280],
@@ -469,120 +532,40 @@
         R(150, 40, 180, 160, 'סלון ופינת אוכל', '46'), R(330, 40, 70, 90, 'מטבח', '14'),
         R(400, 40, 80, 90, 'ממ״ד', '12'), R(400, 130, 80, 95, 'חדר', '12'),
         R(400, 225, 80, 95, 'חדר', '12'), R(150, 200, 130, 120, 'יחידת הורים', '20'),
-        R(280, 200, 50, 60, 'רחצה', ''), R(280, 260, 50, 60, 'ארונות', ''),
-        R(330, 130, 70, 70, 'רחצה', ''), R(330, 200, 70, 120, 'מבואה', ''),
+        R(280, 200, 50, 60, 'רחצת הורים', '6'), R(280, 260, 50, 60, 'חדר ארונות', '5'),
+        R(330, 130, 70, 70, 'רחצה', '6'), R(330, 200, 70, 120, 'מבואה', '11'),
       ],
       entry: [365, 320],
     },
     {
-      name: 'פנטהאוז גג', short: 'פנטהאוז גג',
+      name: 'פנטהאוז גג', apt: 'פנטהאוז גג',
+      img: srcs('09-living-room', 'img/'), alt: 'סלון הפנטהאוז: ספות בהירות, שולחן טרוורטין וקיר זכוכית פתוח אל מרפסת הגג והים בשעת דמדומים',
+      inset: srcs('08-terrace', 'img/'), insetAlt: 'מרפסת הגג של הפנטהאוז: פרגולת ברונזה, עצי זית ובריכה מוארת',
       desc: 'הבית היחיד בקומה העליונה. סוויטת הורים, חדר עבודה ומבואה פרטית מהמעלית — ומרפסת גג עם פרגולת ברונזה ובריכת אינסוף פרטית.',
       facts: [['שטח הדירה', '245 מ״ר'], ['מרפסת גג', '160 מ״ר'], ['בריכה פרטית', '12 מ׳'], ['חדרי רחצה', '3 + שירותי אורחים'], ['קומה', '12 · יחידה אחת']],
       outer: [170, 30, 330, 310],
       outs: [R(10, 30, 160, 310, 'מרפסת גג', '160')],
-      pool: R(26, 262, 128, 58, 'בריכה', ''),
+      pool: R(26, 262, 128, 58, 'בריכה', '24'),
       rooms: [
         R(170, 30, 170, 170, 'סלון ופינת אוכל', '58'), R(340, 30, 80, 100, 'חדר עבודה', '12'),
         R(420, 30, 80, 100, 'מטבח', '18'), R(420, 130, 80, 80, 'ממ״ד', '12'),
         R(420, 210, 80, 65, 'חדר', '13'), R(420, 275, 80, 65, 'חדר', '13'),
-        R(170, 200, 140, 140, 'סוויטת הורים', '26'), R(310, 200, 50, 70, 'רחצה', ''),
-        R(310, 270, 50, 70, 'ארונות', ''), R(340, 130, 80, 70, 'רחצה', ''),
-        R(360, 200, 60, 140, 'מבואה פרטית', ''),
+        R(170, 200, 140, 140, 'סוויטת הורים', '26'), R(310, 200, 50, 70, 'רחצת הורים', '7'),
+        R(310, 270, 50, 70, 'חדר ארונות', '6'), R(340, 130, 80, 70, 'רחצה', '6'),
+        R(360, 200, 60, 140, 'מבואה פרטית', '9'),
       ],
       entry: [390, 340],
     },
   ];
 
-  const svg = $('#planSvg');
-  const NS = 'http://www.w3.org/2000/svg';
-  const el = (tag, attrs, parent) => { const n = document.createElementNS(NS, tag); for (const k in attrs) n.setAttribute(k, attrs[k]); if (parent) parent.appendChild(n); return n; };
-
-  function renderPlan(p, animate = true) {
-    while (svg.lastChild && svg.lastChild.nodeName !== 'title') svg.removeChild(svg.lastChild);
-    $('#planTitle').textContent = `תוכנית סכמטית: ${p.name}`;
-    const defs = el('defs', {}, svg);
-    const pat = el('pattern', { id: 'hatch', width: 7, height: 7, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' }, defs);
-    el('line', { x1: 0, y1: 0, x2: 0, y2: 7, stroke: '#9A7448', 'stroke-width': .6, opacity: .45 }, pat);
-
-    const anim = !reduced && animate;
-    const rectEl = (r, cls) => {
-      const n = el('rect', { x: r.x, y: r.y, width: r.w, height: r.h, class: cls + (anim ? ' plan__draw' : '') }, svg);
-      if (anim) n.style.setProperty('--len', 2 * (r.w + r.h));
-      return n;
-    };
-    p.outs.forEach((o) => rectEl(o, 'plan__out'));
-    if (p.pool) rectEl(p.pool, 'plan__pool');
-    const [ox, oy, ow, oh] = p.outer;
-    p.rooms.forEach((r) => rectEl(r, 'plan__room'));
-    rectEl({ x: ox, y: oy, w: ow, h: oh }, 'plan__outer');
-
-    // Phones: the drawing is fitted to the screen and set in larger units (≥11px rendered);
-    // service rooms get a one-letter key explained under the plan.
-    const compact = compactMQ.matches;
-    const FS = compact ? 17 : 11, FA = compact ? 16 : 10, FB = compact ? 18 : 12;
-    const KEY = { 'רחצה': 'ר', 'ארונות': 'א', 'כביסה': 'כ' };
-    const usedKeys = new Set();
-    const fits = (txt, fs, w) => txt.length * fs * 0.56 <= w - 8;
-    const label = (r, big) => {
-      const cx = r.x + r.w / 2, cy = r.y + r.h / 2;
-      const fs = big ? FB : FS;
-      let text = r.label;
-      if (compact && KEY[text]) { usedKeys.add(text); text = KEY[text]; }
-      let lines = [text];
-      if (!fits(text, fs, r.w) && text.includes(' ')) {
-        const words = text.split(' '); const half = Math.ceil(words.length / 2);
-        lines = [words.slice(0, half).join(' '), words.slice(half).join(' ')];
-      }
-      const widest = Math.max(...lines.map((l) => l.length));
-      const rotate = !fits('x'.repeat(widest), fs, r.w) && r.h > r.w * 1.6;
-      const lh = fs * 1.15, areaH = r.area ? FA * 1.2 : 0;
-      const blockH = lines.length * lh + areaH;
-      const g = el('g', rotate ? { transform: `rotate(-90 ${cx} ${cy})` } : {}, svg);
-      lines.forEach((ln, n) => {
-        const t = el('text', { x: cx, y: cy - blockH / 2 + lh * (n + 0.78), class: 'plan__label', 'font-size': fs }, g);
-        t.textContent = ln;
-      });
-      if (r.area) { const a = el('text', { x: cx, y: cy - blockH / 2 + lines.length * lh + FA * 0.95, class: 'plan__area', 'font-size': FA }, g); a.textContent = `${r.area} מ״ר`; }
-    };
-    p.rooms.forEach((r) => label(r));
-    p.outs.forEach((r) => label(r, true));
-    if (p.pool) label(p.pool);
-
-    // fitted viewBox on phones so the drawing uses the full width
-    const boxes = [...p.outs, { x: ox, y: oy, w: ow, h: oh }, ...(p.pool ? [p.pool] : [])];
-    const minX = Math.min(...boxes.map((b) => b.x)) - 6, maxX = Math.max(...boxes.map((b) => b.x + b.w)) + 6;
-    const minY = Math.min(...boxes.map((b) => b.y)) - 6;
-    const [ex, ey] = p.entry;
-    const bottom = ey + (compact ? 56 : 40);
-    svg.setAttribute('viewBox', compact ? `${minX} ${minY} ${maxX - minX} ${bottom - minY}` : '0 0 520 380');
-
-    // entrance marker
-    el('path', { d: `M${ex - 14} ${ey} h28`, stroke: '#F3EEE6', 'stroke-width': 5 }, svg);
-    el('path', { d: `M${ex} ${ey + 22} v-14 m-5 5 l5 -5 l5 5`, class: 'plan__door' }, svg);
-    const et = el('text', { x: ex, y: ey + 22 + FS, class: 'plan__label', 'font-size': FS }, svg); et.textContent = 'כניסה';
-
-    // sea direction (west = left)
-    const sx = compact ? minX + 4 : 4, sy = compact ? bottom - 12 : 362;
-    el('path', { d: `M${sx} ${sy} h${compact ? 50 : 70}`, class: 'plan__seaLine' }, svg);
-    el('path', { d: `M${sx} ${sy} l7 -4 m-7 4 l7 4`, class: 'plan__seaLine' }, svg);
-    const s = el('text', { x: sx + (compact ? 58 : 76), y: sy + 4, class: 'plan__sea', 'text-anchor': 'end', 'font-size': FS }, svg); s.textContent = 'הים';
-
-    planKey.textContent = [...usedKeys].map((k) => `${KEY[k]} — ${k}`).join('  ·  ');
-    planKey.hidden = !usedKeys.size;
-  }
-  const compactMQ = matchMedia('(max-width: 760px)');
-  const planKey = document.createElement('p');
-  planKey.className = 'res__key'; planKey.hidden = true;
-  svg.after(planKey);
-  compactMQ.addEventListener('change', () => renderPlan(PLANS[current], false));
-
   const tabs = $$('.res__tabs [role="tab"]');
   const resApp = $('#resApp');
   const tabBar = $('.res__tabs');
-  // One indicator that slides between tabs (spatially consistent), moved with transform only.
+  const resImg = $('#resImg'), resInset = $('#resInset');
   const ind = document.createElement('span');
   ind.className = 'res__ind'; ind.setAttribute('aria-hidden', 'true');
   tabBar.appendChild(ind);
+  let current = 0, firstPaint = true;
   function moveIndicator(i, instant) {
     const t = tabs[i];
     if (instant) ind.style.transition = 'none';
@@ -590,34 +573,38 @@
     if (instant) { ind.offsetWidth; ind.style.transition = ''; }
   }
   addEventListener('resize', () => moveIndicator(current, true));
-  let current = 0;
-  // Keyboard-initiated switches are instant: no swap, no indicator travel, no drawing.
+  function applyPlan(p, i) {
+    resImg.srcset = p.img.srcset; resImg.src = p.img.src; resImg.alt = p.alt;
+    if (p.inset) { resInset.srcset = p.inset.srcset; resInset.src = p.inset.src; resInset.alt = p.insetAlt; resInset.sizes = '(min-width: 900px) 24vw, 44vw'; resInset.hidden = false; }
+    else resInset.hidden = true;
+    $('#resName').textContent = p.name;
+    $('#resDesc').textContent = p.desc;
+    $('#resFacts').innerHTML = p.facts.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('');
+    $('#resCta').dataset.apt = i;
+    resApp.classList.remove('is-swapping');
+  }
+  // Keyboard-initiated switches are instant: no swap, no indicator travel.
   function showPlan(i, keyboard) {
-    const p = PLANS[i];
     tabs.forEach((t, n) => { t.setAttribute('aria-selected', String(n === i)); t.tabIndex = n === i ? 0 : -1; });
     $('#panel-res').setAttribute('aria-labelledby', tabs[i].id);
     if (keyboard) tabs[i].focus();
-    moveIndicator(i, keyboard || svg.childElementCount <= 1);
-    const instant = reduced || keyboard;
-    const apply = () => {
-      renderPlan(p, !instant);
-      $('#resName').textContent = p.name;
-      $('#resDesc').textContent = p.desc;
-      $('#resFacts').innerHTML = p.facts.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('');
-      $('#resCta').dataset.apt = i;
-      resApp.classList.remove('is-swapping');
-    };
-    if (i === current && svg.childElementCount > 1) return;
+    moveIndicator(i, keyboard || firstPaint);
+    if (i === current && !firstPaint) return;
     current = i;
-    if (instant || svg.childElementCount <= 1) apply();
-    else { resApp.classList.add('is-swapping'); setTimeout(apply, 180); }
+    const instant = reduced || keyboard || firstPaint;
+    firstPaint = false;
+    if (instant) applyPlan(PLANS[i], i);
+    else {
+      resApp.classList.add('is-swapping');
+      // warm the next image while the old one fades
+      const pre = new Image(); pre.srcset = PLANS[i].img.srcset; pre.sizes = resImg.sizes; pre.src = PLANS[i].img.src;
+      setTimeout(() => applyPlan(PLANS[i], i), 180);
+    }
   }
   tabs.forEach((t, n) => {
     t.addEventListener('click', () => showPlan(n));
     t.addEventListener('keydown', (e) => {
-      // RTL: ArrowLeft moves forward
-      const k = e.key;
-      let to = null;
+      const k = e.key; let to = null;
       if (k === 'ArrowLeft') to = (n + 1) % tabs.length;
       if (k === 'ArrowRight') to = (n - 1 + tabs.length) % tabs.length;
       if (k === 'Home') to = 0;
@@ -626,68 +613,241 @@
     });
   });
   showPlan(0);
-  // CTA pre-selects the apartment in the form
-  $('#resCta').addEventListener('click', () => {
-    const radios = $$('input[name="apt"]');
-    const r = radios[+$('#resCta').dataset.apt || 0];
-    if (r) r.checked = true;
-  });
+  $('#resCta').addEventListener('click', () => setApt(PLANS[+$('#resCta').dataset.apt || 0].apt));
 
-  /* =======================================================
-     Location — list ↔ map highlight
-     ======================================================= */
-  $$('.places li').forEach((li) => {
-    const pin = li.dataset.pin;
-    const lab = $(`.map__labels [data-pin="${pin}"]`);
-    const on = () => { li.classList.add('is-hot'); lab && lab.classList.add('is-hot'); };
-    const off = () => { li.classList.remove('is-hot'); lab && lab.classList.remove('is-hot'); };
-    li.addEventListener('mouseenter', on); li.addEventListener('mouseleave', off);
-  });
-
-  /* =======================================================
-     Gallery lightbox
-     ======================================================= */
-  const GAL = [
-    { src: 'img/08-terrace-1672.webp', alt: 'מרפסת הגג בשעת דמדומים: פרגולת ברונזה, עצי זית, ספה לבנה ובריכה מוארת', cap: 'מרפסת הגג · הדמיה' },
-    { src: 'img/07-rooftop-1672.webp', alt: 'הפנטהאוז בראש המגדל בשקיעה, עם בריכת אינסוף ונוף לים', cap: 'הפנטהאוז · הדמיה' },
-    { src: 'img/09-living-room-1672.webp', alt: 'סלון הפנטהאוז עם רצפת עץ, ספות בהירות וקיר זכוכית פתוח אל המרפסת והים', cap: 'הסלון · הדמיה' },
-    { src: 'img/06-drone-1672.webp', alt: 'מבט אווירי על הקומות העליונות של המגדל, מרפסות מוארות והשמש שוקעת בים', cap: 'מבט מהאוויר · הדמיה' },
-  ];
-  const lb = $('#lightbox'), lbImg = $('#lbImg'), lbCap = $('#lbCap'), lbCount = $('#lbCount');
-  let li = 0, opener = null;
-  function lbShow(i) {
-    li = (i + GAL.length) % GAL.length;
-    const g = GAL[li];
-    lbImg.classList.add('is-swap');
-    const pre = new Image(); pre.src = g.src;
-    const set = () => { lbImg.src = g.src; lbImg.alt = g.alt; lbCap.textContent = g.cap; lbCount.textContent = `${String(li + 1).padStart(2, '0')} / ${String(GAL.length).padStart(2, '0')}`; requestAnimationFrame(() => lbImg.classList.remove('is-swap')); };
-    pre.decode ? pre.decode().then(set, set) : (pre.onload = set);
+  // --- plan dialog: thin lines, numbered rooms, legend beside ---
+  const planDlg = $('#planDlg'), planSvg = $('#planSvg'), planLegend = $('#planLegend');
+  const NS = 'http://www.w3.org/2000/svg';
+  const el = (tag, attrs, parent) => { const n = document.createElementNS(NS, tag); for (const k in attrs) n.setAttribute(k, attrs[k]); if (parent) parent.appendChild(n); return n; };
+  const compactMQ = matchMedia('(max-width: 760px)');
+  function renderPlan(p) {
+    planSvg.textContent = '';
+    $('#planDlgTitle').textContent = `תוכנית · ${p.name}`;
+    const compact = compactMQ.matches;
+    const defs = el('defs', {}, planSvg);
+    const pat = el('pattern', { id: 'hatch', width: 6, height: 6, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' }, defs);
+    el('line', { x1: 0, y1: 0, x2: 0, y2: 6, stroke: '#9A7448', 'stroke-width': .5, opacity: .5 }, pat);
+    const rect = (r, cls) => el('rect', { x: r.x, y: r.y, width: r.w, height: r.h, class: cls }, planSvg);
+    p.outs.forEach((o) => rect(o, 'pl-out'));
+    if (p.pool) rect(p.pool, 'pl-pool');
+    p.rooms.forEach((r) => rect(r, 'pl-room'));
+    const [ox, oy, ow, oh] = p.outer;
+    rect({ x: ox, y: oy, w: ow, h: oh }, 'pl-outer');
+    const all = [...p.rooms, ...p.outs, ...(p.pool ? [p.pool] : [])];
+    const rad = compact ? 12 : 9;
+    planLegend.textContent = '';
+    all.forEach((r, n) => {
+      const g = el('g', { class: 'pl-num', 'data-n': n + 1 }, planSvg);
+      el('circle', { cx: r.x + r.w / 2, cy: r.y + r.h / 2, r: Math.min(rad, r.w / 2 - 2, r.h / 2 - 2) }, g);
+      const t = el('text', { x: r.x + r.w / 2, y: r.y + r.h / 2 }, g); t.textContent = n + 1;
+      const li = document.createElement('li');
+      li.dataset.n = n + 1;
+      li.innerHTML = `<b>${n + 1}</b><span>${r.label}</span><span>${r.area ? r.area + ' מ״ר' : ''}</span>`;
+      li.addEventListener('pointerenter', () => g.classList.add('is-hot'));
+      li.addEventListener('pointerleave', () => g.classList.remove('is-hot'));
+      planLegend.appendChild(li);
+    });
+    const [ex, ey] = p.entry;
+    el('path', { d: `M${ex - 12} ${ey} h24`, stroke: '#F3EEE6', 'stroke-width': 4 }, planSvg);
+    el('path', { d: `M${ex} ${ey + 20} v-13 m-4 4 l4 -4 l4 4`, class: 'pl-entry' }, planSvg);
+    // fit the drawing; sea arrow points west (left)
+    const boxes = [...p.outs, { x: ox, y: oy, w: ow, h: oh }, ...(p.pool ? [p.pool] : [])];
+    const minX = Math.min(...boxes.map((b) => b.x)) - 8, maxX = Math.max(...boxes.map((b) => b.x + b.w)) + 8;
+    const minY = Math.min(...boxes.map((b) => b.y)) - 8, maxY = ey + 30;
+    el('path', { d: `M${minX + 4} ${maxY - 6} h40 M${minX + 4} ${maxY - 6} l6 -3.5 M${minX + 4} ${maxY - 6} l6 3.5`, class: 'pl-sea' }, planSvg);
+    planSvg.setAttribute('viewBox', `${minX} ${minY} ${maxX - minX} ${maxY - minY}`);
   }
-  $$('.gal__item').forEach((b) => b.addEventListener('click', () => {
-    opener = b; lbShow(+b.dataset.index);
-    lb.showModal(); document.body.style.overflow = 'hidden';
-  }));
-  lb.addEventListener('close', () => { document.body.style.overflow = ''; opener && opener.focus(); });
-  $('#lbClose').addEventListener('click', () => lb.close());
-  $('#lbNext').addEventListener('click', () => lbShow(li + 1));
-  $('#lbPrev').addEventListener('click', () => lbShow(li - 1));
-  lb.addEventListener('click', (e) => { if (e.target === lb || e.target.classList.contains('lightbox__fig')) lb.close(); });
-  lb.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowLeft') lbShow(li + 1);
-    if (e.key === 'ArrowRight') lbShow(li - 1);
-  });
-  let tx = null;
-  lb.addEventListener('touchstart', (e) => { tx = e.touches[0].clientX; }, { passive: true });
-  lb.addEventListener('touchend', (e) => {
-    if (tx === null) return;
-    const dx = e.changedTouches[0].clientX - tx; tx = null;
-    if (Math.abs(dx) > 50) lbShow(li + (dx > 0 ? 1 : -1)); // RTL: swipe right → next
+  $('#planBtn').addEventListener('click', () => { renderPlan(PLANS[current]); openDlg(planDlg); });
+
+  /* =======================================================
+     Dialogs (plan, brochure)
+     ======================================================= */
+  function openDlg(d) { d.showModal(); root.classList.add('menu-open'); }
+  $$('dialog.sheet').forEach((d) => {
+    d.addEventListener('close', () => root.classList.remove('menu-open'));
+    d.addEventListener('click', (e) => { if (e.target === d) d.close(); });
+    $$('[data-close]', d).forEach((b) => b.addEventListener('click', () => d.close()));
   });
 
   /* =======================================================
-     Lead form (demo only — nothing is sent)
+     5 · Floor finder (demo availability)
      ======================================================= */
-  const form = $('#leadForm');
+  const FLOORS = [
+    { n: 1, y: [714, 858], type: 'דירת גן', size: '168 מ״ר + גינה 85 מ״ר', orient: 'מערב · דרום', s: 'free', apt: 'גן / מיני פנטהאוז' },
+    { n: 2, y: [652, 714], type: '4 חדרים', size: '118 מ״ר', orient: 'מערב · צפון', s: 'free', apt: '4 חדרים' },
+    { n: 3, y: [590, 652], type: '5 חדרים', size: '146 מ״ר', orient: 'מערב · דרום', s: 'free', apt: '5 חדרים' },
+    { n: 4, y: [528, 590], type: '4 חדרים', size: '118 מ״ר', orient: 'מערב · צפון', s: 'free', apt: '4 חדרים' },
+    { n: 5, y: [466, 528], type: '4 חדרים', size: '118 מ״ר', orient: 'מערב · דרום', s: 'held', apt: '4 חדרים' },
+    { n: 6, y: [404, 466], type: '4 חדרים', size: '118 מ״ר', orient: 'מערב · צפון', s: 'free', apt: '4 חדרים' },
+    { n: 7, y: [342, 404], type: '5 חדרים', size: '146 מ״ר', orient: 'מערב · דרום', s: 'free', apt: '5 חדרים' },
+    { n: 8, y: [280, 342], type: '5 חדרים', size: '146 מ״ר', orient: 'מערב · צפון', s: 'sold', apt: '5 חדרים' },
+    { n: 9, y: [218, 280], type: '5 חדרים', size: '146 מ״ר', orient: 'מערב · דרום', s: 'free', apt: '5 חדרים' },
+    { n: 10, y: [156, 218], type: '5 חדרים', size: '146 מ״ר', orient: 'מערב · צפון', s: 'free', apt: '5 חדרים' },
+    { n: 11, y: [94, 156], type: 'מיני פנטהאוז', size: '168 מ״ר + 85 מ״ר מרפסת', orient: 'מערב · דרום', s: 'held', apt: 'גן / מיני פנטהאוז' },
+    { n: 12, y: [30, 94], type: 'פנטהאוז גג', size: '245 מ״ר + 160 מ״ר גג', orient: '360°', s: 'free', apt: 'פנטהאוז גג' },
+  ];
+  const STATUS = { free: 'פנויה', held: 'שמורה', sold: 'נמכרה' };
+  const IMG_H = 941;
+  // measured on the street image: lobby 714-858, ten typical floors 150-714, penthouse 30-150
+  FLOORS.forEach((f) => { if (f.n >= 2 && f.n <= 11) { const h = (714 - 150) / 10, y1 = 714 - (f.n - 2) * h; f.y = [Math.round(y1 - h), Math.round(y1)]; } if (f.n === 12) f.y = [30, 150]; });
+  const band = $('#floorsBand'), hits = $('#floorsHits'), flist = $('#floorsList');
+  let floorSel = 7;
+  function showFloor(n) {
+    const f = FLOORS[n - 1];
+    band.style.top = `${(f.y[0] / IMG_H) * 100}%`;
+    band.style.height = `${((f.y[1] - f.y[0]) / IMG_H) * 100}%`;
+    band.classList.add('is-on');
+    band.classList.toggle('is-sold', f.s === 'sold');
+    $('#fcNum').textContent = n === 1 ? 'קרקע' : n;
+    $('#fcType').textContent = f.type;
+    $('#fcSize').textContent = f.size;
+    $('#fcOrient').textContent = f.orient;
+    const st = $('#fcStatus'); st.textContent = STATUS[f.s]; st.dataset.s = f.s;
+    const cta = $('#fcCta');
+    cta.textContent = f.s === 'sold' ? 'לרשימת המתנה לקומה' : 'לתיאום פגישה על הקומה';
+  }
+  function selectFloor(n) {
+    floorSel = n; showFloor(n);
+    $$('button', flist).forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.n === n)));
+    $$('.floors__hit', hits).forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.n === n)));
+  }
+  FLOORS.slice().reverse().forEach((f) => {
+    const label = `קומה ${f.n === 1 ? 'קרקע' : f.n}: ${f.type}, ${f.size}, ${STATUS[f.s]}`;
+    const b = document.createElement('button');
+    b.className = 'floors__hit'; b.type = 'button'; b.dataset.n = f.n; b.setAttribute('aria-label', label);
+    b.style.top = `${(f.y[0] / IMG_H) * 100}%`; b.style.height = `${((f.y[1] - f.y[0]) / IMG_H) * 100}%`;
+    b.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') showFloor(f.n); });
+    b.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') showFloor(floorSel); });
+    b.addEventListener('click', () => selectFloor(f.n));
+    b.addEventListener('focus', () => showFloor(f.n));
+    hits.appendChild(b);
+    const li = document.createElement('li');
+    li.innerHTML = `<button type="button" data-n="${f.n}" aria-pressed="false"><b>${f.n === 1 ? 'ק' : f.n}</b><span>${f.type}</span><span class="sz">${f.size.split(' +')[0]}</span><span class="dot dot--${f.s}" title="${STATUS[f.s]}"></span></button>`;
+    li.firstChild.setAttribute('aria-label', label);
+    li.firstChild.addEventListener('click', () => { selectFloor(f.n); $('#floorsCard').scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'nearest' }); });
+    flist.appendChild(li);
+  });
+  hits.addEventListener('pointerleave', () => showFloor(floorSel));
+  selectFloor(7);
+  $('#fcCta').addEventListener('click', () => {
+    const f = FLOORS[floorSel - 1];
+    setApt(f.apt);
+    $('#f-floor').value = String(f.n);
+    $('#formFloorText').textContent = `התעניינות: קומה ${f.n === 1 ? 'קרקע' : f.n} · ${f.type}`;
+    $('#formFloor').hidden = false;
+  });
+  $('#formFloorClear').addEventListener('click', () => { $('#formFloor').hidden = true; $('#f-floor').value = ''; });
+
+  /* =======================================================
+     7 · The building — sticky image follows the text
+     ======================================================= */
+  const bImgs = $$('.building__img');
+  const amenities = $$('.amenity');
+  const amIO = new IntersectionObserver((entries) => {
+    entries.forEach((en) => {
+      if (!en.isIntersecting) return;
+      amenities.forEach((a) => a.classList.toggle('is-active', a === en.target));
+      const i = +en.target.dataset.i;
+      bImgs.forEach((im) => im.classList.toggle('is-active', +im.dataset.i === i));
+    });
+  }, { rootMargin: '-45% 0px -45% 0px' });
+  amenities.forEach((a) => amIO.observe(a));
+  amenities[0].classList.add('is-active');
+
+  /* =======================================================
+     8 · A day at AURA — pinned horizontal (desktop), snap carousel (phones)
+     ======================================================= */
+  const day = $('#day'), track = $('#dayTrack'), dayVP = $('.day__viewport');
+  const cards = $$('.day__card', track);
+  const HOURS = cards.map((c) => +c.dataset.t);
+  const hh = $('.day__hh'), mh = $('.day__mh'), nowEl = $('#dayNow'), bar = $('#dayBar');
+  new IntersectionObserver(([en], obs) => { if (en.isIntersecting) { $$('img', track).forEach((im) => { im.loading = 'eager'; }); obs.disconnect(); } }, { rootMargin: '1200px 0px' }).observe(day);
+  function setDay(p) {
+    const seg = p * (HOURS.length - 1), k = Math.min(Math.floor(seg), HOURS.length - 2);
+    const h = lerp(HOURS[k], HOURS[k + 1], seg - k);
+    const hour = Math.floor(h), min = Math.round(((h - hour) * 60) / 5) * 5 % 60;
+    nowEl.textContent = `${String(hour).padStart(2, '0')}:${String(min).padStart(2, '0')}`;
+    hh.style.transform = `rotate(${((h % 12) / 12) * 360}deg)`;
+    mh.style.transform = `rotate(${(h % 1) * 360}deg)`;
+    bar.parentElement.style.setProperty('--p', p.toFixed(3));
+  }
+  function dayDesktop() {
+    if (!desktopMQ.matches) return;
+    const r = day.getBoundingClientRect();
+    const p = clamp(-r.top / (r.height - innerHeight), 0, 1);
+    const max = track.scrollWidth - dayVP.clientWidth;
+    track.style.transform = `translate3d(${(p * max).toFixed(1)}px, 0, 0)`;   // RTL: content travels right
+    setDay(p);
+  }
+  if (!reduced) whileVisible(day, dayDesktop, '0px');
+  dayVP.addEventListener('scroll', () => {
+    if (desktopMQ.matches) return;
+    const max = dayVP.scrollWidth - dayVP.clientWidth;
+    setDay(max > 0 ? clamp(Math.abs(dayVP.scrollLeft) / max, 0, 1) : 0);
+  }, { passive: true });
+  desktopMQ.addEventListener('change', () => { track.style.transform = ''; requestJobs(); });
+  setDay(0);
+
+  /* =======================================================
+     9 · Location — Leaflet + CARTO light, loaded only when near
+     ======================================================= */
+  const mapEl = $('#map');
+  const AURA_LL = [32.1668, 34.8072];
+  const PLACES = {
+    beach: { ll: [32.1712, 34.8026], name: 'חוף אכדיה' },
+    marina: { ll: [32.1622, 34.7985], name: 'מרינה הרצליה' },
+    biz: { ll: [32.1622, 34.8088], name: 'אזור התעסוקה פיתוח' },
+    road2: { ll: [32.1700, 34.8172], name: 'כביש החוף (2)' },
+    train: { ll: [32.1636, 34.8178], name: 'תחנת רכבת הרצליה' },
+  };
+  const loadAsset = (tag, attrs) => new Promise((res, rej) => { const n = document.createElement(tag); Object.assign(n, attrs); n.onload = res; n.onerror = rej; document.head.appendChild(n); });
+  let map = null; const pins = {};
+  function initMap() {
+    const L = window.L;
+    const touch = matchMedia('(pointer: coarse)').matches;
+    map = L.map(mapEl, { center: AURA_LL, zoom: 14, maxZoom: 16, scrollWheelZoom: false, dragging: !touch, touchZoom: !touch, tap: false, zoomControl: true, attributionControl: true });
+    // CARTO's free basemaps now answer with an "API key required" tile, so the keyless
+    // Esri Light Gray Canvas (base + labels) is used instead, warmed with a CSS filter.
+    const ESRI = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/';
+    L.tileLayer(ESRI + 'World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom: 16, attribution: 'Tiles &copy; <a href="https://www.esri.com">Esri</a> &mdash; Esri, HERE, Garmin, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    }).addTo(map);
+    L.tileLayer(ESRI + 'World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}', { maxZoom: 16, pane: 'overlayPane' }).addTo(map);
+    L.marker(AURA_LL, { icon: L.divIcon({ className: 'aura-pin', html: '<i></i><b>AURA</b>', iconSize: [16, 16] }), keyboard: false, title: 'AURA' }).addTo(map);
+    Object.entries(PLACES).forEach(([k, v]) => {
+      pins[k] = L.marker(v.ll, { icon: L.divIcon({ className: 'place-pin', html: '<i></i>', iconSize: [10, 10] }), keyboard: false })
+        .bindTooltip(v.name, { direction: 'top', offset: [0, -8], className: 'place-tip' }).addTo(map);
+    });
+    map.fitBounds(L.latLngBounds([AURA_LL, ...Object.values(PLACES).map((p) => p.ll)]), { padding: [36, 36] });
+    if (touch) {
+      mapEl.classList.add('is-locked');
+      $('#mapActivate').addEventListener('click', () => {
+        map.dragging.enable(); map.touchZoom.enable(); mapEl.classList.remove('is-locked');
+      });
+    }
+  }
+  new IntersectionObserver(([en], obs) => {
+    if (!en.isIntersecting) return;
+    obs.disconnect();
+    Promise.all([
+      loadAsset('link', { rel: 'stylesheet', href: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css' }),
+      loadAsset('script', { src: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js' }),
+    ]).then(initMap).catch(() => mapEl.classList.add('is-failed'));
+  }, { rootMargin: '600px 0px' }).observe(mapEl);
+  $$('#places li').forEach((li) => {
+    const k = li.dataset.pin;
+    const on = () => { li.classList.add('is-hot'); const p = pins[k]; if (p) { p.getElement()?.classList.add('is-hot'); p.openTooltip(); } };
+    const off = () => { li.classList.remove('is-hot'); const p = pins[k]; if (p) { p.getElement()?.classList.remove('is-hot'); p.closeTooltip(); } };
+    li.addEventListener('pointerenter', on); li.addEventListener('pointerleave', off);
+  });
+
+  /* =======================================================
+     Forms (demo only — nothing is sent)
+     ======================================================= */
+  function setApt(value) {
+    const r = $$('input[name="apt"]').find((x) => x.value === value);
+    if (r) r.checked = true;
+  }
   const normPhone = (v) => v.replace(/[\s\-().]/g, '').replace(/^\+?972/, '0');
   const RULES = {
     name: (v) => v.trim().length < 2 ? 'נא להזין שם מלא' : (v.trim().split(/\s+/).length < 2 ? 'נא להזין שם פרטי ושם משפחה' : ''),
@@ -698,27 +858,33 @@
   function check(input) {
     const rule = RULES[input.name]; if (!rule) return true;
     const msg = rule(input.value, input.checked);
-    const field = input.closest('.field');
-    field.classList.toggle('has-error', !!msg);
+    input.closest('.field').classList.toggle('has-error', !!msg);
     input.setAttribute('aria-invalid', String(!!msg));
-    $('#e-' + input.name).textContent = msg;
+    const err = document.getElementById(input.getAttribute('aria-describedby'));
+    if (err) err.textContent = msg;
     return !msg;
   }
-  $$('input', form).forEach((inp) => {
-    inp.addEventListener('blur', () => { if (inp.value || inp.type === 'checkbox') check(inp); });
-    inp.addEventListener('input', () => { if (inp.closest('.field').classList.contains('has-error')) check(inp); });
+  function wireForm(form, names, onDone) {
+    $$('input', form).forEach((inp) => {
+      inp.addEventListener('blur', () => { if (inp.value || inp.type === 'checkbox') check(inp); });
+      inp.addEventListener('input', () => { if (inp.closest('.field')?.classList.contains('has-error')) check(inp); });
+    });
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const bad = names.map((n) => form.elements[n]).filter((i) => !check(i));
+      if (bad.length) { bad[0].focus(); return; }
+      const btn = $('.btn', form);
+      btn.disabled = true; btn.firstElementChild.textContent = 'שולח…';
+      setTimeout(onDone, 900);
+    });
+  }
+  const form = $('#leadForm');
+  wireForm(form, ['name', 'phone', 'email', 'consent'], () => {
+    $('#successName').textContent = form.elements.name.value.trim().split(/\s+/)[0];
+    form.hidden = true;
+    const s = $('#success'); s.hidden = false; s.focus();
   });
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const inputs = ['name', 'phone', 'email', 'consent'].map((n) => form.elements[n]);
-    const bad = inputs.filter((i) => !check(i));
-    if (bad.length) { bad[0].focus(); return; }
-    const btn = $('.btn', form);
-    btn.disabled = true; btn.firstElementChild.textContent = 'שולח…';
-    setTimeout(() => {
-      $('#successName').textContent = form.elements.name.value.trim().split(/\s+/)[0];
-      form.hidden = true;
-      const s = $('#success'); s.hidden = false; s.focus();
-    }, 900);
-  });
+  const brDlg = $('#brochureDlg'), brForm = $('#brForm');
+  $('#brochureBtn').addEventListener('click', () => openDlg(brDlg));
+  wireForm(brForm, ['name', 'phone'], () => { brForm.hidden = true; const s = $('#brSuccess'); s.hidden = false; s.focus(); });
 })();
