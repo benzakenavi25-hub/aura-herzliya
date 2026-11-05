@@ -287,6 +287,10 @@
     });
   }, { rootMargin: '0px 0px -12% 0px', threshold: 0.05 });
   $$('[data-reveal], [data-reveal-lines]').forEach((el) => io.observe(el));
+  // Stagger siblings that enter together (stats, specs, timeline, gallery): 70 ms apart, capped.
+  ['.stats', '.specs__grid', '.timeline', '.gal'].forEach((sel) => {
+    $$(`${sel} > [data-reveal]`).forEach((el, n) => el.style.setProperty('--d', `${Math.min(n, 5) * 70}ms`));
+  });
 
   function countUp(el) {
     const end = +el.dataset.count;
@@ -374,14 +378,14 @@
   const NS = 'http://www.w3.org/2000/svg';
   const el = (tag, attrs, parent) => { const n = document.createElementNS(NS, tag); for (const k in attrs) n.setAttribute(k, attrs[k]); if (parent) parent.appendChild(n); return n; };
 
-  function renderPlan(p) {
+  function renderPlan(p, animate = true) {
     while (svg.lastChild && svg.lastChild.nodeName !== 'title') svg.removeChild(svg.lastChild);
     $('#planTitle').textContent = `תוכנית סכמטית: ${p.name}`;
     const defs = el('defs', {}, svg);
     const pat = el('pattern', { id: 'hatch', width: 7, height: 7, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' }, defs);
     el('line', { x1: 0, y1: 0, x2: 0, y2: 7, stroke: '#9A7448', 'stroke-width': .6, opacity: .45 }, pat);
 
-    const anim = !reduced;
+    const anim = !reduced && animate;
     const rectEl = (r, cls) => {
       const n = el('rect', { x: r.x, y: r.y, width: r.w, height: r.h, class: cls + (anim ? ' plan__draw' : '') }, svg);
       if (anim) n.style.setProperty('--len', 2 * (r.w + r.h));
@@ -420,14 +424,29 @@
 
   const tabs = $$('.res__tabs [role="tab"]');
   const resApp = $('#resApp');
+  const tabBar = $('.res__tabs');
+  // One indicator that slides between tabs (spatially consistent), moved with transform only.
+  const ind = document.createElement('span');
+  ind.className = 'res__ind'; ind.setAttribute('aria-hidden', 'true');
+  tabBar.appendChild(ind);
+  function moveIndicator(i, instant) {
+    const t = tabs[i];
+    if (instant) ind.style.transition = 'none';
+    ind.style.transform = `translate(${t.offsetLeft}px, ${t.offsetTop + t.offsetHeight - 2}px) scaleX(${t.offsetWidth / 100})`;
+    if (instant) { ind.offsetWidth; ind.style.transition = ''; }
+  }
+  addEventListener('resize', () => moveIndicator(current, true));
   let current = 0;
-  function showPlan(i, focus) {
+  // Keyboard-initiated switches are instant: no swap, no indicator travel, no drawing.
+  function showPlan(i, keyboard) {
     const p = PLANS[i];
     tabs.forEach((t, n) => { t.setAttribute('aria-selected', String(n === i)); t.tabIndex = n === i ? 0 : -1; });
     $('#panel-res').setAttribute('aria-labelledby', tabs[i].id);
-    if (focus) tabs[i].focus();
+    if (keyboard) tabs[i].focus();
+    moveIndicator(i, keyboard || svg.childElementCount <= 1);
+    const instant = reduced || keyboard;
     const apply = () => {
-      renderPlan(p);
+      renderPlan(p, !instant);
       $('#resName').textContent = p.name;
       $('#resDesc').textContent = p.desc;
       $('#resFacts').innerHTML = p.facts.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('');
@@ -436,8 +455,8 @@
     };
     if (i === current && svg.childElementCount > 1) return;
     current = i;
-    if (reduced || svg.childElementCount <= 1) apply();
-    else { resApp.classList.add('is-swapping'); setTimeout(apply, 320); }
+    if (instant || svg.childElementCount <= 1) apply();
+    else { resApp.classList.add('is-swapping'); setTimeout(apply, 180); }
   }
   tabs.forEach((t, n) => {
     t.addEventListener('click', () => showPlan(n));
