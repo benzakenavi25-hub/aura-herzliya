@@ -50,16 +50,21 @@
     <a class="header__cta" href="#contact">תיאום פגישה</a>
     <button class="header__menu" id="menuBtn" aria-expanded="false" aria-controls="mobileNav"><span class="sr-only">תפריט</span><i></i><i></i></button>
   </div>
-  <nav class="mnav" id="mobileNav" aria-label="ניווט ראשי (נייד)" hidden>
+</header>
+<div class="mnav" id="mobileNav" aria-hidden="true" inert>
+  <nav class="mnav__links" aria-label="ניווט ראשי (נייד)">
     <a href="#project">הפרויקט</a>
     <a href="#residences">הדירות</a>
     <a href="#specs">מפרט</a>
     <a href="#location">מיקום</a>
     <a href="#progress">התקדמות</a>
     <a href="#gallery">גלריה</a>
-    <a href="#contact" class="mnav__cta">תיאום פגישה במשרדי המכירות</a>
   </nav>
-</header>
+  <div class="mnav__foot">
+    <a href="#contact" class="mnav__cta">תיאום פגישה במשרדי המכירות</a>
+    <p>רח׳ השקמה 8, הרצליה פיתוח · <a href="tel:+97290000000" dir="ltr">09-000-0000</a></p>
+  </div>
+</div>
 
 <main id="main">
 
@@ -92,7 +97,7 @@
         <p class="chapter__text">שלד בטון מדויק ותכנון שקט — גם במה שלא רואים, אין קיצורי דרך.</p>
       </div>
 
-      <div class="chapter chapter--street" data-from="0.45" data-to="0.535" data-pos="top" data-m="bottom">
+      <div class="chapter chapter--short" data-from="0.45" data-to="0.535" data-pos="top" data-m="top">
         <p class="chapter__num">03 — המגדל</p>
         <h2 class="chapter__title">אבן בהירה, זכוכית, ואופק פתוח.</h2>
         <p class="chapter__text">שתים־עשרה קומות של מגורים, ומרפסות מעוגלות שפונות אל המערב.</p>
@@ -111,7 +116,7 @@
         <p class="chapter__text">טרוורטין חם, עצי זית ותאורה רכה — המרפסת היא חדר נוסף, רק פתוח.</p>
       </div>
 
-      <div class="chapter chapter--final" data-from="0.925" data-to="1.01" data-m="bottom">
+      <div class="chapter chapter--final" data-from="0.9" data-to="1.01" data-m="bottom">
         <p class="chapter__num">05 — הבית</p>
         <p class="chapter__en">Welcome home</p>
         <h2 class="chapter__title">ברוכים הבאים הביתה.</h2>
@@ -333,13 +338,13 @@
         <circle class="map__station" cx="566" cy="250" r="6"/>
         <!-- labels -->
         <g class="map__labels">
-          <text x="80" y="320" class="map__sea-label" transform="rotate(-90 80 320)">הים התיכון</text>
+          <text x="78" y="300" class="map__sea-label">הים</text><text x="78" y="326" class="map__sea-label">התיכון</text>
           <text x="96" y="530" data-pin="marina">המרינה</text>
-          <text x="200" y="206" data-pin="beach" class="map__small">חוף אכדיה</text>
+          <text x="218" y="204" data-pin="beach" class="map__small">חוף אכדיה</text>
           <text x="410" y="448" data-pin="biz">אזור התעסוקה</text>
           <text x="486" y="236" data-pin="road2" class="map__small">כביש 2</text>
-          <text x="560" y="276" data-pin="train" class="map__small" text-anchor="end">רכבת</text>
-          <text x="420" y="620" data-pin="tlv" class="map__small">תל אביב ↓</text>
+          <text x="540" y="290" data-pin="train" class="map__small">רכבת</text>
+          <text x="420" y="620" data-pin="tlv" class="map__small" data-m-hide>תל אביב ↓</text>
         </g>
         <!-- AURA -->
         <g class="map__aura" transform="translate(218 252)">
@@ -369,35 +374,35 @@
 
   <ol class="timeline" id="timeline">
     <li class="tl is-done" data-reveal>
-      <figure class="tl__img"><img src="img/01-lot-640.webp" srcset="img/01-lot-640.webp 640w, img/01-lot-1024.webp 1024w" sizes="(min-width: 900px) 30vw, 80vw" alt="המגרש הריק מאחורי גדר לבנה, דקלים ושמיים בשעת הזהב" loading="lazy" decoding="async" width="1672" height="941"></figure>
+      <figure class="tl__img"><img style="--pos: 50% 50%" src="img/01-lot-640.webp" srcset="img/01-lot-640.webp 640w, img/01-lot-1024.webp 1024w" sizes="(min-width: 900px) 30vw, 80vw" alt="המגרש הריק מאחורי גדר לבנה, דקלים ושמיים בשעת הזהב" loading="lazy" decoding="async" width="1672" height="941"></figure>
       <p class="tl__when">2025</p>
       <h3>המגרש</h3>
       <p>רכישת הקרקע, היתר בנייה וגידור האתר.</p>
       <span class="tl__state">הושלם</span>
     </li>
     <li class="tl is-now" data-reveal>
-      <figure class="tl__img"><img src="img/02-foundations-640.webp" srcset="img/02-foundations-640.webp 640w, img/02-foundations-1024.webp 1024w" sizes="(min-width: 900px) 30vw, 80vw" alt="עבודות יסודות במגרש ועגורן צהוב ניצב מעל האתר" loading="lazy" decoding="async" width="1672" height="941"></figure>
+      <figure class="tl__img"><img style="--pos: 56% 50%" src="img/02-foundations-640.webp" srcset="img/02-foundations-640.webp 640w, img/02-foundations-1024.webp 1024w" sizes="(min-width: 900px) 30vw, 80vw" alt="עבודות יסודות במגרש ועגורן צהוב ניצב מעל האתר" loading="lazy" decoding="async" width="1672" height="941"></figure>
       <p class="tl__when">2026</p>
       <h3>יסודות</h3>
       <p>חפירה, כלונסאות ורצפת המרתף. העגורן כבר במקום.</p>
       <span class="tl__state">בביצוע</span>
     </li>
     <li class="tl" data-reveal>
-      <figure class="tl__img"><img src="img/03-skeleton-640.webp" srcset="img/03-skeleton-640.webp 640w, img/03-skeleton-1024.webp 1024w" sizes="(min-width: 900px) 30vw, 80vw" alt="שלד הבטון עולה קומה אחר קומה לצד העגורן" loading="lazy" decoding="async" width="1672" height="941"></figure>
+      <figure class="tl__img"><img style="--pos: 50% 50%" src="img/03-skeleton-640.webp" srcset="img/03-skeleton-640.webp 640w, img/03-skeleton-1024.webp 1024w" sizes="(min-width: 900px) 30vw, 80vw" alt="שלד הבטון עולה קומה אחר קומה לצד העגורן" loading="lazy" decoding="async" width="1672" height="941"></figure>
       <p class="tl__when">2027</p>
       <h3>שלד</h3>
       <p>יציקת הקומות, קומה בכל שלושה שבועות בממוצע.</p>
       <span class="tl__state">מתוכנן</span>
     </li>
     <li class="tl" data-reveal>
-      <figure class="tl__img"><img src="img/04-facade-640.webp" srcset="img/04-facade-640.webp 640w, img/04-facade-1024.webp 1024w" sizes="(min-width: 900px) 30vw, 80vw" alt="התקנת חזית הזכוכית והאבן, הקומות העליונות עדיין מכוסות ברשת" loading="lazy" decoding="async" width="1672" height="941"></figure>
+      <figure class="tl__img"><img style="--pos: 47% 50%" src="img/04-facade-640.webp" srcset="img/04-facade-640.webp 640w, img/04-facade-1024.webp 1024w" sizes="(min-width: 900px) 30vw, 80vw" alt="התקנת חזית הזכוכית והאבן, הקומות העליונות עדיין מכוסות ברשת" loading="lazy" decoding="async" width="1672" height="941"></figure>
       <p class="tl__when">2028</p>
       <h3>חזית</h3>
       <p>חיפוי אבן, מערכות זכוכית ומעקות.</p>
       <span class="tl__state">מתוכנן</span>
     </li>
     <li class="tl" data-reveal>
-      <figure class="tl__img"><img src="img/05-finished-street-640.webp" srcset="img/05-finished-street-640.webp 640w, img/05-finished-street-1024.webp 1024w" sizes="(min-width: 900px) 30vw, 80vw" alt="המגדל המוגמר עם לובי מואר, עצי זית במרפסות ודקלים ברחוב" loading="lazy" decoding="async" width="1672" height="941"></figure>
+      <figure class="tl__img"><img style="--pos: 45% 50%" src="img/05-finished-street-640.webp" srcset="img/05-finished-street-640.webp 640w, img/05-finished-street-1024.webp 1024w" sizes="(min-width: 900px) 30vw, 80vw" alt="המגדל המוגמר עם לובי מואר, עצי זית במרפסות ודקלים ברחוב" loading="lazy" decoding="async" width="1672" height="941"></figure>
       <p class="tl__when">2029</p>
       <h3>מסירה</h3>
       <p>גמרים, פיתוח נופי ומסירת המפתחות.</p>

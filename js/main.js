@@ -27,7 +27,9 @@
   // over half of the scroll; camera moves get less. Tuned by feel.
   const PACE = [
     [0, 0], [0.035, 0], [0.52, 11], [0.6, 13], [0.73, 21],
-    [0.83, 25], [0.85, 26], [0.935, 30.4], [0.965, 31], [1, 31],
+    // the walk inside ends at 0.925; the last frame (living room → sea) then holds
+    // for the final ~7.5% of the scroll with "welcome home" over it
+    [0.83, 25], [0.85, 26], [0.925, 31], [1, 31],
   ];
   // Chapter rail: lot, structure, tower, roof, home (by video time)
   const CH_T = [0, 2, 9.6, 15, 26.5];
@@ -57,6 +59,7 @@
     if (w === cw && Math.abs(h - ch) < 2) return;
     cw = canvas.width = w; ch = canvas.height = h;
     ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+    measureInset();
     lastDrawKey = '';
     draw();
   }
@@ -76,16 +79,95 @@
     return -1;
   }
 
-  function cover(img, alpha, t) {
-    const iw = img.naturalWidth, ih = img.naturalHeight;
-    const s = Math.max(cw / iw, ch / ih);
-    const dw = iw * s, dh = ih * s;
+  /* ---- Framing ----
+     Desktop/landscape: plain "cover".
+     Portrait: during construction (0 → 10.5 s) the mobile crop (the middle ~52% of the
+     16:9 film: tower + crane mast) is drawn at the viewport width — i.e. the full frame at
+     ~1.9× the viewport — anchored so the street sits at the bottom of the small viewport.
+     The sky above it is extended from the frame's own top rows. As the camera lifts off
+     (10.5 → 12.5 s, hidden by the cut to the drone shot) it eases to full cover. */
+  const FIT_T0 = 10.5, FIT_T1 = 12.5;
+  let bottomInset = 0;          // device px between the large and small viewport bottoms
+  function measureInset() {
+    const probe = document.createElement('div');
+    probe.style.cssText = 'position:fixed;top:0;height:100vh;height:100svh;width:0;visibility:hidden;pointer-events:none';
+    document.body.appendChild(probe);
+    const svh = probe.getBoundingClientRect().height;
+    probe.remove();
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    bottomInset = Math.max(0, (canvas.parentElement.clientHeight - svh) * dpr);
+  }
+
+  function placement(iw, ih, t) {
+    const sCover = Math.max(cw / iw, ch / ih);
     const fx = setKey === 'm' ? interp(FOCAL, t) : 0.5;
-    let dx = cw / 2 - fx * dw;
-    dx = clamp(dx, cw - dw, 0);
-    const dy = (ch - dh) / 2;
-    ctx.globalAlpha = alpha;
-    ctx.drawImage(img, dx, dy, dw, dh);
+    const cdw = iw * sCover, cdh = ih * sCover;
+    const cover = { s: sCover, dx: clamp(cw / 2 - fx * cdw, cw - cdw, 0), dy: (ch - cdh) / 2 };
+    const sFit = cw / iw;
+    if (setKey !== 'm' || sFit >= sCover) return cover;
+    const e = 1 - smooth(FIT_T0, FIT_T1, t);            // 1 = construction framing
+    if (e <= 0) return cover;
+    const fdh = ih * sFit;
+    const fit = { s: sFit, dx: 0, dy: ch - bottomInset - fdh };
+    return { s: lerp(cover.s, fit.s, e), dx: lerp(cover.dx, fit.dx, e), dy: lerp(cover.dy, fit.dy, e) };
+  }
+
+  // Sky extension: the top rows of the frame, median-filtered horizontally (so the crane
+  // tip or a cable never streaks upward), stretched up, deepened slightly toward the
+  // zenith, and faded into the top of the image so there is no seam.
+  const stripC = document.createElement('canvas'); stripC.width = 64; stripC.height = 1;
+  const sampleC = document.createElement('canvas'); sampleC.width = 64; sampleC.height = 2;
+  const skyC = document.createElement('canvas');
+  const sampleX = sampleC.getContext('2d', { willReadFrequently: true });
+  const stripX = stripC.getContext('2d');
+  const skyX = skyC.getContext('2d');
+  let stripFor = -1;
+  function buildStrip(img, idx) {
+    if (stripFor === idx) return;
+    stripFor = idx;
+    sampleX.clearRect(0, 0, 64, 2);
+    sampleX.drawImage(img, 0, 0, img.naturalWidth, 4, 0, 0, 64, 2);
+    let src;
+    try { src = sampleX.getImageData(0, 0, 64, 2).data; } catch (e) { stripFor = -2; return; }
+    const out = stripX.createImageData(64, 1);
+    // median over a window that slides inward at the edges (clamping would repeat an
+    // edge outlier — e.g. the crane counterweight at the right edge — and let it win)
+    const W = 8;
+    for (let x = 0; x < 64; x++) {
+      const start = clamp(x - W, 0, 63 - 2 * W);
+      for (let c = 0; c < 3; c++) {
+        const win = [];
+        for (let xx = start; xx <= start + 2 * W; xx++) {
+          win.push((src[xx * 4 + c] + src[(64 + xx) * 4 + c]) / 2);
+        }
+        win.sort((p, q) => p - q);
+        out.data[x * 4 + c] = win[W];
+      }
+      out.data[x * 4 + 3] = 255;
+    }
+    stripX.putImageData(out, 0, 0);
+  }
+  function drawSky(pl, iw) {
+    const top = Math.ceil(pl.dy);
+    if (top <= 0 || stripFor < 0) return;
+    const fade = Math.round(28 * Math.min(window.devicePixelRatio || 1, 2));
+    const h = top + fade;
+    if (skyC.width !== cw || skyC.height !== h) { skyC.width = cw; skyC.height = h; }
+    skyX.globalCompositeOperation = 'source-over';
+    skyX.imageSmoothingEnabled = true;
+    skyX.drawImage(stripC, 0, 0, 64, 1, pl.dx, 0, iw * pl.s, h);
+    // a little deeper toward the zenith, like a real sky
+    const g = skyX.createLinearGradient(0, 0, 0, top);
+    g.addColorStop(0, 'rgba(70, 92, 160, .16)'); g.addColorStop(1, 'rgba(70, 92, 160, 0)');
+    skyX.fillStyle = g; skyX.fillRect(0, 0, cw, top);
+    // feather the bottom edge into the image
+    skyX.globalCompositeOperation = 'destination-out';
+    const f = skyX.createLinearGradient(0, top - 2, 0, h);
+    f.addColorStop(0, 'rgba(0,0,0,0)'); f.addColorStop(1, 'rgba(0,0,0,1)');
+    skyX.fillStyle = f; skyX.fillRect(0, top - 2, cw, h - top + 2);
+    skyX.globalCompositeOperation = 'source-over';
+    ctx.globalAlpha = 1;
+    ctx.drawImage(skyC, 0, 0);
   }
 
   function draw() {
@@ -100,12 +182,18 @@
       f = clamp((t - times[i]) / (times[i + 1] - times[i]), 0, 1);
       if (f > 0.02) b = i + 1;
     }
-    const key = a + ':' + b + ':' + f.toFixed(2);
+    const key = a + ':' + b + ':' + f.toFixed(2) + ':' + t.toFixed(2);
     if (key === lastDrawKey) return;
     lastDrawKey = key;
-    cover(frames[a], 1, t);
-    if (b >= 0) cover(frames[b], f, t);
+    const img = frames[a];
+    const iw = img.naturalWidth, ih = img.naturalHeight;
+    const pl = placement(iw, ih, t);
+    if (pl.dy > 0.5) { ctx.fillStyle = '#C9C6DA'; ctx.fillRect(0, 0, cw, Math.ceil(pl.dy) + 1); }
     ctx.globalAlpha = 1;
+    ctx.drawImage(img, pl.dx, pl.dy, iw * pl.s, ih * pl.s);
+    if (b >= 0) { ctx.globalAlpha = f; ctx.drawImage(frames[b], pl.dx, pl.dy, iw * pl.s, ih * pl.s); }
+    ctx.globalAlpha = 1;
+    if (pl.dy > 0.5) { buildStrip(b >= 0 && f > 0.5 ? frames[b] : img, b >= 0 && f > 0.5 ? b : a); drawSky(pl, iw); }
   }
 
   // Light arc: golden hour (ink on light veil) → blue hour (cream on dusk veil)
@@ -121,7 +209,8 @@
     hero.style.setProperty('--shade', mix(WARM, DUSK, k));
     hero.style.setProperty('--veil-top', (0.5 * (1 - flip)).toFixed(3));
     hero.style.setProperty('--veil-bot', (flip * lerp(0.75, 0.95, k)).toFixed(3));
-    fadeEl.style.opacity = smooth(0.968, 1, progress).toFixed(3);
+    // only the lower edge darkens at the very end, flowing into the dusk bridge
+    fadeEl.style.opacity = smooth(0.975, 1, progress).toFixed(3);
 
     chapters.forEach((el) => {
       const on = progress >= +el.dataset.from && progress < +el.dataset.to;
@@ -233,6 +322,17 @@
   const menuBtn = $('#menuBtn');
   const mnav = $('#mobileNav');
   let lastY = scrollY;
+  // Floating contact: hidden in the hero, while the form or footer is on screen,
+  // and (on phones) while scrolling down through content — it returns when scrolling up
+  // or when the page comes to rest, so it never parks on top of text being read.
+  let waBlocked = false, waScrollingDown = matchMedia('(max-width: 760px)').matches, waIdle = null;
+  const narrow = matchMedia('(max-width: 760px)');
+  const waIO = new IntersectionObserver((entries) => {
+    entries.forEach((en) => { en.target._inView = en.isIntersecting; });
+    waBlocked = [$('#contact'), $('.footer')].some((n) => n._inView);
+    onScroll();
+  }, { rootMargin: '0px 0px -10% 0px' });
+  waIO.observe($('#contact')); waIO.observe($('.footer'));
   function onScroll() {
     const y = scrollY;
     const heroEnd = hero.offsetTop + hero.offsetHeight - innerHeight * (reduced ? 0.3 : 1);
@@ -241,18 +341,37 @@
     const menuOpen = menuBtn.getAttribute('aria-expanded') === 'true';
     header.classList.toggle('is-hidden-by-scroll', past && y > lastY + 4 && y > heroEnd + 400 && !menuOpen);
     if (y < lastY - 4) header.classList.remove('is-hidden-by-scroll');
-    wa.classList.toggle('is-visible', past);
+    if (narrow.matches) {
+      // phones: appears on scroll-up (intent), tucks away again when reading resumes
+      if (y > lastY + 2) waScrollingDown = true;
+      else if (y < lastY - 2) {
+        waScrollingDown = false;
+        clearTimeout(waIdle);
+        waIdle = setTimeout(() => { waScrollingDown = true; wa.classList.remove('is-visible'); }, 3200);
+      }
+    } else waScrollingDown = false;
+    wa.classList.toggle('is-visible', past && !waBlocked && !waScrollingDown);
     lastY = y;
   }
   addEventListener('scroll', onScroll, { passive: true });
   onScroll();
 
-  menuBtn.addEventListener('click', () => {
-    const open = menuBtn.getAttribute('aria-expanded') !== 'true';
+  // Full-screen mobile menu: scroll lock, Escape, focus return, closes on link tap.
+  function setMenu(open, returnFocus, viaKeyboard) {
     menuBtn.setAttribute('aria-expanded', String(open));
-    mnav.hidden = !open;
-  });
-  $$('a', mnav).forEach((a) => a.addEventListener('click', () => { menuBtn.setAttribute('aria-expanded', 'false'); mnav.hidden = true; }));
+    menuBtn.querySelector('.sr-only').textContent = open ? 'סגירת התפריט' : 'תפריט';
+    mnav.classList.toggle('is-open', open);
+    mnav.setAttribute('aria-hidden', String(!open));
+    mnav.inert = !open;
+    root.classList.toggle('menu-open', open);
+    if (open) $$('.mnav__links a', mnav).forEach((a, n) => a.style.setProperty('--d', `${40 + n * 35}ms`));
+    if (open && viaKeyboard) setTimeout(() => $('.mnav__links a', mnav).focus({ preventScroll: true }), 60);
+    else if (!open && returnFocus) menuBtn.focus();
+  }
+  menuBtn.addEventListener('click', (e) => setMenu(menuBtn.getAttribute('aria-expanded') !== 'true', false, e.detail === 0));
+  $$('a', mnav).forEach((a) => a.addEventListener('click', () => setMenu(false)));
+  addEventListener('keydown', (e) => { if (e.key === 'Escape' && mnav.classList.contains('is-open')) setMenu(false, true); });
+  matchMedia('(min-width: 961px)').addEventListener('change', (m) => { if (m.matches) setMenu(false); });
 
   // Anchor links: account for the fixed header; jumping into the page reveals the header
   $$('a[href^="#"]').forEach((a) => a.addEventListener('click', (e) => {
@@ -397,30 +516,65 @@
     p.rooms.forEach((r) => rectEl(r, 'plan__room'));
     rectEl({ x: ox, y: oy, w: ow, h: oh }, 'plan__outer');
 
+    // Phones: the drawing is fitted to the screen and set in larger units (≥11px rendered);
+    // service rooms get a one-letter key explained under the plan.
+    const compact = compactMQ.matches;
+    const FS = compact ? 17 : 11, FA = compact ? 16 : 10, FB = compact ? 18 : 12;
+    const KEY = { 'רחצה': 'ר', 'ארונות': 'א', 'כביסה': 'כ' };
+    const usedKeys = new Set();
+    const fits = (txt, fs, w) => txt.length * fs * 0.56 <= w - 8;
     const label = (r, big) => {
       const cx = r.x + r.w / 2, cy = r.y + r.h / 2;
-      const small = r.w < 60;
-      const t = el('text', { x: cx, y: cy + (r.area ? -2 : 4), class: 'plan__label' }, svg);
-      t.textContent = r.label;
-      if (small) t.setAttribute('font-size', '9.5');
-      if (big) t.setAttribute('font-size', '12');
-      if (r.area) { const a = el('text', { x: cx, y: cy + 13, class: 'plan__area' }, svg); a.textContent = `${r.area} מ״ר`; }
+      const fs = big ? FB : FS;
+      let text = r.label;
+      if (compact && KEY[text]) { usedKeys.add(text); text = KEY[text]; }
+      let lines = [text];
+      if (!fits(text, fs, r.w) && text.includes(' ')) {
+        const words = text.split(' '); const half = Math.ceil(words.length / 2);
+        lines = [words.slice(0, half).join(' '), words.slice(half).join(' ')];
+      }
+      const widest = Math.max(...lines.map((l) => l.length));
+      const rotate = !fits('x'.repeat(widest), fs, r.w) && r.h > r.w * 1.6;
+      const lh = fs * 1.15, areaH = r.area ? FA * 1.2 : 0;
+      const blockH = lines.length * lh + areaH;
+      const g = el('g', rotate ? { transform: `rotate(-90 ${cx} ${cy})` } : {}, svg);
+      lines.forEach((ln, n) => {
+        const t = el('text', { x: cx, y: cy - blockH / 2 + lh * (n + 0.78), class: 'plan__label', 'font-size': fs }, g);
+        t.textContent = ln;
+      });
+      if (r.area) { const a = el('text', { x: cx, y: cy - blockH / 2 + lines.length * lh + FA * 0.95, class: 'plan__area', 'font-size': FA }, g); a.textContent = `${r.area} מ״ר`; }
     };
     p.rooms.forEach((r) => label(r));
     p.outs.forEach((r) => label(r, true));
     if (p.pool) label(p.pool);
 
-    // entrance marker
+    // fitted viewBox on phones so the drawing uses the full width
+    const boxes = [...p.outs, { x: ox, y: oy, w: ow, h: oh }, ...(p.pool ? [p.pool] : [])];
+    const minX = Math.min(...boxes.map((b) => b.x)) - 6, maxX = Math.max(...boxes.map((b) => b.x + b.w)) + 6;
+    const minY = Math.min(...boxes.map((b) => b.y)) - 6;
     const [ex, ey] = p.entry;
+    const bottom = ey + (compact ? 56 : 40);
+    svg.setAttribute('viewBox', compact ? `${minX} ${minY} ${maxX - minX} ${bottom - minY}` : '0 0 520 380');
+
+    // entrance marker
     el('path', { d: `M${ex - 14} ${ey} h28`, stroke: '#F3EEE6', 'stroke-width': 5 }, svg);
     el('path', { d: `M${ex} ${ey + 22} v-14 m-5 5 l5 -5 l5 5`, class: 'plan__door' }, svg);
-    const et = el('text', { x: ex, y: ey + 34, class: 'plan__label' }, svg); et.textContent = 'כניסה';
+    const et = el('text', { x: ex, y: ey + 22 + FS, class: 'plan__label', 'font-size': FS }, svg); et.textContent = 'כניסה';
 
     // sea direction (west = left)
-    el('path', { d: 'M4 362 h70', class: 'plan__seaLine' }, svg);
-    el('path', { d: 'M4 362 l7 -4 m-7 4 l7 4', class: 'plan__seaLine' }, svg);
-    const s = el('text', { x: 80, y: 366, class: 'plan__sea', 'text-anchor': 'end' }, svg); s.textContent = 'הים';
+    const sx = compact ? minX + 4 : 4, sy = compact ? bottom - 12 : 362;
+    el('path', { d: `M${sx} ${sy} h${compact ? 50 : 70}`, class: 'plan__seaLine' }, svg);
+    el('path', { d: `M${sx} ${sy} l7 -4 m-7 4 l7 4`, class: 'plan__seaLine' }, svg);
+    const s = el('text', { x: sx + (compact ? 58 : 76), y: sy + 4, class: 'plan__sea', 'text-anchor': 'end', 'font-size': FS }, svg); s.textContent = 'הים';
+
+    planKey.textContent = [...usedKeys].map((k) => `${KEY[k]} — ${k}`).join('  ·  ');
+    planKey.hidden = !usedKeys.size;
   }
+  const compactMQ = matchMedia('(max-width: 760px)');
+  const planKey = document.createElement('p');
+  planKey.className = 'res__key'; planKey.hidden = true;
+  svg.after(planKey);
+  compactMQ.addEventListener('change', () => renderPlan(PLANS[current], false));
 
   const tabs = $$('.res__tabs [role="tab"]');
   const resApp = $('#resApp');

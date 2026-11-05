@@ -1,0 +1,14 @@
+import { webkit, devices } from 'playwright';
+const b = await webkit.launch();
+const p = await b.newPage({ ...devices['iPhone 13'] });
+await p.goto('http://localhost:5173/', { waitUntil: 'networkidle' });
+await p.waitForSelector('#loader', { state: 'detached' });
+await p.evaluate(() => document.getElementById('gallery').scrollIntoView({ behavior: 'instant' }));
+await p.waitForTimeout(400);
+await p.evaluate(() => window.scrollBy(0, -120)); await p.waitForTimeout(700);
+await p.tap('#menuBtn'); await p.waitForTimeout(600);
+await p.screenshot({ path: 'screenshots/mobile-menu.png', clip: { x: 0, y: 0, width: 390, height: 140 } });
+await p.tap('.mnav__links a[href="#residences"]'); await p.waitForTimeout(1500);
+const st = await p.evaluate(() => ({ open: document.getElementById('mobileNav').classList.contains('is-open'), y: Math.round(document.getElementById('residences').getBoundingClientRect().top), lock: getComputedStyle(document.body).overflow }));
+console.log(JSON.stringify(st));
+await b.close();

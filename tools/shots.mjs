@@ -6,7 +6,7 @@ const base = process.argv[2] || 'http://localhost:5173/';
 const only = process.argv[3];
 mkdirSync('screenshots', { recursive: true });
 
-const HERO_P = [0, 0.08, 0.22, 0.34, 0.47, 0.56, 0.66, 0.8, 0.9, 0.95, 0.985];
+const HERO_P = [0, 0.04, 0.10, 0.25, 0.40, 0.50, 0.58, 0.67, 0.80, 0.90, 0.95, 1.0];
 const SECTIONS = ['project', 'residences', 'specs', 'location', 'progress', 'gallery', 'contact'];
 
 const runs = [
@@ -49,6 +49,26 @@ for (const run of runs) {
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
   await page.waitForTimeout(1200);
   await page.screenshot({ path: `screenshots/${run.name}-footer.png` });
+  if (run.name === 'mobile') {
+    // menu overlay over content
+    await page.evaluate(() => document.getElementById('specs').scrollIntoView({ behavior: 'instant' }));
+    await page.waitForTimeout(900);
+    await page.click('#menuBtn'); await page.waitForTimeout(700);
+    await page.screenshot({ path: `screenshots/${run.name}-menu.png` });
+    const locked = await page.evaluate(() => getComputedStyle(document.body).overflow);
+    await page.keyboard.press('Escape'); await page.waitForTimeout(500);
+    const closed = await page.evaluate(() => !document.getElementById('mobileNav').classList.contains('is-open'));
+    console.log('menu scroll-lock:', locked, '| closes on Escape:', closed);
+    // timeline: first card + scrolled one card
+    await page.evaluate(() => document.getElementById('timeline').scrollIntoView({ behavior: 'instant', block: 'center' }));
+    await page.waitForTimeout(1500);
+    await page.screenshot({ path: `screenshots/${run.name}-timeline.png` });
+    // a mid-section frame to check the floating button is not over content at rest
+    await page.evaluate(() => document.getElementById('residences').scrollIntoView({ behavior: 'instant' }));
+    await page.evaluate(() => window.scrollBy(0, 700));
+    await page.waitForTimeout(1500);
+    await page.screenshot({ path: `screenshots/${run.name}-plan.png` });
+  }
   console.log(run.name, 'errors:', errors.length ? errors : 'none');
   await browser.close();
 }
