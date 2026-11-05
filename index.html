@@ -1,0 +1,536 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AURA הרצליה פיתוח · מגדל בוטיק מעל הים</title>
+<meta name="description" content="AURA – מגדל מגורים בוטיק בשורה הראשונה לים בהרצליה פיתוח. דירות 4 ו־5 חדרים, מיני פנטהאוז ופנטהאוז גג עם בריכה פרטית. הרשמה מוקדמת ותיאום פגישה במשרדי המכירות.">
+<meta name="theme-color" content="#F3EEE6">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="he_IL">
+<meta property="og:title" content="AURA · Rising above the sea">
+<meta property="og:description" content="מגדל מגורים בוטיק בשורה הראשונה לים, הרצליה פיתוח. הרשמה מוקדמת פתוחה.">
+<meta property="og:image" content="img/og-aura.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;1,6..96,400&family=Frank+Ruhl+Libre:wght@300;400&family=IBM+Plex+Sans+Hebrew:wght@300;400;500&display=swap">
+<link rel="preload" href="frames/manifest.json" as="fetch" crossorigin>
+<link rel="stylesheet" href="css/style.css">
+<script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+<a class="skip" href="#main">דילוג לתוכן הראשי</a>
+
+<!-- Loader: warm daylight, matches the golden-hour opening frame -->
+<div class="loader" id="loader" role="status" aria-live="polite">
+  <div class="loader__inner">
+    <p class="loader__mark" aria-hidden="true">AURA</p>
+    <p class="loader__place">הרצליה פיתוח</p>
+    <div class="loader__bar" aria-hidden="true"><span id="loaderBar"></span></div>
+    <p class="loader__pct"><span id="loaderPct">0</span><span class="sr-only">% נטען</span></p>
+  </div>
+</div>
+
+<header class="header" id="header">
+  <div class="header__inner">
+    <a class="header__logo" href="#top" aria-label="AURA – חזרה לראש העמוד">AURA</a>
+    <nav class="header__nav" aria-label="ניווט ראשי">
+      <a href="#project">הפרויקט</a>
+      <a href="#residences">הדירות</a>
+      <a href="#specs">מפרט</a>
+      <a href="#location">מיקום</a>
+      <a href="#progress">התקדמות</a>
+      <a href="#gallery">גלריה</a>
+    </nav>
+    <a class="header__cta" href="#contact">תיאום פגישה</a>
+    <button class="header__menu" id="menuBtn" aria-expanded="false" aria-controls="mobileNav"><span class="sr-only">תפריט</span><i></i><i></i></button>
+  </div>
+  <nav class="mnav" id="mobileNav" aria-label="ניווט ראשי (נייד)" hidden>
+    <a href="#project">הפרויקט</a>
+    <a href="#residences">הדירות</a>
+    <a href="#specs">מפרט</a>
+    <a href="#location">מיקום</a>
+    <a href="#progress">התקדמות</a>
+    <a href="#gallery">גלריה</a>
+    <a href="#contact" class="mnav__cta">תיאום פגישה במשרדי המכירות</a>
+  </nav>
+</header>
+
+<main id="main">
+
+<!-- ============ HERO: scroll-driven image sequence ============ -->
+<section class="hero" id="top" aria-label="AURA – מסע מהמגרש אל הבית">
+  <div class="hero__stage">
+    <canvas class="hero__canvas" id="heroCanvas" aria-hidden="true"></canvas>
+    <img class="hero__poster" src="img/poster.webp" alt="המגרש של AURA בשעת הזהב: גדר לבנה, דקלים, וילות והים ברקע" width="1672" height="941">
+    <div class="hero__scrim" aria-hidden="true"></div>
+    <div class="hero__fade" aria-hidden="true"></div>
+
+    <div class="hero__ui">
+      <div class="chapter chapter--intro is-active" data-from="0" data-to="0.035" data-m="center">
+        <p class="chapter__kicker">הרצליה פיתוח · שורה ראשונה לים</p>
+        <h1 class="chapter__brand">AURA</h1>
+        <p class="chapter__en">Rising above the sea</p>
+      </div>
+      <p class="hero__cue" aria-hidden="true"><span>גללו כדי להיכנס</span><i></i></p>
+
+      <div class="chapter" data-from="0.05" data-to="0.15" data-pos="top" data-m="top">
+        <p class="chapter__num">01 — המגרש</p>
+        <h2 class="chapter__title">כאן מתחיל משהו אחר.</h2>
+        <p class="chapter__text">שורה אחת מהים, בין הדקלים והווילות של הפיתוח. מגרש שחיכה לבניין הנכון.</p>
+      </div>
+
+      <div class="chapter chapter--lean" data-from="0.19" data-to="0.33" data-pos="top" data-m="top">
+        <p class="chapter__num">02 — המבנה</p>
+        <p class="chapter__en chapter__en--sm">Floor by floor</p>
+        <h2 class="chapter__title">קומה אחר קומה, בקצב של הים.</h2>
+        <p class="chapter__text">שלד בטון מדויק ותכנון שקט — גם במה שלא רואים, אין קיצורי דרך.</p>
+      </div>
+
+      <div class="chapter chapter--street" data-from="0.45" data-to="0.535" data-pos="top" data-m="bottom">
+        <p class="chapter__num">03 — המגדל</p>
+        <h2 class="chapter__title">אבן בהירה, זכוכית, ואופק פתוח.</h2>
+        <p class="chapter__text">שתים־עשרה קומות של מגורים, ומרפסות מעוגלות שפונות אל המערב.</p>
+      </div>
+
+      <div class="chapter" data-from="0.62" data-to="0.72" data-m="bottom">
+        <p class="chapter__num">04 — הגג</p>
+        <p class="chapter__en chapter__en--sm">Above everything</p>
+        <h2 class="chapter__title">הקומה שבה השמיים מתחילים.</h2>
+        <p class="chapter__text">פנטהאוז אחד בלבד, עם מרפסת גג, פרגולת ברונזה ובריכה פרטית.</p>
+      </div>
+
+      <div class="chapter" data-from="0.78" data-to="0.865" data-m="bottom">
+        <p class="chapter__num">04 — הגג</p>
+        <h2 class="chapter__title">השקיעה הזאת שמורה לכם.</h2>
+        <p class="chapter__text">טרוורטין חם, עצי זית ותאורה רכה — המרפסת היא חדר נוסף, רק פתוח.</p>
+      </div>
+
+      <div class="chapter chapter--final" data-from="0.925" data-to="1.01" data-m="bottom">
+        <p class="chapter__num">05 — הבית</p>
+        <p class="chapter__en">Welcome home</p>
+        <h2 class="chapter__title">ברוכים הבאים הביתה.</h2>
+      </div>
+
+      <ol class="rail" id="rail" aria-hidden="true">
+        <li data-ch="0"><span>המגרש</span></li>
+        <li data-ch="1"><span>המבנה</span></li>
+        <li data-ch="2"><span>המגדל</span></li>
+        <li data-ch="3"><span>הגג</span></li>
+        <li data-ch="4"><span>הבית</span></li>
+      </ol>
+      <div class="rail__progress" aria-hidden="true"><span id="railFill"></span></div>
+    </div>
+  </div>
+</section>
+
+<!-- Soft transition: blue hour inside the living room → stone daylight -->
+<div class="dusk-bridge" aria-hidden="true"></div>
+
+<!-- ============ ABOUT ============ -->
+<section class="section about" id="project" aria-labelledby="about-title">
+  <div class="wrap">
+    <p class="eyebrow" data-reveal>01 — הפרויקט</p>
+    <div class="about__grid">
+      <h2 class="display" id="about-title" data-reveal-lines>
+        <span>בניין אחד,</span>
+        <span>שלושים ושמונה בתים,</span>
+        <span>וים אחד שלא נגמר.</span>
+      </h2>
+      <div class="about__copy" data-reveal>
+        <p class="lead">AURA הוא מגדל בוטיק בן שתים־עשרה קומות בשורה הראשונה של הרצליה פיתוח. מעט דירות, הרבה אור, ושקט שקשה למצוא קרוב כל כך לים.</p>
+        <p>האדריכלות נולדה מהנוף: קווים אופקיים רכים, מרפסות מעוגלות שעוטפות את הבניין, וחזית אבן בגוון חול שמשנה את צבעה במהלך היום. בפנים — חללים פתוחים, תקרות גבוהות וחלונות מהרצפה עד התקרה, כך שכל בית מקבל את המערב במלואו.</p>
+        <p>הלובי בגובה כפול, הגינה המעוצבת והחניון התת־קרקעי תוכננו באותה הקפדה כמו הדירות עצמן. כאן הפרטים הם העיקר.</p>
+      </div>
+    </div>
+
+    <dl class="stats">
+      <div class="stat" data-reveal>
+        <dt>קומות מגורים</dt>
+        <dd><span class="num" data-count="12">12</span></dd>
+      </div>
+      <div class="stat" data-reveal>
+        <dt>דירות בלבד</dt>
+        <dd><span class="num" data-count="38">38</span></dd>
+      </div>
+      <div class="stat" data-reveal>
+        <dt>מטרים מקו החוף</dt>
+        <dd><span class="num" data-count="350">350</span></dd>
+      </div>
+      <div class="stat" data-reveal>
+        <dt>מ״ר מרפסת גג בפנטהאוז</dt>
+        <dd><span class="num" data-count="160">160</span></dd>
+      </div>
+    </dl>
+  </div>
+
+  <figure class="about__figure" data-reveal>
+    <picture>
+      <source type="image/webp" srcset="img/05-finished-street-640.webp 640w, img/05-finished-street-1024.webp 1024w, img/05-finished-street-1672.webp 1672w" sizes="(min-width: 900px) 84vw, 100vw">
+      <img src="img/05-finished-street-1024.webp" alt="חזית מגדל AURA מהרחוב בשעת שקיעה, עם דקלים, לובי מואר ומרפסות זכוכית" loading="lazy" decoding="async" width="1672" height="941">
+    </picture>
+    <figcaption>חזית הבניין מרחוב השקמה · הדמיה</figcaption>
+  </figure>
+</section>
+
+<!-- ============ RESIDENCES ============ -->
+<section class="section residences" id="residences" aria-labelledby="res-title">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow" data-reveal>02 — הדירות</p>
+      <h2 class="display" id="res-title" data-reveal-lines><span>ארבעה סוגי בתים.</span><span>אותו אופק.</span></h2>
+    </div>
+
+    <div class="res" id="resApp">
+      <div class="res__tabs" role="tablist" aria-label="סוגי דירות">
+        <button role="tab" id="tab-4" aria-controls="panel-res" aria-selected="true" data-type="0"><span class="res__tabnum">4</span><span>חדרים</span></button>
+        <button role="tab" id="tab-5" aria-controls="panel-res" aria-selected="false" tabindex="-1" data-type="1"><span class="res__tabnum">5</span><span>חדרים</span></button>
+        <button role="tab" id="tab-mp" aria-controls="panel-res" aria-selected="false" tabindex="-1" data-type="2"><span class="res__tabnum">5</span><span>גן · מיני פנטהאוז</span></button>
+        <button role="tab" id="tab-ph" aria-controls="panel-res" aria-selected="false" tabindex="-1" data-type="3"><span class="res__tabnum">6</span><span>פנטהאוז גג</span></button>
+      </div>
+
+      <div class="res__panel" id="panel-res" role="tabpanel" aria-labelledby="tab-4" tabindex="0">
+        <div class="res__plan">
+          <svg id="planSvg" viewBox="0 0 520 380" role="img" aria-labelledby="planTitle"><title id="planTitle">תוכנית סכמטית</title></svg>
+          <p class="res__note">תוכנית סכמטית להמחשה בלבד · אינה בקנה מידה</p>
+        </div>
+        <div class="res__info" aria-live="polite">
+          <h3 class="res__name" id="resName">דירת 4 חדרים</h3>
+          <p class="res__desc" id="resDesc"></p>
+          <dl class="res__facts" id="resFacts"></dl>
+          <a class="link-arrow" href="#contact" id="resCta">לתיאום פגישה על הדירה הזאת</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SPECS ============ -->
+<section class="section specs" id="specs" aria-labelledby="specs-title">
+  <div class="wrap">
+    <div class="sec-head sec-head--split">
+      <div>
+        <p class="eyebrow" data-reveal>03 — מפרט וגמרים</p>
+        <h2 class="display" id="specs-title" data-reveal-lines><span>חומרים שנבחרו</span><span>כדי להזדקן יפה.</span></h2>
+      </div>
+      <p class="sec-head__aside" data-reveal>המפרט המלא יימסר בפגישה. לפניכם עיקרי הסטנדרט, ללא תוספות וללא אותיות קטנות.</p>
+    </div>
+
+    <div class="specs__grid">
+      <div class="spec" data-reveal>
+        <p class="spec__idx">I</p>
+        <h3>חזית ומעטפת</h3>
+        <ul>
+          <li>חיפוי אבן טבעית בגוון חול, גמר מוברש</li>
+          <li>מערכות אלומיניום בפרופיל דק, זיגוג בידודי כפול</li>
+          <li>מעקות זכוכית שקופים ללא מסגרת עליונה</li>
+        </ul>
+      </div>
+      <div class="spec" data-reveal>
+        <p class="spec__idx">II</p>
+        <h3>ריצוף וחיפויים</h3>
+        <ul>
+          <li>פרקט עץ אלון בדוגמת אדרה בחללי המגורים</li>
+          <li>טרוורטין במרפסות ובחדרי הרחצה</li>
+          <li>אריחי פורצלן גדולי מידות, 120×120 ס״מ</li>
+        </ul>
+      </div>
+      <div class="spec" data-reveal>
+        <p class="spec__idx">III</p>
+        <h3>מטבח</h3>
+        <ul>
+          <li>מטבח בתכנון אדריכלי, חזיתות פורניר אלון</li>
+          <li>משטח ואי משיש טבעי</li>
+          <li>הכנה למקרר ומקפיא אינטגרליים, כיור כפול</li>
+        </ul>
+      </div>
+      <div class="spec" data-reveal>
+        <p class="spec__idx">IV</p>
+        <h3>רחצה</h3>
+        <ul>
+          <li>כלים סניטריים תלויים וניקוז רצפתי לינארי</li>
+          <li>ברזים בגימור ברונזה מוברשת</li>
+          <li>חימום תת־רצפתי בחדר הרחצה הראשי</li>
+        </ul>
+      </div>
+      <div class="spec" data-reveal>
+        <p class="spec__idx">V</p>
+        <h3>מערכות ובית חכם</h3>
+        <ul>
+          <li>מיזוג VRF מרכזי עם שליטה נפרדת לכל חדר</li>
+          <li>תשתית בית חכם: תאורה, תריסים ומיזוג</li>
+          <li>תריסים חשמליים וקיר זכוכית נגרר למרפסת</li>
+        </ul>
+      </div>
+      <div class="spec" data-reveal>
+        <p class="spec__idx">VI</p>
+        <h3>הבניין</h3>
+        <ul>
+          <li>לובי בגובה כפול בעיצוב אדריכל פנים</li>
+          <li>שתי מעליות, אחת מהן מעלית שבת</li>
+          <li>חניון תת־קרקעי, מחסן ועמדת טעינה לכל דירה</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ LOCATION ============ -->
+<section class="section location" id="location" aria-labelledby="loc-title">
+  <div class="wrap location__grid">
+    <div class="location__copy">
+      <p class="eyebrow" data-reveal>04 — מיקום</p>
+      <h2 class="display" id="loc-title" data-reveal-lines><span>הים במרחק הליכה.</span><span>כל השאר — קרוב.</span></h2>
+      <p class="lead" data-reveal>ברחוב שקט בהרצליה פיתוח, בין החוף למרינה ובמרחק דקות ממרכז העסקים. שכונה של וילות, שדרות דקלים ואוויר מלוח.</p>
+      <ul class="places" data-reveal>
+        <li data-pin="beach"><span>חוף אכדיה</span><span class="places__d">4 דק׳ הליכה</span></li>
+        <li data-pin="marina"><span>מרינה הרצליה</span><span class="places__d">1.2 ק״מ</span></li>
+        <li data-pin="biz"><span>אזור התעסוקה פיתוח</span><span class="places__d">1.5 ק״מ</span></li>
+        <li data-pin="road2"><span>כביש החוף (2)</span><span class="places__d">3 דק׳ נסיעה</span></li>
+        <li data-pin="train"><span>תחנת רכבת הרצליה</span><span class="places__d">8 דק׳ נסיעה</span></li>
+        <li data-pin="tlv"><span>מרכז תל אביב</span><span class="places__d">15 דק׳ נסיעה</span></li>
+      </ul>
+    </div>
+
+    <figure class="map" data-reveal>
+      <svg viewBox="0 0 600 640" role="img" aria-labelledby="mapTitle mapDesc">
+        <title id="mapTitle">מפה מאוירת של הרצליה פיתוח</title>
+        <desc id="mapDesc">מפה סכמטית: הים במערב, AURA סמוך לחוף, המרינה מדרום־מערב, אזור התעסוקה ממזרח, כביש 2 ותחנת הרכבת מזרחה יותר.</desc>
+        <defs>
+          <pattern id="waves" width="18" height="10" patternUnits="userSpaceOnUse">
+            <path d="M0 5 q4.5 -4 9 0 t9 0" fill="none" stroke="currentColor" stroke-width=".7" opacity=".35"/>
+          </pattern>
+        </defs>
+        <!-- sea (west = left) -->
+        <path class="map__sea" d="M0 0 H170 C150 90 182 150 160 230 C140 300 178 360 150 430 C128 500 160 570 140 640 H0 Z"/>
+        <path class="map__sea-tex" d="M0 0 H170 C150 90 182 150 160 230 C140 300 178 360 150 430 C128 500 160 570 140 640 H0 Z" fill="url(#waves)"/>
+        <path class="map__coast" d="M170 0 C150 90 182 150 160 230 C140 300 178 360 150 430 C128 500 160 570 140 640"/>
+        <!-- marina -->
+        <path class="map__marina" d="M150 452 h-46 v54 h40"/>
+        <path class="map__marina" d="M150 470 h-30 M150 488 h-30"/>
+        <!-- streets -->
+        <g class="map__streets">
+          <path d="M190 0 C200 140 196 300 186 640"/>
+          <path d="M260 0 C268 200 262 420 258 640"/>
+          <path d="M160 120 H600"/><path d="M168 300 H600"/><path d="M150 470 H600"/>
+          <path d="M330 300 V640"/>
+        </g>
+        <!-- business district -->
+        <g class="map__biz">
+          <rect x="350" y="330" width="34" height="46"/><rect x="392" y="320" width="28" height="56"/><rect x="428" y="336" width="38" height="40"/>
+          <rect x="356" y="386" width="40" height="30"/><rect x="404" y="386" width="30" height="40"/>
+        </g>
+        <!-- highway 2 -->
+        <path class="map__hwy" d="M500 0 C492 200 520 420 506 640"/>
+        <g class="map__shield" transform="translate(507 196)"><rect x="-13" y="-10" width="26" height="20" rx="3"/><text y="5">2</text></g>
+        <!-- rail -->
+        <path class="map__rail" d="M566 0 C560 220 576 430 568 640"/>
+        <circle class="map__station" cx="566" cy="250" r="6"/>
+        <!-- labels -->
+        <g class="map__labels">
+          <text x="80" y="320" class="map__sea-label" transform="rotate(-90 80 320)">הים התיכון</text>
+          <text x="96" y="530" data-pin="marina">המרינה</text>
+          <text x="200" y="206" data-pin="beach" class="map__small">חוף אכדיה</text>
+          <text x="410" y="448" data-pin="biz">אזור התעסוקה</text>
+          <text x="486" y="236" data-pin="road2" class="map__small">כביש 2</text>
+          <text x="560" y="276" data-pin="train" class="map__small" text-anchor="end">רכבת</text>
+          <text x="420" y="620" data-pin="tlv" class="map__small">תל אביב ↓</text>
+        </g>
+        <!-- AURA -->
+        <g class="map__aura" transform="translate(218 252)">
+          <circle r="22" class="map__pulse"/>
+          <circle r="7"/>
+          <text x="16" y="5" text-anchor="start">AURA</text>
+        </g>
+        <!-- north -->
+        <g class="map__north" transform="translate(560 44)"><path d="M0 -16 L6 6 L0 2 L-6 6 Z"/><text y="22">N</text></g>
+      </svg>
+      <figcaption>מפה מאוירת · מרחקים משוערים</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ============ PROGRESS TIMELINE ============ -->
+<section class="section progress" id="progress" aria-labelledby="prog-title">
+  <div class="wrap">
+    <div class="sec-head sec-head--split">
+      <div>
+        <p class="eyebrow" data-reveal>05 — התקדמות הבנייה</p>
+        <h2 class="display" id="prog-title" data-reveal-lines><span>מהחול</span><span>אל קו הרקיע.</span></h2>
+      </div>
+      <p class="sec-head__aside" data-reveal>המסע שראיתם בתחילת הדרך — שלב אחר שלב. אנחנו כאן עכשיו: היסודות כבר בקרקע.</p>
+    </div>
+  </div>
+
+  <ol class="timeline" id="timeline">
+    <li class="tl is-done" data-reveal>
+      <figure class="tl__img"><img src="img/01-lot-640.webp" srcset="img/01-lot-640.webp 640w, img/01-lot-1024.webp 1024w" sizes="(min-width: 900px) 30vw, 80vw" alt="המגרש הריק מאחורי גדר לבנה, דקלים ושמיים בשעת הזהב" loading="lazy" decoding="async" width="1672" height="941"></figure>
+      <p class="tl__when">2025</p>
+      <h3>המגרש</h3>
+      <p>רכישת הקרקע, היתר בנייה וגידור האתר.</p>
+      <span class="tl__state">הושלם</span>
+    </li>
+    <li class="tl is-now" data-reveal>
+      <figure class="tl__img"><img src="img/02-foundations-640.webp" srcset="img/02-foundations-640.webp 640w, img/02-foundations-1024.webp 1024w" sizes="(min-width: 900px) 30vw, 80vw" alt="עבודות יסודות במגרש ועגורן צהוב ניצב מעל האתר" loading="lazy" decoding="async" width="1672" height="941"></figure>
+      <p class="tl__when">2026</p>
+      <h3>יסודות</h3>
+      <p>חפירה, כלונסאות ורצפת המרתף. העגורן כבר במקום.</p>
+      <span class="tl__state">בביצוע</span>
+    </li>
+    <li class="tl" data-reveal>
+      <figure class="tl__img"><img src="img/03-skeleton-640.webp" srcset="img/03-skeleton-640.webp 640w, img/03-skeleton-1024.webp 1024w" sizes="(min-width: 900px) 30vw, 80vw" alt="שלד הבטון עולה קומה אחר קומה לצד העגורן" loading="lazy" decoding="async" width="1672" height="941"></figure>
+      <p class="tl__when">2027</p>
+      <h3>שלד</h3>
+      <p>יציקת הקומות, קומה בכל שלושה שבועות בממוצע.</p>
+      <span class="tl__state">מתוכנן</span>
+    </li>
+    <li class="tl" data-reveal>
+      <figure class="tl__img"><img src="img/04-facade-640.webp" srcset="img/04-facade-640.webp 640w, img/04-facade-1024.webp 1024w" sizes="(min-width: 900px) 30vw, 80vw" alt="התקנת חזית הזכוכית והאבן, הקומות העליונות עדיין מכוסות ברשת" loading="lazy" decoding="async" width="1672" height="941"></figure>
+      <p class="tl__when">2028</p>
+      <h3>חזית</h3>
+      <p>חיפוי אבן, מערכות זכוכית ומעקות.</p>
+      <span class="tl__state">מתוכנן</span>
+    </li>
+    <li class="tl" data-reveal>
+      <figure class="tl__img"><img src="img/05-finished-street-640.webp" srcset="img/05-finished-street-640.webp 640w, img/05-finished-street-1024.webp 1024w" sizes="(min-width: 900px) 30vw, 80vw" alt="המגדל המוגמר עם לובי מואר, עצי זית במרפסות ודקלים ברחוב" loading="lazy" decoding="async" width="1672" height="941"></figure>
+      <p class="tl__when">2029</p>
+      <h3>מסירה</h3>
+      <p>גמרים, פיתוח נופי ומסירת המפתחות.</p>
+      <span class="tl__state">מתוכנן</span>
+    </li>
+  </ol>
+</section>
+
+<!-- ============ GALLERY ============ -->
+<section class="section gallery" id="gallery" aria-labelledby="gal-title">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow" data-reveal>06 — גלריה</p>
+      <h2 class="display" id="gal-title" data-reveal-lines><span>הרגעים שבשבילם</span><span>בונים בית כזה.</span></h2>
+    </div>
+    <div class="gal">
+      <button class="gal__item gal__item--a" data-index="0" data-reveal aria-label="הגדלת תמונה: מרפסת הגג בשעת דמדומים">
+        <img src="img/08-terrace-1024.webp" srcset="img/08-terrace-640.webp 640w, img/08-terrace-1024.webp 1024w, img/08-terrace-1672.webp 1672w" sizes="(min-width: 900px) 62vw, 100vw" alt="" loading="lazy" decoding="async" width="1672" height="941">
+        <span class="gal__cap">מרפסת הגג</span>
+      </button>
+      <button class="gal__item gal__item--b" data-index="1" data-reveal aria-label="הגדלת תמונה: הפנטהאוז ובריכת האינסוף בשקיעה">
+        <img src="img/07-rooftop-1024.webp" srcset="img/07-rooftop-640.webp 640w, img/07-rooftop-1024.webp 1024w" sizes="(min-width: 900px) 34vw, 100vw" alt="" loading="lazy" decoding="async" width="1672" height="941">
+        <span class="gal__cap">הפנטהאוז</span>
+      </button>
+      <button class="gal__item gal__item--c" data-index="2" data-reveal aria-label="הגדלת תמונה: סלון הפנטהאוז עם נוף לים">
+        <img src="img/09-living-room-1024.webp" srcset="img/09-living-room-640.webp 640w, img/09-living-room-1024.webp 1024w, img/09-living-room-1672.webp 1672w" sizes="(min-width: 900px) 34vw, 100vw" alt="" loading="lazy" decoding="async" width="1672" height="941">
+        <span class="gal__cap">הסלון</span>
+      </button>
+      <button class="gal__item gal__item--d" data-index="3" data-reveal aria-label="הגדלת תמונה: מבט אווירי על הקומות העליונות והים">
+        <img src="img/06-drone-1024.webp" srcset="img/06-drone-640.webp 640w, img/06-drone-1024.webp 1024w, img/06-drone-1672.webp 1672w" sizes="(min-width: 900px) 62vw, 100vw" alt="" loading="lazy" decoding="async" width="1672" height="941">
+        <span class="gal__cap">מבט מהאוויר</span>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONTACT ============ -->
+<section class="section contact" id="contact" aria-labelledby="contact-title">
+  <div class="wrap contact__grid">
+    <div class="contact__intro">
+      <p class="eyebrow eyebrow--light" data-reveal>07 — הרשמה מוקדמת</p>
+      <h2 class="display" id="contact-title" data-reveal-lines><span>הבית הבא שלכם</span><span>מתחיל בשיחה.</span></h2>
+      <p class="lead" data-reveal>השאירו פרטים להרשמה מוקדמת או לתיאום פגישה אישית במשרדי המכירות. נחזור אליכם תוך יום עסקים אחד.</p>
+      <address class="contact__office" data-reveal>
+        <span class="contact__label">משרדי המכירות</span>
+        רח׳ השקמה 8, הרצליה פיתוח<br>
+        א׳–ה׳ <span dir="ltr">10:00-19:00</span> · ו׳ <span dir="ltr">9:00-13:00</span><br>
+        <a href="tel:+97290000000" dir="ltr">09-000-0000</a>
+      </address>
+    </div>
+
+    <div class="contact__formwrap">
+      <form class="form" id="leadForm" novalidate>
+        <div class="field">
+          <input id="f-name" name="name" type="text" autocomplete="name" required placeholder=" " aria-describedby="e-name">
+          <label for="f-name">שם מלא</label>
+          <p class="field__err" id="e-name" aria-live="polite"></p>
+        </div>
+        <div class="field">
+          <input id="f-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" required placeholder=" " dir="ltr" aria-describedby="e-phone">
+          <label for="f-phone">טלפון נייד</label>
+          <p class="field__err" id="e-phone" aria-live="polite"></p>
+        </div>
+        <div class="field">
+          <input id="f-email" name="email" type="email" inputmode="email" autocomplete="email" required placeholder=" " dir="ltr" aria-describedby="e-email">
+          <label for="f-email">דוא״ל</label>
+          <p class="field__err" id="e-email" aria-live="polite"></p>
+        </div>
+        <fieldset class="field field--choice">
+          <legend>איזה בית מעניין אתכם?</legend>
+          <div class="chips">
+            <label><input type="radio" name="apt" value="4 חדרים" checked><span>4 חדרים</span></label>
+            <label><input type="radio" name="apt" value="5 חדרים"><span>5 חדרים</span></label>
+            <label><input type="radio" name="apt" value="גן / מיני פנטהאוז"><span>גן / מיני פנטהאוז</span></label>
+            <label><input type="radio" name="apt" value="פנטהאוז גג"><span>פנטהאוז גג</span></label>
+          </div>
+        </fieldset>
+        <div class="field field--check">
+          <label class="check"><input id="f-consent" type="checkbox" name="consent" required aria-describedby="e-consent"><span class="check__box" aria-hidden="true"></span><span>אני מאשר/ת קבלת פרטים ועדכונים על הפרויקט, בהתאם ל<a href="privacy.html">מדיניות הפרטיות</a>.</span></label>
+          <p class="field__err" id="e-consent" aria-live="polite"></p>
+        </div>
+        <button class="btn" type="submit"><span>שליחה</span></button>
+        <p class="form__demo">אתר תצוגה — הפרטים אינם נשלחים לשום מקום.</p>
+      </form>
+
+      <div class="success" id="success" hidden tabindex="-1">
+        <svg class="success__mark" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="30"/><path d="M20 33 l8 8 l16 -18"/></svg>
+        <h3>תודה, <span id="successName"></span>.</h3>
+        <p>הפרטים התקבלו. נציג מטעם AURA יחזור אליכם בהקדם לתיאום פגישה במשרדי המכירות.</p>
+        <p class="success__small">בינתיים, הים לא הולך לשום מקום.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer__top">
+      <p class="footer__mark">AURA</p>
+      <p class="footer__dev">יזמות ובנייה: <strong>סלע ים יזמות בע״מ</strong></p>
+    </div>
+    <div class="footer__bottom">
+      <nav aria-label="קישורים משפטיים">
+        <a href="privacy.html">מדיניות פרטיות</a>
+        <a href="accessibility.html">הצהרת נגישות</a>
+        <a href="terms.html">תנאי שימוש</a>
+      </nav>
+      <p class="footer__demo">אתר תצוגה · ההדמיות להמחשה בלבד</p>
+      <p class="footer__copy">© 2026 AURA הרצליה פיתוח</p>
+    </div>
+  </div>
+</footer>
+
+<a class="wa" href="https://wa.me/972500000000?text=%D7%A9%D7%9C%D7%95%D7%9D%2C%20%D7%90%D7%A9%D7%9E%D7%97%20%D7%9C%D7%A9%D7%9E%D7%95%D7%A2%20%D7%A2%D7%9C%20AURA" target="_blank" rel="noopener" aria-label="שיחה בוואטסאפ (קישור הדגמה)">
+  <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 4.5C9.6 4.5 4.5 9.4 4.5 15.6c0 2.2.6 4.2 1.8 6L5 27.5l6.1-1.6c1.5.8 3.2 1.2 4.9 1.2 6.4 0 11.5-5 11.5-11.2S22.4 4.5 16 4.5Z"/><path d="M12.2 10.8c.3 0 .6 0 .8.6l1 2.3c.1.3 0 .6-.2.8l-.7.8c.8 1.5 2 2.7 3.6 3.5l.8-.9c.2-.3.5-.3.8-.2l2.2 1c.4.2.5.4.4.8-.2 1.3-1.3 2.1-2.6 2-3.9-.4-7.4-3.7-7.9-7.6-.1-1.4.6-2.6 1.8-3.1Z" class="wa__phone"/></svg>
+  <span class="wa__label">שיחה עם יועץ</span>
+</a>
+
+<dialog class="lightbox" id="lightbox" aria-label="גלריית תמונות">
+  <figure class="lightbox__fig">
+    <img id="lbImg" alt="">
+    <figcaption id="lbCap"></figcaption>
+  </figure>
+  <button class="lightbox__close" id="lbClose" aria-label="סגירה"><i></i><i></i></button>
+  <button class="lightbox__nav lightbox__nav--prev" id="lbPrev" aria-label="התמונה הקודמת"></button>
+  <button class="lightbox__nav lightbox__nav--next" id="lbNext" aria-label="התמונה הבאה"></button>
+  <p class="lightbox__count" id="lbCount" aria-live="polite"></p>
+</dialog>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
+<script src="js/main.js" defer></script>
+</body>
+</html>

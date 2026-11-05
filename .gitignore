@@ -1,0 +1,9 @@
+# Source media stays local (large / unoptimized)
+assets/
+*.mp4
+*.png
+!apple-touch-icon.png
+# tooling output
+node_modules/
+screenshots/
+.claude/
