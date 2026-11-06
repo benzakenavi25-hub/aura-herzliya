@@ -22,6 +22,7 @@
     if (r) r.checked = true;
   }
   function openDlg(d) { d.showModal(); root.classList.add('menu-open'); }
+  const bridge = {};   // cross-section hooks (e.g. the floor finder opens the residences plan dialog)
 
   /* =======================================================
      HERO — scroll-scrubbed image sequence
@@ -556,7 +557,7 @@
       name: 'דירת 4 חדרים', apt: '4 חדרים',
       img: srcs('P6'), alt: 'סלון דירת 4 חדרים: ספה בהירה, שולחן טרוורטין, פרקט אדרה ויציאה למרפסת מעוגלת מול הים',
       desc: 'בית מואר לזוג או למשפחה צעירה. הסלון והמרפסת פונים מערבה אל הים, וחדרי השינה שקטים ומופנים אל הגינה.',
-      facts: [['שטח הדירה', '118 מ״ר'], ['מרפסת שמש', '14 מ״ר'], ['חדרי רחצה', '2'], ['כיווני אוויר', '3'], ['קומות', '2 עד 6']],
+      facts: [['שטח הדירה', '118 מ״ר'], ['מרפסת שמש', '14 מ״ר'], ['חדרי רחצה', '2'], ['כיווני אוויר', '3'], ['קומות', '1 עד 10']],
       outer: [60, 40, 400, 280],
       outs: [R(20, 70, 40, 220, 'מרפסת', '14')],
       rooms: [
@@ -571,7 +572,7 @@
       name: 'דירת 5 חדרים', apt: '5 חדרים',
       img: srcs('P2'), alt: 'מטבח ופינת אוכל בדירת 5 חדרים: אי שיש, ארונות אלון ושולחן ערוך מול חלון לים',
       desc: 'חלל ציבורי רחב עם מטבח פתוח ואי שיש, יחידת הורים עם חדר ארונות, ושלושה חדרים נוספים. נוף פתוח לים מכל החלל המרכזי.',
-      facts: [['שטח הדירה', '146 מ״ר'], ['מרפסת שמש', '18 מ״ר'], ['חדרי רחצה', '2 + שירותי אורחים'], ['כיווני אוויר', '3'], ['קומות', '3 עד 10']],
+      facts: [['שטח הדירה', '146 מ״ר'], ['מרפסת שמש', '18 מ״ר'], ['חדרי רחצה', '2 + שירותי אורחים'], ['כיווני אוויר', '3'], ['קומות', '1 עד 10']],
       outer: [40, 40, 440, 280],
       outs: [R(8, 60, 32, 240, 'מרפסת', '18')],
       rooms: [
@@ -721,6 +722,7 @@
     planSvg.setAttribute('viewBox', `${minX} ${minY} ${maxX - minX} ${maxY - minY}`);
   }
   $('#planBtn').addEventListener('click', () => { renderPlan(PLANS[current]); openDlg(planDlg); });
+  bridge.openPlan = (i) => { renderPlan(PLANS[i]); openDlg(planDlg); };
   });
 
   /* =======================================================
@@ -735,75 +737,222 @@
   });
 
   /* =======================================================
-     5 · Floor finder (demo availability)
+     5 · Floor finder — building view → floor plan view (demo availability)
+     38 homes: ground 4 garden · floors 1–10 three each · 11 three mini-PH · 12 one PH
      ======================================================= */
-  section("5 · Floor finder (demo availability)", () => {
-  const FLOORS = [
-    { n: 1, y: [714, 858], type: 'דירת גן', size: '168 מ״ר + גינה 85 מ״ר', orient: 'מערב · דרום', s: 'free', apt: 'גן / מיני פנטהאוז' },
-    { n: 2, y: [652, 714], type: '4 חדרים', size: '118 מ״ר', orient: 'מערב · צפון', s: 'free', apt: '4 חדרים' },
-    { n: 3, y: [590, 652], type: '5 חדרים', size: '146 מ״ר', orient: 'מערב · דרום', s: 'free', apt: '5 חדרים' },
-    { n: 4, y: [528, 590], type: '4 חדרים', size: '118 מ״ר', orient: 'מערב · צפון', s: 'free', apt: '4 חדרים' },
-    { n: 5, y: [466, 528], type: '4 חדרים', size: '118 מ״ר', orient: 'מערב · דרום', s: 'held', apt: '4 חדרים' },
-    { n: 6, y: [404, 466], type: '4 חדרים', size: '118 מ״ר', orient: 'מערב · צפון', s: 'free', apt: '4 חדרים' },
-    { n: 7, y: [342, 404], type: '5 חדרים', size: '146 מ״ר', orient: 'מערב · דרום', s: 'free', apt: '5 חדרים' },
-    { n: 8, y: [280, 342], type: '5 חדרים', size: '146 מ״ר', orient: 'מערב · צפון', s: 'sold', apt: '5 חדרים' },
-    { n: 9, y: [218, 280], type: '5 חדרים', size: '146 מ״ר', orient: 'מערב · דרום', s: 'free', apt: '5 חדרים' },
-    { n: 10, y: [156, 218], type: '5 חדרים', size: '146 מ״ר', orient: 'מערב · צפון', s: 'free', apt: '5 חדרים' },
-    { n: 11, y: [94, 156], type: 'מיני פנטהאוז', size: '168 מ״ר + 85 מ״ר מרפסת', orient: 'מערב · דרום', s: 'held', apt: 'גן / מיני פנטהאוז' },
-    { n: 12, y: [30, 94], type: 'פנטהאוז גג', size: '245 מ״ר + 160 מ״ר גג', orient: '360°', s: 'free', apt: 'פנטהאוז גג' },
-  ];
+  section("5 · Floor finder", () => {
+  const ff = $('#floors');
+  if (!ff || !$('#ffIndex')) return;
+  // floor bands measured on F1-elevation (% of image height, top → bottom)
+  const BANDS = { 12: [7.6, 16.05], 11: [16.05, 21.75], 10: [21.75, 27.25], 9: [27.25, 32.75], 8: [32.75, 38.55], 7: [38.55, 44.05],
+    6: [44.05, 49.55], 5: [49.55, 55.05], 4: [55.05, 60.5], 3: [60.5, 65.95], 2: [65.95, 71.35], 1: [71.35, 76.9], 0: [76.9, 91.9] };
+  // types match the Residences section (res = its tab index)
+  const TYPE = {
+    r4: { name: '4 חדרים', long: 'דירת 4 חדרים', rooms: 4, size: 118, out: 14, outName: 'מרפסת שמש', res: 0, img: 'img/new/P6-640.webp' },
+    r5: { name: '5 חדרים', long: 'דירת 5 חדרים', rooms: 5, size: 146, out: 18, outName: 'מרפסת שמש', res: 1, img: 'img/new/P2-640.webp' },
+    garden: { name: 'דירת גן', long: 'דירת גן', rooms: 5, size: 168, out: 85, outName: 'גינה פרטית', res: 2, img: 'img/new/P5-640.webp' },
+    mini: { name: 'מיני פנטהאוז', long: 'מיני פנטהאוז', rooms: 5, size: 168, out: 85, outName: 'מרפסת גג', res: 2, img: 'img/new/P5-640.webp' },
+    ph: { name: 'פנטהאוז גג', long: 'פנטהאוז גג', rooms: 6, size: 245, out: 160, outName: 'מרפסת גג + בריכה', res: 3, img: 'img/09-living-room-640.webp' },
+  };
+  const APT_LABEL = { r4: '4 חדרים', r5: '5 חדרים', garden: 'גן / מיני פנטהאוז', mini: 'גן / מיני פנטהאוז', ph: 'פנטהאוז גג' };
+  const SOLD = new Set([6, 9, 14, 20, 27, 35]), HELD = new Set([2, 5, 11, 17, 22, 29, 31, 36]);
   const STATUS = { free: 'פנויה', held: 'שמורה', sold: 'נמכרה' };
-  const IMG_H = 941;
-  // measured on the street image: lobby 714-858, ten typical floors 150-714, penthouse 30-150
-  FLOORS.forEach((f) => { if (f.n >= 2 && f.n <= 11) { const h = (714 - 150) / 10, y1 = 714 - (f.n - 2) * h; f.y = [Math.round(y1 - h), Math.round(y1)]; } if (f.n === 12) f.y = [30, 150]; });
-  const band = $('#floorsBand'), hits = $('#floorsHits'), flist = $('#floorsList');
-  let floorSel = 7;
-  function showFloor(n) {
-    const f = FLOORS[n - 1];
-    band.style.top = `${(f.y[0] / IMG_H) * 100}%`;
-    band.style.height = `${((f.y[1] - f.y[0]) / IMG_H) * 100}%`;
-    band.classList.add('is-on');
-    band.classList.toggle('is-sold', f.s === 'sold');
-    $('#fcNum').textContent = n === 1 ? 'קרקע' : n;
-    $('#fcType').textContent = f.type;
-    $('#fcSize').textContent = f.size;
-    $('#fcOrient').textContent = f.orient;
-    const st = $('#fcStatus'); st.textContent = STATUS[f.s]; st.dataset.s = f.s;
-    const cta = $('#fcCta');
-    cta.textContent = f.s === 'sold' ? 'לרשימת המתנה לקומה' : 'לתיאום פגישה על הקומה';
-  }
-  function selectFloor(n) {
-    floorSel = n; showFloor(n);
-    $$('button', flist).forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.n === n)));
-    $$('.floors__hit', hits).forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.n === n)));
-  }
-  FLOORS.slice().reverse().forEach((f) => {
-    const label = `קומה ${f.n === 1 ? 'קרקע' : f.n}: ${f.type}, ${f.size}, ${STATUS[f.s]}`;
-    const b = document.createElement('button');
-    b.className = 'floors__hit'; b.type = 'button'; b.dataset.n = f.n; b.setAttribute('aria-label', label);
-    b.style.top = `${(f.y[0] / IMG_H) * 100}%`; b.style.height = `${((f.y[1] - f.y[0]) / IMG_H) * 100}%`;
-    b.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') showFloor(f.n); });
-    b.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') showFloor(floorSel); });
-    b.addEventListener('click', () => selectFloor(f.n));
-    b.addEventListener('focus', () => showFloor(f.n));
-    hits.appendChild(b);
+  const R = (x, y, w, h) => ({ x, y, w, h });
+  // unit shapes on the plate (viewBox 800×520, sea side = west = left)
+  const SLOTS = {
+    typical: [{ r: R(120, 100, 240, 136), o: 'מערב · צפון' }, { r: R(120, 256, 240, 164), o: 'מערב · דרום' }, { r: R(440, 100, 240, 320), o: 'מזרח · צפון · דרום' }],
+    ground: [{ r: R(120, 100, 210, 150), o: 'מערב · צפון' }, { r: R(120, 270, 210, 150), o: 'מערב · דרום' }, { r: R(470, 100, 210, 150), o: 'מזרח · צפון' }, { r: R(470, 270, 210, 150), o: 'מזרח · דרום' }],
+    ph: [{ r: R(260, 100, 420, 320), o: '360° · ים ועיר' }],
+  };
+  const FLOORS = {};
+  let num = 0;
+  const mk = (f, plate, types) => {
+    FLOORS[f] = { f, plate, units: SLOTS[plate === 'mini' ? 'typical' : plate].map((s, i) => {
+      num++; const st = SOLD.has(num) ? 'sold' : HELD.has(num) ? 'held' : 'free';
+      return { n: num, f, type: types[i], s: st, ...s };
+    }) };
+  };
+  mk(0, 'ground', ['garden', 'garden', 'garden', 'garden']);
+  for (let f = 1; f <= 10; f++) mk(f, 'typical', ['r4', 'r5', 'r4']);
+  mk(11, 'mini', ['mini', 'mini', 'mini']);
+  mk(12, 'ph', ['ph']);
+  const fName = (f) => (f === 0 ? 'קרקע' : `קומה ${f}`);
+  const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+  const avail = (f) => FLOORS[f].units.filter((u) => u.s === 'free').length;
+
+  /* ---- floor index (12 → 1, קרקע) + hit areas ---- */
+  const list = $('#ffIndex'), hits = $('#ffHits');
+  const ORDER = [12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0];
+  ORDER.forEach((f) => {
+    const a = avail(f), units = FLOORS[f].units.length;
     const li = document.createElement('li');
-    li.innerHTML = `<button type="button" data-n="${f.n}" aria-pressed="false"><b>${f.n === 1 ? 'ק' : f.n}</b><span>${f.type}</span><span class="sz">${f.size.split(' +')[0]}</span><span class="dot dot--${f.s}" title="${STATUS[f.s]}"></span></button>`;
-    li.firstChild.setAttribute('aria-label', label);
-    li.firstChild.addEventListener('click', () => { selectFloor(f.n); $('#floorsCard').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); });
-    flist.appendChild(li);
+    li.innerHTML = `<button type="button" data-f="${f}"><b>${f === 0 ? 'קרקע' : f}</b><small>${a ? plural(a, 'פנויה', 'פנויות') : 'נמכרה'}</small></button>`;
+    li.firstChild.setAttribute('aria-label', `${fName(f)}: ${plural(units, 'דירה', 'דירות')}, ${plural(a, 'פנויה', 'פנויות')}`);
+    list.appendChild(li);
+    const h = document.createElement('span');
+    h.className = 'ff__hit'; h.dataset.f = f; h.setAttribute('aria-hidden', 'true');
+    h.style.top = BANDS[f][0] + '%'; h.style.height = (BANDS[f][1] - BANDS[f][0]) + '%';
+    hits.appendChild(h);
   });
-  hits.addEventListener('pointerleave', () => showFloor(floorSel));
-  selectFloor(7);
-  $('#fcCta').addEventListener('click', () => {
-    const f = FLOORS[floorSel - 1];
-    setApt(f.apt);
-    $('#f-floor').value = String(f.n);
-    $('#formFloorText').textContent = `התעניינות: קומה ${f.n === 1 ? 'קרקע' : f.n} · ${f.type}`;
-    $('#formFloor').hidden = false;
+  const idxBtns = $$('button', list);
+  const btnFor = (f) => idxBtns.find((b) => +b.dataset.f === f);
+  // phones: keep the active floor centred in the horizontal strip without moving the page
+  const centerInStrip = (btn) => { if (!btn || list.scrollWidth <= list.clientWidth) return; const a = btn.getBoundingClientRect(), r = list.getBoundingClientRect(); list.scrollBy({ left: (a.left + a.width / 2) - (r.left + r.width / 2), behavior: 'smooth' }); };
+
+  let hot = null, openF = null;
+  function light(f) {
+    hot = f;
+    if (f === null) { ff.classList.remove('has-floor'); ff.style.setProperty('--t', '100%'); ff.style.setProperty('--b', '100%'); }
+    else {
+      const [t, b] = BANDS[f], fl = FLOORS[f], a = avail(f), u = fl.units.length;
+      ff.classList.add('has-floor');
+      ff.style.setProperty('--t', t + '%'); ff.style.setProperty('--b', b + '%');
+      const kind = f === 0 ? ' דירות גן' : f === 12 ? ' · פנטהאוז' : '';
+      const txt = f === 0 ? `קרקע · ${u}${kind} · ${plural(a, 'פנויה', 'פנויות')}` : `קומה ${f}${kind} · ${plural(u, 'דירה', 'דירות')} · ${plural(a, 'פנויה', 'פנויות')}`;
+      $('#ffTag').textContent = txt; $('#ffNow').textContent = txt;
+    }
+    idxBtns.forEach((b) => b.classList.toggle('is-hot', f !== null && +b.dataset.f === f));
+  }
+  light(null);
+  const isPlan = () => ff.classList.contains('is-plan');
+  hits.addEventListener('pointermove', (e) => { const t = e.target.closest('.ff__hit'); if (t && e.pointerType === 'mouse' && +t.dataset.f !== hot) light(+t.dataset.f); });
+  hits.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') light(null); });
+  // tap on phones: first tap lights the floor, second tap on the same floor opens it
+  hits.addEventListener('click', (e) => {
+    const t = e.target.closest('.ff__hit'); if (!t) return;
+    const f = +t.dataset.f;
+    if (matchMedia('(hover: none)').matches && hot !== f) { light(f); centerInStrip(btnFor(f)); return; }
+    openPlan(f);
   });
-  $('#formFloorClear')?.addEventListener('click', () => { $('#formFloor').hidden = true; $('#f-floor').value = ''; });
+  idxBtns.forEach((b, i) => {
+    const f = +b.dataset.f;
+    b.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse' && !isPlan()) light(f); });
+    b.addEventListener('focus', () => { if (!isPlan()) light(f); centerInStrip(b); });
+    b.addEventListener('click', () => openPlan(f));
+    b.addEventListener('keydown', (e) => {
+      const d = { ArrowUp: -1, ArrowLeft: 1, ArrowDown: 1, ArrowRight: -1 }[e.key];   // up = higher floor (earlier in the list)
+      if (d === undefined) return;
+      e.preventDefault();
+      const n = idxBtns[clamp(i + d, 0, idxBtns.length - 1)];
+      n.focus(); if (isPlan()) openPlan(+n.dataset.f, true);
+    });
   });
+  list.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse' && !isPlan()) light(null); });
+
+  /* ---- floor plan view ---- */
+  const svg = $('#ffSvg'), NS = 'http://www.w3.org/2000/svg';
+  const el = (tag, attrs, parent, text) => { const n = document.createElementNS(NS, tag); for (const k in attrs) n.setAttribute(k, attrs[k]); if (text != null) n.textContent = text; if (parent) parent.appendChild(n); return n; };
+  function drawPlate(fl) {
+    svg.textContent = '';
+    const defs = el('defs', {}, svg);
+    const pat = el('pattern', { id: 'fpHatch', width: 8, height: 8, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' }, defs);
+    el('rect', { width: 8, height: 8, fill: 'rgba(120,120,120,.22)' }, pat);
+    el('line', { x1: 0, y1: 0, x2: 0, y2: 8, stroke: 'rgba(200,200,200,.45)', 'stroke-width': 2 }, pat);
+    const ph = fl.plate === 'ph';
+    // site / terraces / rounded wrap-around balconies (as on the façade)
+    if (fl.plate === 'ground') { el('rect', { x: 34, y: 26, width: 732, height: 462, rx: 34, class: 'fp-dash' }, svg); el('text', { x: 400, y: 50, class: 'fp-label fp-small' }, svg, 'גינות פרטיות'); }
+    if (fl.plate === 'mini') { el('rect', { x: 60, y: 42, width: 680, height: 436, rx: 64, class: 'fp-dash' }, svg); el('text', { x: 400, y: 64, class: 'fp-label fp-small' }, svg, 'מרפסות גג'); }
+    if (ph) {
+      el('rect', { x: 70, y: 78, width: 190, height: 364, rx: 40, class: 'fp-dash' }, svg);
+      el('rect', { x: 92, y: 320, width: 146, height: 90, rx: 6, class: 'fp-pool' }, svg);
+      el('text', { x: 165, y: 370, class: 'fp-label fp-small' }, svg, 'בריכה');
+      el('text', { x: 165, y: 200, class: 'fp-label' }, svg, 'מרפסת גג');
+      for (let x = 96; x <= 236; x += 14) el('line', { x1: x, y1: 104, x2: x, y2: 150, class: 'fp-thin' }, svg);   // pergola
+    }
+    el('rect', { x: ph ? 236 : 92, y: 72, width: ph ? 472 : 616, height: 376, rx: 48, class: 'fp-thin' }, svg);
+    el('rect', { x: ph ? 260 : 120, y: 100, width: ph ? 420 : 560, height: 320, class: 'fp-line' }, svg);
+    if (fl.plate === 'ground') { el('text', { x: 400, y: 128, class: 'fp-label' }, svg, 'לובי'); }
+    // apartments
+    fl.units.forEach((u) => {
+      const t = TYPE[u.type];
+      const g = el('g', { class: 'apt', 'data-n': u.n, 'data-s': u.s, tabindex: 0, role: 'button',
+        'aria-label': `דירה ${u.n}, ${t.long}, ${t.size} מ״ר, ${STATUS[u.s]}` }, svg);
+      el('rect', { x: u.r.x, y: u.r.y, width: u.r.w, height: u.r.h }, g);
+      const cx = u.r.x + u.r.w / 2, cy = u.r.y + u.r.h / 2;
+      el('text', { x: cx, y: cy + 6, class: 'n' }, g, u.n);
+      el('text', { x: cx, y: cy + 36, class: 't' }, g, `${t.name} · ${STATUS[u.s]}`);
+    });
+    // building core: elevators + stairs
+    el('rect', { x: 370, y: 176, width: 60, height: 168, class: 'fp-core' }, svg);
+    el('rect', { x: 378, y: 186, width: 44, height: 40, class: 'fp-thin' }, svg);
+    el('rect', { x: 378, y: 232, width: 44, height: 40, class: 'fp-thin' }, svg);
+    for (let y = 282; y <= 334; y += 8) el('line', { x1: 378, y1: y, x2: 422, y2: y, class: 'fp-thin' }, svg);
+    el('text', { x: 400, y: 168, class: 'fp-label fp-small' }, svg, 'מעליות · מדרגות');
+    // orientation
+    el('text', { x: 52, y: 508, class: 'fp-label' }, svg, '← צד הים');
+    el('text', { x: 748, y: 508, class: 'fp-label' }, svg, 'צד הרחוב →');
+    const n = el('g', { class: 'fp-north', transform: 'translate(752 36)' }, svg);
+    el('path', { d: 'M0 -14 L6 6 L0 2 L-6 6 Z' }, n); el('text', { y: 22 }, n, 'N');
+    // interactions
+    $$('.apt', svg).forEach((g) => {
+      const u = fl.units.find((x) => x.n === +g.dataset.n);
+      g.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') showCard(u, false); });
+      g.addEventListener('click', () => showCard(u, true));
+      g.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); showCard(u, true); } });
+    });
+  }
+
+  function openPlan(f, keepFocus) {
+    const fl = FLOORS[f];
+    openF = f;
+    ff.classList.add('is-plan');
+    $('#ffPlan').hidden = false;
+    light(f);
+    idxBtns.forEach((b) => { if (+b.dataset.f === f) b.setAttribute('aria-current', 'true'); else b.removeAttribute('aria-current'); });
+    $('#ffPlanTitle').innerHTML = f === 0 ? '<span>קומת קרקע</span>' : `<span>קומה</span> ${String(f).padStart(2, '0')}`;
+    $('#ffPlanTypes').textContent = [...new Set(fl.units.map((u) => TYPE[u.type].long))].join(' · ') + ` · ${plural(fl.units.length, 'דירה', 'דירות')}`;
+    const fr = fl.units.filter((u) => u.s === 'free').length, so = fl.units.filter((u) => u.s === 'sold').length, he = fl.units.length - fr - so;
+    $('#ffPlanStat').textContent = `${fr} פנויות · ${so} נמכרו` + (he ? ` · ${he} שמורות` : '');
+    drawPlate(fl);
+    closeCard();
+    // preselect the first available apartment on wide screens so the card is never empty
+    if (matchMedia('(min-width: 901px)').matches) showCard(fl.units.find((u) => u.s === 'free') || fl.units[0], false);
+    const top = ff.getBoundingClientRect().top;
+    if (top < -40 || top > innerHeight * .4) ff.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (!keepFocus) $('#ffPlanTitle').focus({ preventScroll: true });
+  }
+  function closePlan() {
+    const f = openF;
+    ff.classList.remove('is-plan'); $('#ffPlan').hidden = true; closeCard();
+    idxBtns.forEach((b) => b.removeAttribute('aria-current'));
+    if (f !== null) { light(f); btnFor(f).focus({ preventScroll: true }); }
+    openF = null;
+  }
+  $('#ffBack').addEventListener('click', closePlan);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && isPlan() && !document.querySelector('dialog[open]') && ff.getBoundingClientRect().bottom > 0 && ff.getBoundingClientRect().top < innerHeight) { e.preventDefault(); if (root.classList.contains('ff-sheet')) closeCard(); else closePlan(); } });
+  $('#ffZoom').addEventListener('click', (e) => { const z = $('#ffPlanWrap').classList.toggle('is-zoom'); e.currentTarget.setAttribute('aria-pressed', String(z)); e.currentTarget.textContent = z ? 'הקטנת התוכנית' : 'הגדלת התוכנית'; });
+
+  /* ---- apartment card (side card on desktop, bottom sheet on phones) ---- */
+  const card = $('#ffCard');
+  let cardU = null;
+  function showCard(u, sticky) {
+    cardU = u;
+    const t = TYPE[u.type];
+    $$('.apt', svg).forEach((g) => g.classList.toggle('is-hot', +g.dataset.n === u.n));
+    $('#ffThumb').src = t.img; $('#ffThumb').alt = `הדמיית פנים · ${t.long}`;
+    $('#ffCardK').textContent = `דירה ${u.n} · ${fName(u.f)}`;
+    $('#ffCardTitle').textContent = t.long;
+    const rows = [['חדרים', t.rooms], ['שטח פנים', `${t.size} מ״ר`], [t.outName, `${t.out} מ״ר`], ['כיווני אוויר', u.o], ['סטטוס', `<span class="pill" data-s="${u.s}">${STATUS[u.s]}</span>`]];
+    $('#ffCardDl').innerHTML = rows.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('');
+    $('#ffMeet').textContent = u.s === 'sold' ? 'לרשימת המתנה' : 'לתיאום פגישה';
+    card.hidden = false;
+    if (sticky || matchMedia('(min-width: 901px)').matches) { card.classList.add('is-open'); root.classList.toggle('ff-sheet', matchMedia('(max-width: 900px)').matches); }
+  }
+  function closeCard() { card.classList.remove('is-open'); root.classList.remove('ff-sheet'); $$('.apt', svg).forEach((g) => g.classList.remove('is-hot')); if (matchMedia('(max-width: 900px)').matches) card.hidden = true; }
+  $('#ffCardClose').addEventListener('click', closeCard);
+  $('#ffPlanBtn').addEventListener('click', () => { if (cardU && bridge.openPlan) bridge.openPlan(TYPE[cardU.type].res); });
+  $('#ffMeet').addEventListener('click', () => {
+    if (!cardU) return;
+    const t = TYPE[cardU.type];
+    setApt(APT_LABEL[cardU.type]);
+    const ff2 = $('#f-floor'); if (ff2) ff2.value = `${cardU.f}/${cardU.n}`;
+    const tagT = $('#formFloorText'), tag = $('#formFloor');
+    if (tagT && tag) { tagT.textContent = `התעניינות: דירה ${cardU.n} · ${fName(cardU.f)} · ${t.long}`; tag.hidden = false; }
+    closeCard();
+  });
+  $('#formFloorClear')?.addEventListener('click', () => { $('#formFloor').hidden = true; const x = $('#f-floor'); if (x) x.value = ''; });
+  });
+
 
   /* =======================================================
      7 · The building — sticky image follows the text
