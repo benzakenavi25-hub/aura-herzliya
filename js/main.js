@@ -8,8 +8,8 @@
   const lerp = (a, b, t) => a + (b - a) * t;
   const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
   const root = document.documentElement;
-  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (reduced) root.classList.add('reduced');
+  // The full experience always runs, whatever the OS motion setting. The .reduced class below is
+  // only the fallback for when the hero frames fail to load (static poster).
 
   // Each section initialises inside its own boundary: if one part of the page is
   // missing or throws (e.g. a cached older index.html with newer JS), the rest still runs.
@@ -320,7 +320,7 @@
   }
 
   section('hero', () => {
-  if (!reduced) {
+  {
     document.body.classList.add('is-loading');
     sizeCanvas();
     addEventListener('resize', sizeCanvas);
@@ -329,8 +329,6 @@
       hideLoader();
       initScrub();
     }).catch(() => { root.classList.add('reduced'); hideLoader(); });
-  } else {
-    if (loader) loader.remove();
   }
   });
 
@@ -356,7 +354,7 @@
   [$('#contact'), $('.footer')].forEach((n) => { if (n) waIO.observe(n); });
   function onScroll() {
     const y = scrollY;
-    const heroEnd = hero.offsetTop + hero.offsetHeight - innerHeight * (reduced ? 0.3 : 1);
+    const heroEnd = hero.offsetTop + hero.offsetHeight - innerHeight * (root.classList.contains('reduced') ? 0.3 : 1);
     const past = y > heroEnd;
     if (header) header.classList.toggle('is-visible', past);
     const menuOpen = !!menuBtn && menuBtn.getAttribute('aria-expanded') === 'true';
@@ -394,7 +392,7 @@
     const el = $(id); if (!el) return;
     e.preventDefault();
     const top = id === '#top' ? 0 : el.getBoundingClientRect().top + scrollY - (id === '#contact' ? 0 : 0);
-    window.scrollTo({ top, behavior: reduced ? 'auto' : 'smooth' });
+    window.scrollTo({ top, behavior: 'smooth' });
     history.replaceState(null, '', id);
   }));
   });
@@ -444,7 +442,7 @@
      ======================================================= */
   section("1 · Manifesto", () => {
   const mFig = $('#manifestoFig'), mFrame = $('.manifesto__frame');
-  if (mFig && !reduced) {
+  if (mFig) {
     whileVisible(mFig, () => {
       const r = mFig.getBoundingClientRect(), vh = innerHeight;
       const p = clamp((vh - r.top) / (vh * 0.95), 0, 1);
@@ -606,7 +604,7 @@
     moveIndicator(i, keyboard || firstPaint);
     if (i === current && !firstPaint) return;
     current = i;
-    const instant = reduced || keyboard || firstPaint;
+    const instant = keyboard || firstPaint;
     firstPaint = false;
     if (instant) applyPlan(PLANS[i], i);
     else {
@@ -742,7 +740,7 @@
     const li = document.createElement('li');
     li.innerHTML = `<button type="button" data-n="${f.n}" aria-pressed="false"><b>${f.n === 1 ? 'ק' : f.n}</b><span>${f.type}</span><span class="sz">${f.size.split(' +')[0]}</span><span class="dot dot--${f.s}" title="${STATUS[f.s]}"></span></button>`;
     li.firstChild.setAttribute('aria-label', label);
-    li.firstChild.addEventListener('click', () => { selectFloor(f.n); $('#floorsCard').scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'nearest' }); });
+    li.firstChild.addEventListener('click', () => { selectFloor(f.n); $('#floorsCard').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); });
     flist.appendChild(li);
   });
   hits.addEventListener('pointerleave', () => showFloor(floorSel));
@@ -801,7 +799,7 @@
     track.style.transform = `translate3d(${(p * max).toFixed(1)}px, 0, 0)`;   // RTL: content travels right
     setDay(p);
   }
-  if (!reduced) whileVisible(day, dayDesktop, '0px');
+  whileVisible(day, dayDesktop, '0px');
   dayVP.addEventListener('scroll', () => {
     if (desktopMQ.matches) return;
     const max = dayVP.scrollWidth - dayVP.clientWidth;

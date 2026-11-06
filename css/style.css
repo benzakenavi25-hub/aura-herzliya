@@ -971,9 +971,4 @@ figcaption, .map__note, .team__demo, .plan__note, .floors__demo { font-size: 15p
   .wa:hover { background: var(--bronze-ink); }
 }
 
-/* ---------- reduced motion ---------- */
-@media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
-  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
-  .js [data-reveal], .js [data-reveal-lines] > span > span { opacity: 1; transform: none; }
 }
