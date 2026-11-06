@@ -743,9 +743,10 @@
   section("5 · Floor finder", () => {
   const ff = $('#floors');
   if (!ff || !$('#ffIndex')) return;
-  // floor bands measured on F1-elevation (% of image height, top → bottom)
-  const BANDS = { 12: [7.6, 16.05], 11: [16.05, 21.75], 10: [21.75, 27.25], 9: [27.25, 32.75], 8: [32.75, 38.55], 7: [38.55, 44.05],
-    6: [44.05, 49.55], 5: [49.55, 55.05], 4: [55.05, 60.5], 3: [60.5, 65.95], 2: [65.95, 71.35], 1: [71.35, 76.9], 0: [76.9, 91.9] };
+  // floor bands measured on F1-elevation (% of image height, top → bottom). Labels sit at each band's centre.
+  const BANDS = { 12: [7.6, 16.4], 11: [15.7, 22.1], 10: [21.4, 27.6], 9: [26.9, 33.3], 8: [32.6, 38.9], 7: [38.2, 44.4],
+    6: [43.7, 49.9], 5: [49.2, 55.4], 4: [54.7, 60.8], 3: [60.2, 66.3], 2: [65.6, 71.7], 1: [71.0, 76.9], 0: [76.9, 91.9] };
+  const CENTER = (f) => (BANDS[f][0] + BANDS[f][1]) / 2;
   // types match the Residences section (res = its tab index)
   const TYPE = {
     r4: { name: '4 חדרים', long: 'דירת 4 חדרים', rooms: 4, size: 118, out: 14, outName: 'מרפסת שמש', res: 0, img: 'img/new/P6-640.webp' },
@@ -780,64 +781,82 @@
   const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
   const avail = (f) => FLOORS[f].units.filter((u) => u.s === 'free').length;
 
-  /* ---- floor index (12 → 1, קרקע) + hit areas ---- */
-  const list = $('#ffIndex'), hits = $('#ffHits');
+  /* ---- building view: floor scale on the facade + hit layer; plan-view strip index ---- */
+  const list = $('#ffIndex'), hits = $('#ffHits'), scale = $('#ffScale'), sum = $('#ffSum');
   const ORDER = [12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0];
+  const availTxt = (a) => (a ? plural(a, 'פנויה', 'פנויות') : 'נמכרה');
   ORDER.forEach((f) => {
     const a = avail(f), units = FLOORS[f].units.length;
+    const label = `${fName(f)}: ${plural(units, 'דירה', 'דירות')}, ${plural(a, 'פנויה', 'פנויות')}`;
     const li = document.createElement('li');
-    li.innerHTML = `<button type="button" data-f="${f}"><b>${f === 0 ? 'קרקע' : f}</b><small>${a ? plural(a, 'פנויה', 'פנויות') : 'נמכרה'}</small></button>`;
-    li.firstChild.setAttribute('aria-label', `${fName(f)}: ${plural(units, 'דירה', 'דירות')}, ${plural(a, 'פנויה', 'פנויות')}`);
+    li.innerHTML = `<button type="button" data-f="${f}"><b>${f === 0 ? 'קרקע' : f}</b><small>${availTxt(a)}</small></button>`;
+    li.firstChild.setAttribute('aria-label', label);
     list.appendChild(li);
-    const h = document.createElement('span');
-    h.className = 'ff__hit'; h.dataset.f = f; h.setAttribute('aria-hidden', 'true');
-    h.style.top = BANDS[f][0] + '%'; h.style.height = (BANDS[f][1] - BANDS[f][0]) + '%';
-    hits.appendChild(h);
+    const s = document.createElement('li');
+    s.style.top = CENTER(f) + '%';
+    s.innerHTML = `<button type="button" class="ff__lvl" data-f="${f}"><span class="tick" aria-hidden="true"></span><b>${f === 0 ? 'קרקע' : f}</b><small>${availTxt(a)}</small></button>`;
+    s.firstChild.setAttribute('aria-label', label);
+    scale.appendChild(s);
   });
-  const idxBtns = $$('button', list);
+  const idxBtns = $$('button', list), lvls = $$('.ff__lvl', scale);
   const btnFor = (f) => idxBtns.find((b) => +b.dataset.f === f);
-  // phones: keep the active floor centred in the horizontal strip without moving the page
+  const lvlFor = (f) => lvls.find((b) => +b.dataset.f === f);
+  // phones: keep the active floor centred in the plan-view strip without moving the page
   const centerInStrip = (btn) => { if (!btn || list.scrollWidth <= list.clientWidth) return; const a = btn.getBoundingClientRect(), r = list.getBoundingClientRect(); list.scrollBy({ left: (a.left + a.width / 2) - (r.left + r.width / 2), behavior: 'smooth' }); };
+  // the floor under a point: nearest band centre (so each floor's target is its whole band, edge to edge)
+  const floorAt = (clientY) => {
+    const r = hits.getBoundingClientRect(), y = ((clientY - r.top) / r.height) * 100;
+    if (y < BANDS[12][0] - 1 || y > BANDS[0][1] + 1) return null;
+    return ORDER.reduce((best, f) => (Math.abs(CENTER(f) - y) < Math.abs(CENTER(best) - y) ? f : best), 12);
+  };
 
   let hot = null, openF = null;
   function light(f) {
     hot = f;
-    if (f === null) { ff.classList.remove('has-floor'); ff.style.setProperty('--t', '100%'); ff.style.setProperty('--b', '100%'); }
+    if (f === null) { ff.classList.remove('has-floor'); ff.style.setProperty('--t', '100%'); ff.style.setProperty('--b', '100%'); sum.textContent = 'בחרו קומה כדי לראות את הדירות בה'; }
     else {
       const [t, b] = BANDS[f], fl = FLOORS[f], a = avail(f), u = fl.units.length;
       ff.classList.add('has-floor');
       ff.style.setProperty('--t', t + '%'); ff.style.setProperty('--b', b + '%');
-      const kind = f === 0 ? ' דירות גן' : f === 12 ? ' · פנטהאוז' : '';
-      const txt = f === 0 ? `קרקע · ${u}${kind} · ${plural(a, 'פנויה', 'פנויות')}` : `קומה ${f}${kind} · ${plural(u, 'דירה', 'דירות')} · ${plural(a, 'פנויה', 'פנויות')}`;
-      $('#ffTag').textContent = txt; $('#ffNow').textContent = txt;
+      sum.textContent = f === 0 ? `קרקע · ${u} דירות גן · ${plural(a, 'פנויה', 'פנויות')}`
+        : `קומה ${f}${f === 12 ? ' · פנטהאוז' : ''} · ${plural(u, 'דירה', 'דירות')} · ${plural(a, 'פנויה', 'פנויות')}`;
     }
-    idxBtns.forEach((b) => b.classList.toggle('is-hot', f !== null && +b.dataset.f === f));
+    lvls.forEach((b) => b.classList.toggle('is-hot', f !== null && +b.dataset.f === f));
   }
   light(null);
   const isPlan = () => ff.classList.contains('is-plan');
-  hits.addEventListener('pointermove', (e) => { const t = e.target.closest('.ff__hit'); if (t && e.pointerType === 'mouse' && +t.dataset.f !== hot) light(+t.dataset.f); });
+  hits.addEventListener('pointermove', (e) => { if (e.pointerType !== 'mouse') return; const f = floorAt(e.clientY); if (f !== hot) light(f); });
   hits.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') light(null); });
-  // tap on phones: first tap lights the floor, second tap on the same floor opens it
+  // tap on phones: first tap lights the floor, a second tap on the same floor opens it
   hits.addEventListener('click', (e) => {
-    const t = e.target.closest('.ff__hit'); if (!t) return;
-    const f = +t.dataset.f;
-    if (matchMedia('(hover: none)').matches && hot !== f) { light(f); centerInStrip(btnFor(f)); return; }
+    const f = floorAt(e.clientY); if (f === null) return;
+    if (matchMedia('(hover: none)').matches && hot !== f) { light(f); return; }
     openPlan(f);
   });
-  idxBtns.forEach((b, i) => {
+  lvls.forEach((b, i) => {
     const f = +b.dataset.f;
-    b.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse' && !isPlan()) light(f); });
-    b.addEventListener('focus', () => { if (!isPlan()) light(f); centerInStrip(b); });
+    b.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') light(f); });
+    b.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') light(null); });
+    b.addEventListener('focus', () => light(f));
     b.addEventListener('click', () => openPlan(f));
     b.addEventListener('keydown', (e) => {
-      const d = { ArrowUp: -1, ArrowLeft: 1, ArrowDown: 1, ArrowRight: -1 }[e.key];   // up = higher floor (earlier in the list)
+      const d = { ArrowUp: -1, ArrowLeft: 1, ArrowDown: 1, ArrowRight: -1 }[e.key];   // up = higher floor
+      if (d === undefined) return;
+      e.preventDefault();
+      lvls[clamp(i + d, 0, lvls.length - 1)].focus();
+    });
+  });
+  idxBtns.forEach((b, i) => {
+    b.addEventListener('click', () => openPlan(+b.dataset.f));
+    b.addEventListener('focus', () => centerInStrip(b));
+    b.addEventListener('keydown', (e) => {
+      const d = { ArrowUp: -1, ArrowLeft: 1, ArrowDown: 1, ArrowRight: -1 }[e.key];
       if (d === undefined) return;
       e.preventDefault();
       const n = idxBtns[clamp(i + d, 0, idxBtns.length - 1)];
-      n.focus(); if (isPlan()) openPlan(+n.dataset.f, true);
+      n.focus(); openPlan(+n.dataset.f, true);
     });
   });
-  list.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse' && !isPlan()) light(null); });
 
   /* ---- floor plan view ---- */
   const svg = $('#ffSvg'), NS = 'http://www.w3.org/2000/svg';
@@ -915,7 +934,7 @@
     const f = openF;
     ff.classList.remove('is-plan'); $('#ffPlan').hidden = true; closeCard();
     idxBtns.forEach((b) => b.removeAttribute('aria-current'));
-    if (f !== null) { light(f); btnFor(f).focus({ preventScroll: true }); }
+    if (f !== null) { light(f); lvlFor(f).focus({ preventScroll: true }); }
     openF = null;
   }
   $('#ffBack').addEventListener('click', closePlan);

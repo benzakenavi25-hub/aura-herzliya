@@ -507,22 +507,57 @@ figcaption { font-size: 13px; color: var(--ink-2); margin-top: 14px; }
 /* =========================================================
    5 · FLOOR FINDER — dark, two levels: building view → floor plan view
    ========================================================= */
-.ff { --ffbg: #0F141C; --line: rgba(232,224,211,.16); background: var(--ffbg); color: var(--stone); padding-block: clamp(64px, 8vw, 120px); position: relative; }
-.ff__grid {
-  max-width: calc(var(--maxw) + var(--gutter) * 2); margin-inline: auto; padding-inline: var(--gutter);
-  display: grid; grid-template-columns: minmax(180px, 230px) minmax(0, 1fr) minmax(260px, 340px);
-  grid-template-areas: "head stage side" "index stage side"; grid-template-rows: auto 1fr; gap: 24px clamp(24px, 3.5vw, 56px); align-items: start;
-}
-.ff__head { grid-area: head; }
-.ff__title { font-family: var(--f-he-display); font-weight: 300; font-size: clamp(34px, 3.4vw, 52px); line-height: 1.1; }
-.ff__sub { margin-top: 10px; color: rgba(243,238,230,.74); font-size: 16px; }
-.ff__index { grid-area: index; }
-.ff__stage { grid-area: stage; display: grid; justify-items: center; }
-.ff__building { width: 100%; display: grid; justify-items: center; }
-.ff__side { grid-area: side; align-self: end; }
-.ff.is-plan .ff__side { align-self: center; }
+.ff { --ffbg: #12161D; --line: rgba(232,224,211,.16); --t: 100%; --b: 100%; --x0: 21.5%; --x1: 78.5%;
+  --fh: min(90vh, 960px); --fw: calc(var(--fh) * .7502);
+  background: var(--ffbg); color: var(--stone); padding-block: clamp(40px, 5vh, 64px); position: relative; }
+.ff__grid { max-width: calc(var(--maxw) + var(--gutter) * 2); margin-inline: auto; padding-inline: var(--gutter); }
 
-/* elevator-style floor index */
+/* ---------- building view: one full-width stage, everything on the image ---------- */
+.ff:not(.is-plan) .ff__grid { max-width: none; padding-inline: 0; }
+.ff:not(.is-plan) .ff__index, .ff:not(.is-plan) .ff__side { display: none; }
+.ff__building { position: relative; display: grid; justify-items: center; }
+.ff__fig { position: relative; margin: 0; height: var(--fh); aspect-ratio: 952 / 1269; }
+.ff__fig img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 4px; }
+/* one dark veil with a rectangular hole over the active floor (no seams between pieces) */
+.ff__shade { position: absolute; inset: 0; background: rgba(4, 6, 10, .7); pointer-events: none; border-radius: 4px;
+  clip-path: polygon(evenodd, 0 0, 100% 0, 100% 100%, 0 100%, 0 0, var(--x0) var(--t), var(--x1) var(--t), var(--x1) var(--b), var(--x0) var(--b), var(--x0) var(--t));
+  transition: clip-path .3s var(--ease-out); }
+.ff__shade + .ff__shade { display: none; }
+.ff__band { position: absolute; left: var(--x0); right: calc(100% - var(--x1)); top: var(--t); height: calc(var(--b) - var(--t)); pointer-events: none;
+  border-top: 1px solid #D9B27C; border-bottom: 1px solid #D9B27C; box-shadow: 0 0 22px rgba(217,178,124,.25);
+  opacity: 0; transition: top .3s var(--ease-out), height .3s var(--ease-out), opacity .2s ease; }
+.ff.has-floor .ff__band { opacity: 1; }
+.ff__hits { position: absolute; inset: 0; cursor: pointer; }
+
+/* title + description + live summary in the sky to the right of the building (RTL start side) */
+.ff__copy, .ff__sum { position: absolute; z-index: 3; left: calc(50% + var(--fw) * .285 + 28px); width: min(380px, calc(50vw - var(--fw) * .285 - 28px - var(--gutter))); }
+.ff__copy { top: calc(var(--fh) * .085); padding: 18px 20px 6px 0; }
+.ff__copy::before { content: ""; position: absolute; z-index: -1; inset: -40px -60px -40px -40px; pointer-events: none;
+  background: radial-gradient(closest-side, rgba(10,13,19,.78), rgba(10,13,19,.4) 60%, rgba(10,13,19,0)); }
+.ff__title { font-family: var(--f-he-display); font-weight: 300; font-size: clamp(36px, 3.2vw, 54px); line-height: 1.05; color: #F6F1E9; }
+.ff__sub { margin-top: 12px; font-size: 16px; line-height: 1.6; color: rgba(243,238,230,.84); }
+.ff__sum { top: calc(var(--fh) * .085 + 190px); padding-top: 14px; border-top: 1px solid rgba(217,178,124,.45); font-size: 16px; color: #E6CBA2; }
+
+/* floor scale on the facade: each item centred on its own floor band */
+.ff__scale { position: absolute; inset: 0; pointer-events: none; }
+.ff__scale li { position: absolute; right: calc(100% - var(--x0)); transform: translateY(-50%); pointer-events: auto; }
+.ff__lvl { display: flex; align-items: center; gap: 8px; padding: 2px 0 2px 6px; color: rgba(243,238,230,.78); white-space: nowrap; }
+.ff__lvl b { font-family: var(--f-en); font-weight: 400; font-size: 20px; line-height: 1; color: #F3EEE6; min-width: 1.3em; text-align: center;
+  transition: color .2s ease, transform .2s var(--ease-out); }
+.ff__lvl small { font-size: 12px; color: rgba(243,238,230,.68); }
+.ff__lvl .tick { width: 26px; height: 1px; background: rgba(243,238,230,.5); transition: background .2s ease, width .2s var(--ease-out); }
+.ff__lvl[data-f="0"] b { font-family: var(--f-he); font-size: 15px; min-width: 0; }
+.ff__lvl.is-hot b { color: #D9B27C; transform: scale(1.18); }
+.ff__lvl.is-hot .tick { background: #D9B27C; width: 34px; }
+.ff__lvl.is-hot small { color: #E6CBA2; }
+.ff__lvl:focus-visible { outline: 2px solid #E6CBA2; outline-offset: 2px; border-radius: 4px; }
+
+/* ---------- floor plan view (unchanged layout: strip index + stage + card) ---------- */
+.ff.is-plan .ff__grid { display: grid; grid-template-columns: minmax(160px, 200px) minmax(0, 1fr) minmax(260px, 340px); grid-template-areas: "index stage side"; gap: 24px clamp(24px, 3.5vw, 56px); align-items: start; }
+.ff.is-plan .ff__building { display: none; }
+.ff__index { grid-area: index; }
+.ff__stage { grid-area: stage; }
+.ff__side { grid-area: side; align-self: center; }
 .ff__index ol { display: grid; gap: 2px; }
 .ff__index button {
   width: 100%; display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
@@ -532,45 +567,16 @@ figcaption { font-size: 13px; color: var(--ink-2); margin-top: 14px; }
 .ff__index b { font-family: var(--f-en); font-weight: 400; font-size: 18px; color: var(--stone); min-width: 2.2em; text-align: start; }
 .ff__index button[data-f="0"] b { font-family: var(--f-he); font-size: 15px; }
 .ff__index small { font-size: 13px; }
-.ff__index button.is-hot { background: rgba(154,116,72,.22); border-color: rgba(230,203,162,.45); color: var(--stone); }
 .ff__index button[aria-current="true"] { background: #9A7448; border-color: #9A7448; color: #fff; }
 .ff__index button:focus-visible { outline: 2px solid #E6CBA2; outline-offset: 1px; }
 
-/* building view */
-.ff__fig { position: relative; margin: 0; height: min(80vh, 860px); aspect-ratio: 952 / 1269; border-radius: 4px; }
-.ff__fig img { border-radius: 4px; }
-.ff__fig img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.ff { --t: 100%; --b: 100%; --x0: 21.5%; --x1: 78.5%; }
-.ff__shade { position: absolute; background: rgba(4, 6, 10, .7); pointer-events: none;
-  transition: top .3s var(--ease-out), height .3s var(--ease-out), bottom .3s var(--ease-out); }
-.ff__shade--top { left: 0; right: 0; top: 0; height: var(--t); }
-.ff__shade--bot { left: 0; right: 0; top: var(--b); bottom: 0; }
-.ff__shade--l { left: 0; width: var(--x0); top: var(--t); height: calc(var(--b) - var(--t)); }
-.ff__shade--r { right: 0; left: var(--x1); top: var(--t); height: calc(var(--b) - var(--t)); }
-.ff__band { position: absolute; left: var(--x0); right: calc(100% - var(--x1)); top: var(--t); height: calc(var(--b) - var(--t)); pointer-events: none;
-  border-top: 1px solid #D9B27C; border-bottom: 1px solid #D9B27C; box-shadow: 0 0 22px rgba(217,178,124,.25), inset 0 0 0 1px rgba(255,236,206,.06);
-  opacity: 0; transition: top .3s var(--ease-out), height .3s var(--ease-out), opacity .2s ease; }
-.ff.has-floor .ff__band { opacity: 1; }
-.ff__tag { position: absolute; right: calc(100% - var(--x0) + 10px); top: calc((var(--t) + var(--b)) / 2); transform: translateY(-50%);
-  white-space: nowrap; font-size: 14px; padding: 7px 12px; border-radius: 6px; z-index: 2; background: rgba(15,20,28,.86); border: 1px solid rgba(217,178,124,.5); color: var(--stone);
-  opacity: 0; transition: top .3s var(--ease-out), opacity .2s ease; pointer-events: none; }
-.ff.has-floor .ff__tag { opacity: 1; }
-.ff__hits { position: absolute; inset: 0; }
-.ff__hit { position: absolute; left: var(--x0); width: calc(var(--x1) - var(--x0)); cursor: pointer; background: transparent; }
-.ff__now { margin-top: 14px; font-size: 15px; color: rgba(243,238,230,.74); text-align: center; min-height: 1.6em; }
-
-/* side column */
-.ff__hint p { font-size: 14px; color: rgba(243,238,230,.66); }
 .ff__legend { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 14px; color: rgba(243,238,230,.8); }
-.ff__legend--side { margin-top: 12px; }
 .ff__legend li { display: flex; align-items: center; gap: 8px; }
 .sw { width: 14px; height: 14px; border-radius: 3px; display: inline-block; border: 1px solid rgba(232,224,211,.6); }
 .sw--free { background: rgba(201,165,122,.55); }
 .sw--held { background: rgba(96,128,166,.6); }
 .sw--sold { background: repeating-linear-gradient(45deg, rgba(150,150,150,.6) 0 2px, rgba(60,60,60,.4) 2px 5px); }
 
-/* plan view */
-.ff.is-plan .ff__building { display: none; }
 .ff__plan { width: 100%; }
 .ff__planhead { display: grid; grid-template-columns: auto 1fr; align-items: baseline; gap: 6px 20px; margin-bottom: 18px; }
 .ff__back { grid-row: span 3; align-self: start; padding: 10px 16px; border: 1px solid rgba(243,238,230,.3); border-radius: 40px; font-size: 14px; color: var(--stone); transition: background .2s ease; }
@@ -578,16 +584,15 @@ figcaption { font-size: 13px; color: var(--ink-2); margin-top: 14px; }
 .ff__plantitle span { font-family: var(--f-he-display); font-weight: 300; }
 .ff__plantypes { color: rgba(243,238,230,.8); font-size: 16px; }
 .ff__planstat { font-size: 15px; color: #E6CBA2; }
-.ff__planwrap { width: 100%; overflow: auto; overscroll-behavior: contain; border: 1px solid var(--line); border-radius: 6px; background: radial-gradient(120% 90% at 50% 40%, #161D28, #0F141C); }
+.ff__planwrap { width: 100%; overflow: auto; overscroll-behavior: contain; border: 1px solid var(--line); border-radius: 6px; background: radial-gradient(120% 90% at 50% 40%, #1A212C, #12161D); }
 .ff__svg { display: block; width: 100%; height: auto; }
 .ff__planfoot { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-top: 14px; }
 .ff__zoom { display: none; font-size: 14px; color: var(--stone); padding: 8px 14px; border: 1px solid rgba(243,238,230,.3); border-radius: 40px; }
 
-/* plan drawing */
 .fp-line { fill: none; stroke: rgba(232,224,211,.7); stroke-width: 1.2; }
 .fp-thin { fill: none; stroke: rgba(232,224,211,.32); stroke-width: 1; }
 .fp-dash { fill: none; stroke: rgba(232,224,211,.4); stroke-width: 1; stroke-dasharray: 5 6; }
-.fp-core { fill: #0F141C; stroke: rgba(232,224,211,.7); stroke-width: 1.2; }
+.fp-core { fill: #12161D; stroke: rgba(232,224,211,.7); stroke-width: 1.2; }
 .fp-pool { fill: rgba(73,180,190,.18); stroke: rgba(150,210,220,.6); stroke-width: 1; }
 .fp-label { font-family: var(--f-he); font-size: 15px; fill: rgba(243,238,230,.62); text-anchor: middle; }
 .fp-small { font-size: 13px; }
@@ -595,18 +600,17 @@ figcaption { font-size: 13px; color: var(--ink-2); margin-top: 14px; }
 .fp-north text { font-family: var(--f-en); font-size: 13px; fill: rgba(232,224,211,.8); text-anchor: middle; }
 .apt { cursor: pointer; outline: none; }
 .apt rect, .apt path { stroke: rgba(232,224,211,.7); stroke-width: 1.2; transition: fill .2s ease, stroke .2s ease, stroke-width .2s ease; }
-.apt[data-s="free"] rect, .apt[data-s="free"] path { fill: rgba(201,165,122,.3); }
-.apt[data-s="held"] rect, .apt[data-s="held"] path { fill: rgba(96,128,166,.36); }
-.apt[data-s="sold"] rect, .apt[data-s="sold"] path { fill: url(#fpHatch); }
+.apt[data-s="free"] rect { fill: rgba(201,165,122,.3); }
+.apt[data-s="held"] rect { fill: rgba(96,128,166,.36); }
+.apt[data-s="sold"] rect { fill: url(#fpHatch); }
 .apt .n { font-family: var(--f-en); font-size: 40px; fill: #F3EEE6; text-anchor: middle; }
 .apt .t { font-family: var(--f-he); font-size: 19px; fill: rgba(243,238,230,.82); text-anchor: middle; }
 .apt[data-s="sold"] .n, .apt[data-s="sold"] .t { fill: rgba(243,238,230,.55); }
-.apt.is-hot rect, .apt.is-hot path { stroke: #E6CBA2; stroke-width: 2.4; }
-.apt[data-s="free"].is-hot rect, .apt[data-s="free"].is-hot path { fill: rgba(201,165,122,.5); }
-.apt[data-s="held"].is-hot rect, .apt[data-s="held"].is-hot path { fill: rgba(96,128,166,.55); }
-.apt:focus-visible rect, .apt:focus-visible path { stroke: #fff; stroke-width: 2.6; }
+.apt.is-hot rect { stroke: #E6CBA2; stroke-width: 2.4; }
+.apt[data-s="free"].is-hot rect { fill: rgba(201,165,122,.5); }
+.apt[data-s="held"].is-hot rect { fill: rgba(96,128,166,.55); }
+.apt:focus-visible rect { stroke: #fff; stroke-width: 2.6; }
 
-/* apartment card */
 .ff__card { position: relative; background: rgba(243,238,230,.05); border: 1px solid var(--line); border-radius: 10px; padding: 18px; }
 .ff__thumb { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: 6px; }
 .ff__cardk { margin-top: 14px; font-size: 13px; letter-spacing: .08em; color: #E6CBA2; }
@@ -623,34 +627,48 @@ figcaption { font-size: 13px; color: var(--ink-2); margin-top: 14px; }
 .ff__cardclose { display: none; position: absolute; top: 8px; left: 8px; width: 40px; height: 40px; z-index: 1; border-radius: 50%; background: rgba(15,20,28,.7); }
 .ff__cardclose i { position: absolute; left: 11px; right: 11px; top: 19.5px; height: 1px; background: var(--stone); transform: rotate(45deg); }
 .ff__cardclose i + i { transform: rotate(-45deg); }
-.ff.is-plan .ff__hint { display: none; }
-.ff:not(.is-plan) .ff__card { display: none; }
 
 @media (hover: hover) and (pointer: fine) {
   .ff__index button:not([aria-current="true"]):hover { background: rgba(154,116,72,.22); color: var(--stone); }
   .ff__back:hover, .ff__zoom:hover { background: rgba(243,238,230,.1); }
 }
 
-/* phones: image full width, horizontal floor strip, card as a bottom sheet */
+/* ---------- narrower screens: title above, summary pinned below ---------- */
+@media (max-width: 1100px) {
+  .ff { --fh: auto; }
+  .ff__building { display: flex; flex-direction: column; align-items: stretch; padding-inline: var(--gutter); }
+  .ff__copy, .ff__sum { position: static; width: auto; }
+  .ff__copy { padding: 0 0 18px; }
+  .ff__copy::before { display: none; }
+  .ff__fig { width: min(100%, 640px); height: auto; align-self: center; }
+  .ff__sum { margin: 12px auto 0; width: min(100%, 640px); text-align: center; border-top: 0; padding-top: 0; min-height: 1.6em; }
+}
 @media (max-width: 900px) {
-  .ff__grid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "head" "stage" "index" "side"; gap: 18px; }
-  .ff__fig { width: 100%; height: auto; }
-  .ff__tag { display: none; }
+  .ff__building { padding-inline: 0; }
+  .ff__copy { padding-inline: var(--gutter); }
+  .ff__fig { width: 100%; }
+  .ff__fig img, .ff__shade { border-radius: 0; }
+  .ff__lvl { gap: 5px; padding-left: 4px; }
+  .ff__lvl b { font-size: 13px; }
+  .ff__lvl small { display: none; }
+  .ff__lvl .tick { width: 12px; }
+  .ff__lvl.is-hot .tick { width: 16px; }
+  .ff__lvl[data-f="0"] b { font-size: 12px; }
+
+  .ff.is-plan .ff__grid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "index" "stage" "side"; gap: 18px; }
   .ff__index { margin-inline: calc(-1 * var(--gutter)); }
-  .ff__index ol { display: flex; gap: 6px; overflow-x: auto; padding: 4px var(--gutter) 8px; scrollbar-width: none; scroll-padding-inline: var(--gutter); }
+  .ff__index ol { display: flex; gap: 6px; overflow-x: auto; padding: 4px var(--gutter) 8px; scrollbar-width: none; }
   .ff__index ol::-webkit-scrollbar { display: none; }
   .ff__index li { flex: 0 0 auto; }
   .ff__index button { flex-direction: column; align-items: center; gap: 2px; min-width: 64px; min-height: 56px; padding: 6px 10px; border-color: rgba(243,238,230,.16); }
   .ff__index b { min-width: 0; text-align: center; }
   .ff__index small { font-size: 12px; white-space: nowrap; }
-  .ff.is-plan .ff__grid { grid-template-areas: "head" "index" "stage" "side"; }
   .ff__planhead { grid-template-columns: 1fr; }
   .ff__back { grid-row: auto; justify-self: start; margin-bottom: 6px; }
   .ff__zoom { display: inline-flex; }
   .ff__planwrap.is-zoom .ff__svg { width: 190%; }
-  .ff__side { align-self: auto; }
   .ff__card { position: fixed; z-index: 96; inset: auto 0 0 0; max-height: 78vh; overflow: auto; border-radius: 18px 18px 0 0;
-    background: #141A24; border-color: rgba(243,238,230,.18); padding: 16px var(--gutter) calc(18px + var(--safe-b));
+    background: #161C26; border-color: rgba(243,238,230,.18); padding: 16px var(--gutter) calc(18px + var(--safe-b));
     box-shadow: 0 -16px 40px rgba(0,0,0,.4); transform: translateY(105%); transition: transform .35s var(--ease-out); }
   .ff__card.is-open { transform: none; }
   .ff__cardclose { display: block; }
@@ -665,6 +683,7 @@ figcaption { font-size: 13px; color: var(--ink-2); margin-top: 14px; }
 
 /* =========================================================
    6 · MATERIALS
+
 
    ========================================================= */
 .materials { padding-block: clamp(110px, 13vw, 200px); }

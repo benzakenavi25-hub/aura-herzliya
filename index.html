@@ -20,7 +20,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;1,6..96,400&family=Frank+Ruhl+Libre:wght@300;400&family=IBM+Plex+Sans+Hebrew:wght@300;400;500&display=swap">
 <link rel="preload" href="frames/manifest.json" as="fetch" crossorigin>
-<link rel="stylesheet" href="css/style.css?v=202611061553">
+<link rel="stylesheet" href="css/style.css?v=202611061828">
 <script>document.documentElement.classList.add('js');</script>
 </head>
 <body>
@@ -241,29 +241,28 @@
 <!-- ============ 5 · FLOOR FINDER (building view → floor plan view) ============ -->
 <section class="ff" id="floors" aria-labelledby="floors-title">
   <div class="ff__grid">
-    <header class="ff__head">
-      <h2 class="ff__title" id="floors-title">בחרו קומה</h2>
-      <p class="ff__sub" id="ffSub">העבירו את הסמן על הבניין או בחרו קומה מהרשימה. 38 דירות ב־12 קומות.</p>
-    </header>
-
-    <nav class="ff__index" aria-label="קומות הבניין">
+    <nav class="ff__index" aria-label="מעבר בין קומות">
       <ol id="ffIndex"></ol>
     </nav>
 
     <div class="ff__stage">
       <!-- building view -->
       <div class="ff__building" id="ffBuilding">
+        <div class="ff__copy">
+          <h2 class="ff__title" id="floors-title">בחרו קומה</h2>
+          <p class="ff__sub">העבירו את הסמן על קומה בבניין או על מספר הקומה. 38 דירות ב־12 קומות.</p>
+        </div>
         <figure class="ff__fig" id="ffFig">
-          <img src="img/new/F1-952.webp" srcset="img/new/F1-640.webp 640w, img/new/F1-952.webp 952w" sizes="(min-width: 901px) 46vh, 100vw" alt="חזית מגדל AURA בשעת דמדומים: 12 קומות מגורים מעל לובי בגובה כפול" loading="lazy" decoding="async" width="952" height="1269">
+          <img src="img/new/F1-952.webp" srcset="img/new/F1-640.webp 640w, img/new/F1-952.webp 952w" sizes="(min-width: 1101px) 68vh, 100vw" alt="חזית מגדל AURA בשעת דמדומים: 12 קומות מגורים מעל לובי בגובה כפול" loading="lazy" decoding="async" width="952" height="1269">
           <span class="ff__shade ff__shade--top" aria-hidden="true"></span>
           <span class="ff__shade ff__shade--bot" aria-hidden="true"></span>
           <span class="ff__shade ff__shade--l" aria-hidden="true"></span>
           <span class="ff__shade ff__shade--r" aria-hidden="true"></span>
           <span class="ff__band" id="ffBand" aria-hidden="true"></span>
-          <p class="ff__tag" id="ffTag" aria-hidden="true"></p>
-          <div class="ff__hits" id="ffHits"></div>
+          <div class="ff__hits" id="ffHits" aria-hidden="true"></div>
+          <ol class="ff__scale" id="ffScale" aria-label="קומות הבניין"></ol>
         </figure>
-        <p class="ff__now" id="ffNow" aria-live="polite">בחרו קומה כדי לראות את הדירות בה</p>
+        <p class="ff__sum" id="ffSum" aria-live="polite">בחרו קומה כדי לראות את הדירות בה</p>
       </div>
 
       <!-- floor plan view -->
@@ -289,14 +288,6 @@
     </div>
 
     <aside class="ff__side" aria-live="polite">
-      <div class="ff__hint" id="ffHint">
-        <p>נתוני זמינות להמחשה בלבד.</p>
-        <ul class="ff__legend ff__legend--side">
-          <li><i class="sw sw--free"></i>פנויה</li>
-          <li><i class="sw sw--held"></i>שמורה</li>
-          <li><i class="sw sw--sold"></i>נמכרה</li>
-        </ul>
-      </div>
       <div class="ff__card" id="ffCard" hidden>
         <button class="ff__cardclose" type="button" id="ffCardClose" aria-label="סגירת כרטיס הדירה"><i></i><i></i></button>
         <img class="ff__thumb" id="ffThumb" alt="" width="1672" height="941" decoding="async">
@@ -649,6 +640,6 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
-<script src="js/main.js?v=202611061553" defer></script>
+<script src="js/main.js?v=202611061828" defer></script>
 </body>
 </html>
