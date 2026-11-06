@@ -174,10 +174,10 @@ html.menu-open .wa { opacity: 0 !important; pointer-events: none !important; }
 .hero__stage { position: sticky; top: 0; height: 100vh; height: 100lvh; overflow: hidden; }
 .hero__canvas, .hero__poster { position: absolute; inset: 0; width: 100%; height: 100%; }
 .hero__poster { object-fit: cover; object-position: 48% 50%; display: none; }
-html:not(.js) .hero, .no-sequence .hero { height: auto; }
-html:not(.js) .hero__stage, .no-sequence .hero__stage { position: relative; height: 100svh; min-height: 560px; }
-html:not(.js) .hero__poster, .no-sequence .hero__poster { display: block; }
-html:not(.js) .hero__canvas, .no-sequence .hero__canvas { display: none; }
+html:not(.js) .hero, .reduced .hero { height: auto; }
+html:not(.js) .hero__stage, .reduced .hero__stage { position: relative; height: 100svh; min-height: 560px; }
+html:not(.js) .hero__poster, .reduced .hero__poster { display: block; }
+html:not(.js) .hero__canvas, .reduced .hero__canvas { display: none; }
 
 /* Light arc (set from JS by video time):
    golden hour → ink text on a soft light veil at the top;
@@ -233,7 +233,7 @@ html:not(.js) .hero__canvas, .no-sequence .hero__canvas { display: none; }
 .chapter__brand { font-family: var(--f-en); font-weight: 400; font-size: clamp(76px, 15vw, 220px); letter-spacing: .2em; margin-inline-start: .2em; line-height: .9; }
 .chapter--intro .chapter__en { text-align: center; margin-top: 18px; font-size: clamp(20px, 2.2vw, 30px); }
 .hero__cue { position: absolute; left: 50%; bottom: calc(28px + var(--safe-b)); transform: translateX(-50%); display: grid; justify-items: center; gap: 12px; font-size: 12px; letter-spacing: .14em; transition: opacity .8s var(--ease); }
-.hero.is-started .hero__cue, .no-sequence .hero__cue { opacity: 0; }
+.hero.is-started .hero__cue, .reduced .hero__cue { opacity: 0; }
 .hero__cue i { width: 1px; height: 46px; background: linear-gradient(to bottom, currentColor, transparent); animation: drip 2.4s var(--ease-io) infinite; transform-origin: top; }
 @keyframes drip { 0% { transform: scaleY(0); opacity: 1; } 60% { transform: scaleY(1); opacity: 1; } 100% { transform: scaleY(1); opacity: 0; } }
 
@@ -976,7 +976,4 @@ figcaption, .map__note, .team__demo, .plan__note, .floors__demo { font-size: 15p
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
   .js [data-reveal], .js [data-reveal-lines] > span > span { opacity: 1; transform: none; }
-  .js .img-reveal { clip-path: none; } .js .img-reveal img, .views__img, .building__img { transform: none; }
-  .chapter { filter: none; transform: none; } .chapter--intro, .chapter--intro.is-active { transform: translateY(-50%); }
-  .hero__cue i { animation: none; }
 }
