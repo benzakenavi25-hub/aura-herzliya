@@ -9,7 +9,9 @@
   const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
   const root = document.documentElement;
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (reduced) root.classList.add('reduced');
+  // prefers-reduced-motion keeps every scroll-driven (user-controlled) experience; it only removes
+  // decorative self-running motion (CSS media query) and scroll smoothing. The static hero poster
+  // (.no-sequence) is used only when the frames fail to load.
 
   // Each section initialises inside its own boundary: if one part of the page is
   // missing or throws (e.g. a cached older index.html with newer JS), the rest still runs.
@@ -307,20 +309,20 @@
       const proxy = { p: 0 };
       gsap.to(proxy, {
         p: 1, ease: 'none',
-        scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom bottom', scrub: 0.9, invalidateOnRefresh: true },
+        scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom bottom', scrub: reduced ? true : 0.9, invalidateOnRefresh: true },
         onUpdate: () => setProgress(proxy.p),
       });
     } else {
       // fallback: own eased scrub
       let target = 0, cur = 0;
       const measure = () => { const r = hero.getBoundingClientRect(); target = clamp(-r.top / (r.height - innerHeight), 0, 1); };
-      const tick = () => { cur += (target - cur) * 0.12; if (Math.abs(target - cur) < 0.0002) cur = target; setProgress(cur); requestAnimationFrame(tick); };
+      const tick = () => { cur += (target - cur) * (reduced ? 1 : 0.12); if (Math.abs(target - cur) < 0.0002) cur = target; setProgress(cur); requestAnimationFrame(tick); };
       addEventListener('scroll', measure, { passive: true }); measure(); tick();
     }
   }
 
   section('hero', () => {
-  if (!reduced) {
+  {
     document.body.classList.add('is-loading');
     sizeCanvas();
     addEventListener('resize', sizeCanvas);
@@ -328,9 +330,7 @@
       sizeCanvas(); setProgress(0);
       hideLoader();
       initScrub();
-    }).catch(() => { root.classList.add('reduced'); hideLoader(); });
-  } else {
-    if (loader) loader.remove();
+    }).catch(() => { root.classList.add('no-sequence'); hideLoader(); });
   }
   });
 
@@ -356,7 +356,7 @@
   [$('#contact'), $('.footer')].forEach((n) => { if (n) waIO.observe(n); });
   function onScroll() {
     const y = scrollY;
-    const heroEnd = hero.offsetTop + hero.offsetHeight - innerHeight * (reduced ? 0.3 : 1);
+    const heroEnd = hero.offsetTop + hero.offsetHeight - innerHeight * (root.classList.contains('no-sequence') ? 0.3 : 1);
     const past = y > heroEnd;
     if (header) header.classList.toggle('is-visible', past);
     const menuOpen = !!menuBtn && menuBtn.getAttribute('aria-expanded') === 'true';
@@ -801,7 +801,7 @@
     track.style.transform = `translate3d(${(p * max).toFixed(1)}px, 0, 0)`;   // RTL: content travels right
     setDay(p);
   }
-  if (!reduced) whileVisible(day, dayDesktop, '0px');
+  whileVisible(day, dayDesktop, '0px');
   dayVP.addEventListener('scroll', () => {
     if (desktopMQ.matches) return;
     const max = dayVP.scrollWidth - dayVP.clientWidth;
