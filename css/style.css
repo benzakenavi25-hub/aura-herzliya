@@ -367,7 +367,7 @@ figcaption { font-size: 13px; color: var(--ink-2); margin-top: 14px; }
 .hero.is-handed { background: transparent; pointer-events: none; }
 .hero.is-ending .rail, .hero.is-ending .rail__progress { opacity: 0; }
 .hero.is-handed .hero__stage { visibility: hidden; }
-.descent { position: relative; z-index: 1; height: 825vh; margin-top: -100vh; margin-top: -100lvh; background: #1C1A17; }
+.descent { position: relative; z-index: 1; height: 360vh; margin-top: -100vh; margin-top: -100lvh; background: #1C1A17; }
 .descent__stage { position: sticky; top: 0; height: 100vh; height: 100lvh; overflow: hidden; background: #1C1A17; color: var(--stone); }
 .descent__strip { position: absolute; inset: 0; }
 .dpanel, .dslab { position: absolute; left: 0; top: 0; width: 100%; will-change: transform; }
@@ -411,6 +411,13 @@ figcaption { font-size: 13px; color: var(--ink-2); margin-top: 14px; }
   padding: 14px; border-radius: 18px; background: rgba(15,20,28,.55);
   -webkit-backdrop-filter: blur(14px) saturate(1.2); backdrop-filter: blur(14px) saturate(1.2);
   border: 1px solid rgba(243,238,230,.14); box-shadow: 0 18px 40px rgba(10,12,18,.28); color: #fff; }
+.lift__hint { position: absolute; left: calc(100% + 14px); top: 50%; transform: translate(-6px, -50%); width: max-content; max-width: 220px;
+  padding: 10px 14px; border-radius: 12px; background: rgba(15,20,28,.55); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  border: 1px solid rgba(243,238,230,.14); font-size: 15px; line-height: 1.4; color: #fff; opacity: 0; pointer-events: none;
+  transition: opacity .5s var(--ease-out), transform .5s var(--ease-out); }
+.lift.is-inviting .lift__hint { opacity: 1; transform: translate(0, -50%); }
+@keyframes liftPulse { 0% { box-shadow: 0 0 0 0 rgba(217,178,124,.7); } 70% { box-shadow: 0 0 0 14px rgba(217,178,124,0); } 100% { box-shadow: 0 0 0 0 rgba(217,178,124,0); } }
+.lift__btns button.is-pulse { animation: liftPulse 1.2s var(--ease-out) 2; border-color: #D9B27C; }
 .lift__now { font-family: var(--f-he); font-size: 13px; letter-spacing: .06em; text-align: center; color: #E6CBA2; margin-bottom: 10px; min-height: 1.4em; direction: rtl; }
 .lift__body { display: flex; gap: 12px; align-items: stretch; }
 .lift__btns { display: grid; gap: 6px; }
@@ -429,12 +436,14 @@ figcaption { font-size: 13px; color: var(--ink-2); margin-top: 14px; }
 
 @media (max-width: 760px) {
   .dpanel:not(.dpanel--home) img { object-position: 78% 50%; }   /* balcony rail + olive tree + the sea */
-  .descent__copy { left: var(--gutter); right: var(--gutter); width: auto; bottom: calc(150px + var(--safe-b)); }
+  .descent__copy { left: var(--gutter); right: var(--gutter); width: auto; bottom: calc(196px + var(--safe-b)); }
   .descent__title { font-size: clamp(32px, 9vw, 42px); }
   .descent__cap { font-size: 16px; }
   .descent__shade { background: linear-gradient(to top, rgba(14,18,26,.82) 0%, rgba(14,18,26,.35) 40%, rgba(14,18,26,0) 62%); }
   .lift { top: auto; left: 50%; bottom: calc(16px + var(--safe-b)); transform: translateX(-50%); padding: 8px 10px 10px; border-radius: 22px; width: max-content; }
   .lift__now { margin-bottom: 6px; font-size: 12px; }
+  .lift__hint { left: 50%; top: auto; bottom: calc(100% + 10px); transform: translate(-50%, 6px); max-width: 80vw; text-align: center; }
+  .lift.is-inviting .lift__hint { transform: translate(-50%, 0); }
   .lift__body { flex-direction: column; gap: 8px; }
   .lift__btns { grid-auto-flow: column; gap: 6px; }
   .lift__btns button { min-width: 56px; min-height: 52px; font-size: 20px; padding: 0 12px; }

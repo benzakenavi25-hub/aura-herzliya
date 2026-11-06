@@ -442,7 +442,7 @@
   });
 
   /* =======================================================
-     1 · The descent — penthouse → 12 → 7 → 3 through the slabs
+     1 · The descent — scroll: penthouse → 12; elevator: 12 ↔ 7 ↔ 3 (and back up)
      ======================================================= */
   section("1 · The descent", () => {
   const sec = $('#views'), stage = $('#descentStage');
@@ -466,33 +466,33 @@
     obs.disconnect();
   }, { rootMargin: '1600px 0px' }).observe(sec);
 
-  // scroll timeline in "units": landing, descent, landing… (section is 100vh + 725vh tall)
-  const SEG = [['hold', .35], ['move', 1.6], ['hold', .65], ['move', 1.6], ['hold', .65], ['move', 1.6], ['hold', .8]];
+  // scroll drives only penthouse → slab → floor 12 (section is 100vh + 260vh tall);
+  // floors 7 and 3 are reached through the elevator, which animates the stage without moving the page
+  const SEG = [['hold', .35], ['move', 1.6], ['hold', .65]];
   const TOTAL = SEG.reduce((s, [, d]) => s + d, 0);
-  const LANDING_U = []; // scroll unit at the middle of each landing
-  { let u = 0, k = 0; SEG.forEach(([t, d]) => { if (t === 'hold') LANDING_U[k++] = k === 1 ? .12 : u + d * .45; u += d; }); }
   const ease = (x) => (x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
-  const camera = (u) => {           // → landing index as a float (0 … 3)
+  const camera = (u) => {           // → 0 (penthouse) … 1 (floor 12)
     let acc = 0, k = 0;
     for (const [t, d] of SEG) {
       if (u <= acc + d) return t === 'hold' ? k : k + ease((u - acc) / d);
       acc += d; if (t === 'move') k++;
     }
-    return 3;
+    return 1;
   };
 
   let H = 0, S = 0, STEP = 0;
   const measure = () => { H = stage.clientHeight; S = slabs[0] ? slabs[0].offsetHeight : H * .62; STEP = H + S; };
-  measure(); addEventListener('resize', () => { measure(); render(curU); });
+  measure(); addEventListener('resize', () => { measure(); paint(); });
   // hand-off: the moment the hero's stage would release, hide it — the identical frame is pinned beneath
   const hero = $('#top');
   const handOff = () => { if (hero) hero.classList.toggle('is-handed', scrollY >= sec.offsetTop - 1); };
   addEventListener('scroll', handOff, { passive: true }); handOff();
 
-  let curU = 0, lastF = 0, dir = 1;
-  function render(u) {
-    curU = u;
-    const f = camera(u), y = f * STEP;
+  // what's on screen = scroll position (0…1) + an elevator offset (−1…+2) animated by the panel
+  let base = 0, extra = 0, lastF = 0, dir = 1, tween = null;
+  const shown = () => clamp(base + extra, 0, 3);
+  function render(f) {
+    const y = f * STEP;
     if (f !== lastF) dir = f > lastF ? 1 : -1;
     lastF = f;
     panels.forEach((p, k) => { p.style.transform = `translate3d(0, ${(k * STEP - y).toFixed(1)}px, 0)`; });
@@ -503,7 +503,7 @@
       texs[k].style.transform = `translate3d(0, ${((top - (H - S) / 2) * .12).toFixed(1)}px, 0)`;
     });
     const near = Math.round(f), atLanding = Math.abs(f - near) < .06;
-    // captions only while a floor view has landed
+    // captions only while a floor view has landed; each floor has its own
     const vis = near >= 1 ? clamp(1 - Math.abs(f - near) / .18, 0, 1) : 0;
     shade.style.opacity = vis.toFixed(3);
     caps.forEach((c) => c.classList.toggle('is-on', vis > .55 && +c.dataset.k === near));
@@ -512,6 +512,39 @@
     const target = dir > 0 ? Math.min(3, Math.floor(f + .001) + 1) : Math.max(0, Math.ceil(f - .001) - 1);
     liftNow.textContent = atLanding ? (near === 0 ? 'פנטהאוז' : `קומה ${FLOOR[near]}`) : `⁦${dir > 0 ? '↓' : '↑'} ${FLOOR[target]}⁩`;
     liftFill.parentElement.style.setProperty('--p', (f / 3).toFixed(4));
+    // the invitation + one-time pulse once a floor view has landed
+    const invite = vis > .55;
+    lift.classList.toggle('is-inviting', invite);
+    if (invite && !pulsed) { pulsed = true; lift.dataset.pulsed = '1'; const b7 = btns.find((b) => b.dataset.k === '2'); if (b7) { b7.classList.add('is-pulse'); setTimeout(() => b7.classList.remove('is-pulse'), 2600); } }
+  }
+  const lift = $('#lift'); let pulsed = false;
+  const paint = () => render(shown());
+
+  // elevator offset animation (rAF, eased, ~1.4–1.8 s depending on distance)
+  function animateExtra(to, ms) {
+    if (tween) cancelAnimationFrame(tween.id);
+    const from = extra, t0 = performance.now();
+    if (Math.abs(to - from) < .001) { extra = to; paint(); return; }
+    const step = () => {
+      const p = clamp((performance.now() - t0) / ms, 0, 1);
+      extra = from + (to - from) * ease(p);
+      paint();
+      if (p < 1) tween.id = requestAnimationFrame(step); else tween = null;
+    };
+    tween = { id: requestAnimationFrame(step) };
+  }
+  // scrolling (out of the landing) hands control back to the scroll: the offset settles to 0
+  function setBase(b) {
+    const moved = Math.abs(b - base) > .002;
+    base = b;
+    if (moved && extra !== 0 && (!tween || tween.to !== 0)) { animateExtra(0, 700); if (tween) tween.to = 0; }
+    else paint();
+  }
+  function goFloor(k) {
+    const target = k - base;
+    const ms = clamp(1200 + 300 * Math.abs(shown() - k), 1400, 1800);
+    animateExtra(target, ms);
+    if (tween) tween.to = target;
   }
 
   const range = () => sec.offsetHeight - stage.clientHeight;
@@ -522,28 +555,28 @@
     gsap.to(proxy, {
       u: TOTAL, ease: 'none',
       scrollTrigger: { trigger: sec, start: 'top top', end: 'bottom bottom', scrub: 0.9, invalidateOnRefresh: true },
-      onUpdate: () => render(proxy.u),
+      onUpdate: () => setBase(camera(proxy.u)),
     });
   } else {
     let cur = 0;
-    const tick = () => { const t = unitsFromScroll(); cur += (t - cur) * 0.12; if (Math.abs(t - cur) < .0005) cur = t; if (cur !== curU) render(cur); requestAnimationFrame(tick); };
+    const tick = () => { const t = unitsFromScroll(); cur += (t - cur) * 0.12; if (Math.abs(t - cur) < .0005) cur = t; setBase(camera(cur)); requestAnimationFrame(tick); };
     tick();
   }
-  render(unitsFromScroll());
+  base = camera(unitsFromScroll()); paint();
 
-  // elevator buttons: travel smoothly through the slabs to the landing
-  const goTo = (k) => window.scrollTo({ top: sec.offsetTop + (LANDING_U[k] / TOTAL) * range(), behavior: 'smooth' });
+  // elevator buttons: play the descent/ascent inside the pinned stage — the page does not move
   btns.forEach((b, i) => {
-    b.addEventListener('click', () => goTo(+b.dataset.k));
+    b.addEventListener('click', () => goFloor(+b.dataset.k));
     b.addEventListener('keydown', (e) => {
       const d = { ArrowDown: 1, ArrowLeft: 1, ArrowUp: -1, ArrowRight: -1 }[e.key];   // RTL row on phones: left = next floor down
       if (!d) return;
       e.preventDefault();
       const n = clamp(i + d, 0, btns.length - 1);
-      btns[n].focus(); goTo(+btns[n].dataset.k);
+      btns[n].focus(); goFloor(+btns[n].dataset.k);
     });
   });
   });
+
 
 
   /* =======================================================
