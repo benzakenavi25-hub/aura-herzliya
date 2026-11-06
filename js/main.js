@@ -222,7 +222,7 @@
     hero.style.setProperty('--veil-top', (0.5 * (1 - flip)).toFixed(3));
     hero.style.setProperty('--veil-bot', (flip * lerp(0.75, 0.95, k)).toFixed(3));
     // only the lower edge darkens at the very end, flowing into the dusk bridge
-    fadeEl.style.opacity = smooth(0.975, 1, progress).toFixed(3);
+    // no fade: the final frame continues straight into the descent below
 
     chapters.forEach((el) => {
       const on = progress >= +el.dataset.from && progress < +el.dataset.to;
@@ -232,6 +232,7 @@
     if (c !== lastActive) { railItems.forEach((li, n) => li.classList.toggle('is-active', n === c)); lastActive = c; }
     if (railFill) railFill.parentElement.style.setProperty('--p', progress.toFixed(3));
     hero.classList.toggle('is-started', progress > 0.03);
+    hero.classList.toggle('is-ending', progress >= 0.985);
   }
 
   function setProgress(p) { progress = clamp(p, 0, 1); draw(); updateUI(); }
@@ -354,7 +355,9 @@
   [$('#contact'), $('.footer')].forEach((n) => { if (n) waIO.observe(n); });
   function onScroll() {
     const y = scrollY;
-    const heroEnd = hero.offsetTop + hero.offsetHeight - innerHeight * (root.classList.contains('reduced') ? 0.3 : 1);
+    // header and contact bar stay away until the descent through the floors is over
+    const intro = $('#views') || hero;
+    const heroEnd = intro.offsetTop + intro.offsetHeight - innerHeight * (root.classList.contains('reduced') ? 0.3 : 1);
     const past = y > heroEnd;
     if (header) header.classList.toggle('is-visible', past);
     const menuOpen = !!menuBtn && menuBtn.getAttribute('aria-expanded') === 'true';
@@ -438,62 +441,109 @@
   });
 
   /* =======================================================
-     1 · Manifesto — the morning image opens from ~85% to full width
+     1 · The descent — penthouse → 12 → 7 → 3 through the slabs
      ======================================================= */
-  section("1 · Manifesto", () => {
-  const mFig = $('#manifestoFig'), mFrame = $('.manifesto__frame');
-  if (mFig) {
-    whileVisible(mFig, () => {
-      const r = mFig.getBoundingClientRect(), vh = innerHeight;
-      const p = clamp((vh - r.top) / (vh * 0.95), 0, 1);
-      const e = 1 - Math.pow(1 - p, 2);
-      const max = desktopMQ.matches ? 7.5 : 6;
-      mFrame.style.setProperty('--inset', `${(max * (1 - e)).toFixed(2)}%`);
-      mFrame.style.setProperty('--s', (1.08 - 0.08 * e).toFixed(4));
-    });
-  } else if (mFrame) { mFrame.style.setProperty('--inset', '0%'); mFrame.style.setProperty('--s', '1'); }
-  });
+  section("1 · The descent", () => {
+  const sec = $('#views'), stage = $('#descentStage');
+  if (!sec || !stage) return;
+  const panels = $$('.dpanel', stage), slabs = $$('.dslab', stage);
+  const texs = slabs.map((s) => $('.dslab__tex', s));
+  const caps = $$('.descent__cap', stage), title = $('.descent__title', stage), shade = $('.descent__shade', stage);
+  const btns = $$('.lift__btns button', stage), liftNow = $('#liftNow'), liftFill = $('#liftFill');
+  const FLOOR = ['פנטהאוז', '12', '7', '3'];
 
-  /* =======================================================
-     3 · The view from your floor (3 / 7 / 12)
-     ======================================================= */
-  section("3 · The view from your floor (3 / 7 / 12)", () => {
-  const viewImgs = $$('.views__img');
-  const viewBtns = $$('.views__floors button');
-  const viewCap = $('#viewsCap');
-  const VIEW_CAPS = [
-    'בגובה הצמרות: גגות הרעפים של הפיתוח, הדקלים, והים שמציץ ביניהם.',
-    'מעל הגגות: רצועת החוף נפתחת, והמפרץ נמשך עד ההרים.',
-    'מעל הכול: אופק פתוח, המפרץ כולו, והשמש נוגעת במים.',
-  ];
-  let viewIdx = 0;
+  // the first panel is the hero's own last frame (same file, already in cache) → no visible cut
+  const home = $('#descentHome');
+  const key = innerWidth / innerHeight < 1 ? 'm' : 'd';
+  fetch('frames/manifest.json').then((r) => r.json()).then((m) => {
+    const n = m.sets[key] && m.sets[key].count;
+    if (n && home) home.src = `frames/${key}/${String(n).padStart(4, '0')}.webp`;
+  }).catch(() => {});
   new IntersectionObserver(([en], obs) => {
     if (!en.isIntersecting) return;
-    viewImgs.forEach((im) => { if (im.dataset.src) { im.srcset = im.dataset.srcset; im.src = im.dataset.src; delete im.dataset.src; } });
+    $$('img[data-src]', stage).forEach((im) => { im.srcset = im.dataset.srcset; im.src = im.dataset.src; im.removeAttribute('data-src'); });
     obs.disconnect();
-  }, { rootMargin: '800px 0px' }).observe($('#views'));
-  function setView(i) {
-    if (i === viewIdx) return;
-    const up = i > viewIdx;
-    const next = viewImgs[i], prev = viewImgs[viewIdx];
-    next.style.transition = 'none';
-    next.style.setProperty('--from', up ? '-1.8%' : '1.8%');
-    next.offsetWidth; next.style.transition = '';
-    prev.classList.remove('is-active'); next.classList.add('is-active');
-    viewIdx = i;
-    viewBtns.forEach((b) => b.setAttribute('aria-checked', String(+b.dataset.i === i)));
-    $('.views__floors').style.setProperty('--k', String(2 - i));
-    viewCap.classList.add('is-swap');
-    setTimeout(() => { viewCap.textContent = VIEW_CAPS[i]; viewCap.classList.remove('is-swap'); }, 220);
+  }, { rootMargin: '1600px 0px' }).observe(sec);
+
+  // scroll timeline in "units": landing, descent, landing… (section is 100vh + 725vh tall)
+  const SEG = [['hold', .35], ['move', 1.6], ['hold', .65], ['move', 1.6], ['hold', .65], ['move', 1.6], ['hold', .8]];
+  const TOTAL = SEG.reduce((s, [, d]) => s + d, 0);
+  const LANDING_U = []; // scroll unit at the middle of each landing
+  { let u = 0, k = 0; SEG.forEach(([t, d]) => { if (t === 'hold') LANDING_U[k++] = k === 1 ? .12 : u + d * .45; u += d; }); }
+  const ease = (x) => (x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+  const camera = (u) => {           // → landing index as a float (0 … 3)
+    let acc = 0, k = 0;
+    for (const [t, d] of SEG) {
+      if (u <= acc + d) return t === 'hold' ? k : k + ease((u - acc) / d);
+      acc += d; if (t === 'move') k++;
+    }
+    return 3;
+  };
+
+  let H = 0, S = 0, STEP = 0;
+  const measure = () => { H = stage.clientHeight; S = slabs[0] ? slabs[0].offsetHeight : H * .62; STEP = H + S; };
+  measure(); addEventListener('resize', () => { measure(); render(curU); });
+  // hand-off: the moment the hero's stage would release, hide it — the identical frame is pinned beneath
+  const hero = $('#top');
+  const handOff = () => { if (hero) hero.classList.toggle('is-handed', scrollY >= sec.offsetTop - 1); };
+  addEventListener('scroll', handOff, { passive: true }); handOff();
+
+  let curU = 0, lastF = 0, dir = 1;
+  function render(u) {
+    curU = u;
+    const f = camera(u), y = f * STEP;
+    if (f !== lastF) dir = f > lastF ? 1 : -1;
+    lastF = f;
+    panels.forEach((p, k) => { p.style.transform = `translate3d(0, ${(k * STEP - y).toFixed(1)}px, 0)`; });
+    slabs.forEach((s, k) => {
+      const top = k * STEP + H - y;
+      s.style.transform = `translate3d(0, ${top.toFixed(1)}px, 0)`;
+      // the plaster texture travels ~12% faster than the rooms (subtle parallax)
+      texs[k].style.transform = `translate3d(0, ${((top - (H - S) / 2) * .12).toFixed(1)}px, 0)`;
+    });
+    const near = Math.round(f), atLanding = Math.abs(f - near) < .06;
+    // captions only while a floor view has landed
+    const vis = near >= 1 ? clamp(1 - Math.abs(f - near) / .18, 0, 1) : 0;
+    shade.style.opacity = vis.toFixed(3);
+    caps.forEach((c) => c.classList.toggle('is-on', vis > .55 && +c.dataset.k === near));
+    title.classList.toggle('is-on', vis > .55 && near === 1);
+    btns.forEach((b) => { const on = +b.dataset.k === near; b.classList.toggle('is-active', on); if (on) b.setAttribute('aria-current', 'true'); else b.removeAttribute('aria-current'); });
+    const target = dir > 0 ? Math.min(3, Math.floor(f + .001) + 1) : Math.max(0, Math.ceil(f - .001) - 1);
+    liftNow.textContent = atLanding ? (near === 0 ? 'פנטהאוז' : `קומה ${FLOOR[near]}`) : `⁦${dir > 0 ? '↓' : '↑'} ${FLOOR[target]}⁩`;
+    liftFill.parentElement.style.setProperty('--p', (f / 3).toFixed(4));
   }
-  viewBtns.forEach((b) => {
-    b.addEventListener('click', () => setView(+b.dataset.i));
+
+  const range = () => sec.offsetHeight - stage.clientHeight;
+  const unitsFromScroll = () => clamp((scrollY - sec.offsetTop) / range(), 0, 1) * TOTAL;
+  if (window.gsap && window.ScrollTrigger) {
+    gsap.registerPlugin(ScrollTrigger);
+    const proxy = { u: 0 };
+    gsap.to(proxy, {
+      u: TOTAL, ease: 'none',
+      scrollTrigger: { trigger: sec, start: 'top top', end: 'bottom bottom', scrub: 0.9, invalidateOnRefresh: true },
+      onUpdate: () => render(proxy.u),
+    });
+  } else {
+    let cur = 0;
+    const tick = () => { const t = unitsFromScroll(); cur += (t - cur) * 0.12; if (Math.abs(t - cur) < .0005) cur = t; if (cur !== curU) render(cur); requestAnimationFrame(tick); };
+    tick();
+  }
+  render(unitsFromScroll());
+
+  // elevator buttons: travel smoothly through the slabs to the landing
+  const goTo = (k) => window.scrollTo({ top: sec.offsetTop + (LANDING_U[k] / TOTAL) * range(), behavior: 'smooth' });
+  btns.forEach((b, i) => {
+    b.addEventListener('click', () => goTo(+b.dataset.k));
     b.addEventListener('keydown', (e) => {
-      const k = { ArrowUp: 1, ArrowLeft: 1, ArrowDown: -1, ArrowRight: -1 }[e.key];
-      if (k) { e.preventDefault(); const n = clamp(viewIdx + k, 0, 2); setView(n); viewBtns.find((x) => +x.dataset.i === n).focus(); }
+      const d = { ArrowDown: 1, ArrowLeft: 1, ArrowUp: -1, ArrowRight: -1 }[e.key];   // RTL row on phones: left = next floor down
+      if (!d) return;
+      e.preventDefault();
+      const n = clamp(i + d, 0, btns.length - 1);
+      btns[n].focus(); goTo(+btns[n].dataset.k);
     });
   });
   });
+
 
   /* =======================================================
      4 · Residences — image-led tabs; the plan lives in a dialog

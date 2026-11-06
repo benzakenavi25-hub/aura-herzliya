@@ -20,7 +20,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;1,6..96,400&family=Frank+Ruhl+Libre:wght@300;400&family=IBM+Plex+Sans+Hebrew:wght@300;400;500&display=swap">
 <link rel="preload" href="frames/manifest.json" as="fetch" crossorigin>
-<link rel="stylesheet" href="css/style.css?v=202611061501">
+<link rel="stylesheet" href="css/style.css?v=202611061533">
 <script>document.documentElement.classList.add('js');</script>
 </head>
 <body>
@@ -118,7 +118,7 @@
         <p class="chapter__text">טרוורטין חם, עצי זית ותאורה רכה — המרפסת היא חדר נוסף, רק פתוח.</p>
       </div>
 
-      <div class="chapter chapter--final" data-from="0.9" data-to="1.01" data-m="bottom">
+      <div class="chapter chapter--final" data-from="0.9" data-to="0.985" data-m="bottom">
         <p class="chapter__num">05 — הבית</p>
         <p class="chapter__en">Welcome home</p>
         <h2 class="chapter__title">ברוכים הבאים הביתה.</h2>
@@ -136,21 +136,53 @@
   </div>
 </section>
 
-<!-- ============ 1 · MANIFESTO (continues the blue hour) ============ -->
-<section class="manifesto" id="manifesto" aria-labelledby="manifesto-line">
-  <div class="wrap">
-    <h2 class="manifesto__line" id="manifesto-line" data-reveal-lines>
-      <span>יש בתים שרואים מהם את הים.</span>
-      <span>ויש בתים שחיים איתו.</span>
-    </h2>
-  </div>
-  <figure class="manifesto__fig" id="manifestoFig">
-    <div class="manifesto__frame">
-      <img src="img/new/L1-1024.webp" srcset="img/new/L1-640.webp 640w, img/new/L1-1024.webp 1024w, img/new/L1-1672.webp 1672w" sizes="100vw" alt="אישה בחלוק פשתן עם ספל קפה על מרפסת מעוגלת, שמש של בוקר מעל הים ועץ זית בעציץ ברונזה" loading="lazy" decoding="async" width="1672" height="941">
+<!-- ============ 1 · THE DESCENT — "the view from your floor" ============ -->
+<!-- Overlaps the last screen of the hero (sits beneath it) so the hero's final frame
+     continues straight into the first panel with no cut. -->
+<section class="descent" id="views" aria-labelledby="views-title">
+  <div class="descent__stage" id="descentStage">
+    <div class="descent__strip" id="descentStrip">
+      <div class="dpanel dpanel--home" data-k="0">
+        <img id="descentHome" src="frames/d/0254.webp" alt="" decoding="async" width="1920" height="1098">
+        <div class="dpanel__scrim" aria-hidden="true"></div>
+      </div>
+      <div class="dslab" aria-hidden="true"><div class="dslab__tex"></div></div>
+      <div class="dpanel" data-k="1">
+        <img data-src="img/new/V3-1024.webp" data-srcset="img/new/V3-640.webp 640w, img/new/V3-1024.webp 1024w, img/new/V3-1672.webp 1672w" sizes="100vw" alt="הנוף מקומה 12: אופק פתוח, המפרץ כולו ושקיעה מעל המים" decoding="async" width="1672" height="941">
+      </div>
+      <div class="dslab" aria-hidden="true"><div class="dslab__tex"></div></div>
+      <div class="dpanel" data-k="2">
+        <img data-src="img/new/V2-1024.webp" data-srcset="img/new/V2-640.webp 640w, img/new/V2-1024.webp 1024w, img/new/V2-1672.webp 1672w" sizes="100vw" alt="הנוף מקומה 7: הווילות מתחת, רצועת החוף הרחבה והמפרץ" decoding="async" width="1672" height="941">
+      </div>
+      <div class="dslab" aria-hidden="true"><div class="dslab__tex"></div></div>
+      <div class="dpanel" data-k="3">
+        <img data-src="img/new/V1-1024.webp" data-srcset="img/new/V1-640.webp 640w, img/new/V1-1024.webp 1024w, img/new/V1-1672.webp 1672w" sizes="100vw" alt="הנוף מקומה 3: גגות רעפים, דקלים ובוגנוויליה, והים מבצבץ מעליהם" decoding="async" width="1672" height="941">
+      </div>
     </div>
-    <figcaption class="wrap">07:00 · קומה 9, מרפסת מערבית</figcaption>
-  </figure>
+
+    <div class="descent__shade" aria-hidden="true"></div>
+    <div class="descent__copy" aria-live="polite">
+      <h2 class="descent__title" id="views-title">הנוף מהקומה שלכם</h2>
+      <p class="descent__cap" data-k="1"><b>קומה 12</b>מעל הכול: אופק פתוח, המפרץ כולו, והשמש נוגעת במים.</p>
+      <p class="descent__cap" data-k="2"><b>קומה 7</b>מעל הגגות: רצועת החוף נפתחת, והמפרץ נמשך עד ההרים.</p>
+      <p class="descent__cap" data-k="3"><b>קומה 3</b>בגובה הצמרות: גגות הרעפים, הדקלים, והים שמציץ ביניהם.</p>
+    </div>
+
+    <nav class="lift" id="lift" aria-label="מעבר בין קומות">
+      <p class="lift__now" id="liftNow" aria-hidden="true">פנטהאוז</p>
+      <div class="lift__body">
+        <div class="lift__btns">
+          <button type="button" data-k="0" aria-label="פנטהאוז">פנטהאוז</button>
+          <button type="button" data-k="1" aria-label="קומה 12">12</button>
+          <button type="button" data-k="2" aria-label="קומה 7">7</button>
+          <button type="button" data-k="3" aria-label="קומה 3">3</button>
+        </div>
+        <span class="lift__track" aria-hidden="true"><span id="liftFill"></span></span>
+      </div>
+    </nav>
+  </div>
 </section>
+
 
 <!-- ============ 2 · THE PROJECT ============ -->
 <section class="section project" id="project" aria-labelledby="project-title">
@@ -166,27 +198,6 @@
       <img src="img/05-finished-street-1024.webp" srcset="img/05-finished-street-640.webp 640w, img/05-finished-street-1024.webp 1024w, img/05-finished-street-1672.webp 1672w" sizes="(min-width: 900px) 58vw, 100vw" alt="חזית מגדל AURA מהרחוב בשעת שקיעה, עם דקלים, לובי מואר ומרפסות זכוכית" loading="lazy" decoding="async" width="1672" height="941">
       <figcaption>חזית הבניין מרחוב השקמה · הדמיה</figcaption>
     </figure>
-  </div>
-</section>
-
-<!-- ============ 3 · THE VIEW FROM YOUR FLOOR ============ -->
-<section class="views" id="views" aria-labelledby="views-title">
-  <div class="views__stage">
-    <img class="views__img is-active" data-i="0" src="img/new/V1-1024.webp" srcset="img/new/V1-640.webp 640w, img/new/V1-1024.webp 1024w, img/new/V1-1672.webp 1672w" sizes="100vw" alt="הנוף מקומה 3: גגות רעפים, דקלים ובוגנוויליה, והים מבצבץ מעליהם" loading="lazy" decoding="async" width="1672" height="941">
-    <img class="views__img" data-i="1" data-src="img/new/V2-1024.webp" data-srcset="img/new/V2-640.webp 640w, img/new/V2-1024.webp 1024w, img/new/V2-1672.webp 1672w" sizes="100vw" alt="הנוף מקומה 7: הווילות מתחת, רצועת החוף הרחבה והמפרץ" decoding="async" width="1672" height="941">
-    <img class="views__img" data-i="2" data-src="img/new/V3-1024.webp" data-srcset="img/new/V3-640.webp 640w, img/new/V3-1024.webp 1024w, img/new/V3-1672.webp 1672w" sizes="100vw" alt="הנוף מקומה 12: אופק פתוח, המפרץ כולו ושקיעה מעל המים" decoding="async" width="1672" height="941">
-    <div class="views__shade" aria-hidden="true"></div>
-    <div class="views__ui">
-      <div class="views__copy">
-        <h2 class="views__title" id="views-title">הנוף מהקומה שלכם</h2>
-        <p class="views__cap" id="viewsCap" aria-live="polite">בגובה הצמרות: גגות הרעפים של הפיתוח, הדקלים, והים שמציץ ביניהם.</p>
-      </div>
-      <div class="views__floors" role="radiogroup" aria-label="בחירת קומה לתצוגת הנוף">
-        <button role="radio" aria-checked="false" data-i="2"><span class="views__n">12</span><span class="views__l">קומה</span></button>
-        <button role="radio" aria-checked="false" data-i="1"><span class="views__n">7</span><span class="views__l">קומה</span></button>
-        <button role="radio" aria-checked="true" data-i="0"><span class="views__n">3</span><span class="views__l">קומה</span></button>
-      </div>
-    </div>
   </div>
 </section>
 
@@ -595,6 +606,6 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
-<script src="js/main.js?v=202611061501" defer></script>
+<script src="js/main.js?v=202611061533" defer></script>
 </body>
 </html>
