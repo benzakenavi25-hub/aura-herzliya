@@ -11,6 +11,18 @@
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (reduced) root.classList.add('reduced');
 
+  // Each section initialises inside its own boundary: if one part of the page is
+  // missing or throws (e.g. a cached older index.html with newer JS), the rest still runs.
+  function section(name, fn) {
+    try { fn(); } catch (err) { console.error(`[AURA] "${name}" failed to initialise:`, err); }
+  }
+  // shared helpers used by more than one section
+  function setApt(value) {
+    const r = $('input[name="apt"]').find((x) => x.value === value);
+    if (r) r.checked = true;
+  }
+  function openDlg(d) { d.showModal(); root.classList.add('menu-open'); }
+
   /* =======================================================
      HERO — scroll-scrubbed image sequence
      ======================================================= */
@@ -307,6 +319,7 @@
     }
   }
 
+  section('hero', () => {
   if (!reduced) {
     document.body.classList.add('is-loading');
     sizeCanvas();
@@ -317,12 +330,14 @@
       initScrub();
     }).catch(() => { root.classList.add('reduced'); hideLoader(); });
   } else {
-    loader.remove();
+    if (loader) loader.remove();
   }
+  });
 
   /* =======================================================
      Header / floating contact / mobile nav
      ======================================================= */
+  section("Header / floating contact / mobile nav", () => {
   const header = $('#header');
   const wa = $('.wa');
   const menuBtn = $('#menuBtn');
@@ -335,21 +350,21 @@
   const mbar = $('#mbar');
   const waIO = new IntersectionObserver((entries) => {
     entries.forEach((en) => { en.target._inView = en.isIntersecting; });
-    waBlocked = [$('#contact'), $('.footer')].some((n) => n._inView);
+    waBlocked = [$('#contact'), $('.footer')].some((n) => n && n._inView);
     onScroll();
   }, { rootMargin: '0px 0px -10% 0px' });
-  waIO.observe($('#contact')); waIO.observe($('.footer'));
+  [$('#contact'), $('.footer')].forEach((n) => { if (n) waIO.observe(n); });
   function onScroll() {
     const y = scrollY;
     const heroEnd = hero.offsetTop + hero.offsetHeight - innerHeight * (reduced ? 0.3 : 1);
     const past = y > heroEnd;
-    header.classList.toggle('is-visible', past);
-    const menuOpen = menuBtn.getAttribute('aria-expanded') === 'true';
-    header.classList.toggle('is-hidden-by-scroll', past && y > lastY + 4 && y > heroEnd + 400 && !menuOpen);
-    if (y < lastY - 4) header.classList.remove('is-hidden-by-scroll');
+    if (header) header.classList.toggle('is-visible', past);
+    const menuOpen = !!menuBtn && menuBtn.getAttribute('aria-expanded') === 'true';
+    if (header) header.classList.toggle('is-hidden-by-scroll', past && y > lastY + 4 && y > heroEnd + 400 && !menuOpen);
+    if (header && y < lastY - 4) header.classList.remove('is-hidden-by-scroll');
     // desktop: floating pill · phones: slim bottom bar (CSS hides the other one)
-    wa.classList.toggle('is-visible', past && !waBlocked);
-    mbar.classList.toggle('is-visible', past && !waBlocked);
+    if (wa) wa.classList.toggle('is-visible', past && !waBlocked);
+    if (mbar) mbar.classList.toggle('is-visible', past && !waBlocked);
     lastY = y;
   }
   addEventListener('scroll', onScroll, { passive: true });
@@ -367,10 +382,10 @@
     if (open && viaKeyboard) setTimeout(() => $('.mnav__links a', mnav).focus({ preventScroll: true }), 60);
     else if (!open && returnFocus) menuBtn.focus();
   }
-  menuBtn.addEventListener('click', (e) => setMenu(menuBtn.getAttribute('aria-expanded') !== 'true', false, e.detail === 0));
-  $$('a', mnav).forEach((a) => a.addEventListener('click', () => setMenu(false)));
-  addEventListener('keydown', (e) => { if (e.key === 'Escape' && mnav.classList.contains('is-open')) setMenu(false, true); });
-  matchMedia('(min-width: 961px)').addEventListener('change', (m) => { if (m.matches) setMenu(false); });
+  if (menuBtn && mnav) menuBtn.addEventListener('click', (e) => setMenu(menuBtn.getAttribute('aria-expanded') !== 'true', false, e.detail === 0));
+  if (mnav) $$('a', mnav).forEach((a) => a.addEventListener('click', () => setMenu(false)));
+  addEventListener('keydown', (e) => { if (e.key === 'Escape' && mnav && mnav.classList.contains('is-open')) setMenu(false, true); });
+  matchMedia('(min-width: 961px)').addEventListener('change', (m) => { if (m.matches && mnav) setMenu(false); });
 
   // Anchor links: account for the fixed header; jumping into the page reveals the header
   $$('a[href^="#"]').forEach((a) => a.addEventListener('click', (e) => {
@@ -382,7 +397,7 @@
     window.scrollTo({ top, behavior: reduced ? 'auto' : 'smooth' });
     history.replaceState(null, '', id);
   }));
-
+  });
 
   // Active section in nav
   const navLinks = $$('.header__nav a');
@@ -411,6 +426,7 @@
   /* =======================================================
      Reveals
      ======================================================= */
+  section("Reveals", () => {
   $$('[data-reveal-lines] > span').forEach((s) => { const inner = document.createElement('span'); inner.innerHTML = s.innerHTML; s.innerHTML = ''; s.appendChild(inner); });
   const io = new IntersectionObserver((entries) => {
     entries.forEach((en) => {
@@ -421,10 +437,12 @@
   }, { rootMargin: '0px 0px -8% 0px', threshold: 0 });
   $$('[data-reveal], [data-reveal-lines], .img-reveal').forEach((el) => io.observe(el));
   $$('.team__list > [data-reveal]').forEach((el, n) => el.style.setProperty('--d', `${n * 70}ms`));
+  });
 
   /* =======================================================
      1 · Manifesto — the morning image opens from ~85% to full width
      ======================================================= */
+  section("1 · Manifesto", () => {
   const mFig = $('#manifestoFig'), mFrame = $('.manifesto__frame');
   if (mFig && !reduced) {
     whileVisible(mFig, () => {
@@ -436,10 +454,12 @@
       mFrame.style.setProperty('--s', (1.08 - 0.08 * e).toFixed(4));
     });
   } else if (mFrame) { mFrame.style.setProperty('--inset', '0%'); mFrame.style.setProperty('--s', '1'); }
+  });
 
   /* =======================================================
      3 · The view from your floor (3 / 7 / 12)
      ======================================================= */
+  section("3 · The view from your floor (3 / 7 / 12)", () => {
   const viewImgs = $$('.views__img');
   const viewBtns = $$('.views__floors button');
   const viewCap = $('#viewsCap');
@@ -475,10 +495,12 @@
       if (k) { e.preventDefault(); const n = clamp(viewIdx + k, 0, 2); setView(n); viewBtns.find((x) => +x.dataset.i === n).focus(); }
     });
   });
+  });
 
   /* =======================================================
      4 · Residences — image-led tabs; the plan lives in a dialog
      ======================================================= */
+  section("4 · Residences", () => {
   const R = (x, y, w, h, label, area) => ({ x, y, w, h, label, area });
   const srcs = (code, base = 'img/new/') => ({ src: `${base}${code}-1024.webp`, srcset: `${base}${code}-640.webp 640w, ${base}${code}-1024.webp 1024w, ${base}${code}-1672.webp 1672w` });
   const PLANS = [
@@ -651,20 +673,23 @@
     planSvg.setAttribute('viewBox', `${minX} ${minY} ${maxX - minX} ${maxY - minY}`);
   }
   $('#planBtn').addEventListener('click', () => { renderPlan(PLANS[current]); openDlg(planDlg); });
+  });
 
   /* =======================================================
      Dialogs (plan, brochure)
      ======================================================= */
-  function openDlg(d) { d.showModal(); root.classList.add('menu-open'); }
+  section("Dialogs (plan, brochure)", () => {
   $$('dialog.sheet').forEach((d) => {
     d.addEventListener('close', () => root.classList.remove('menu-open'));
     d.addEventListener('click', (e) => { if (e.target === d) d.close(); });
     $$('[data-close]', d).forEach((b) => b.addEventListener('click', () => d.close()));
   });
+  });
 
   /* =======================================================
      5 · Floor finder (demo availability)
      ======================================================= */
+  section("5 · Floor finder (demo availability)", () => {
   const FLOORS = [
     { n: 1, y: [714, 858], type: 'דירת גן', size: '168 מ״ר + גינה 85 מ״ר', orient: 'מערב · דרום', s: 'free', apt: 'גן / מיני פנטהאוז' },
     { n: 2, y: [652, 714], type: '4 חדרים', size: '118 מ״ר', orient: 'מערב · צפון', s: 'free', apt: '4 חדרים' },
@@ -729,11 +754,13 @@
     $('#formFloorText').textContent = `התעניינות: קומה ${f.n === 1 ? 'קרקע' : f.n} · ${f.type}`;
     $('#formFloor').hidden = false;
   });
-  $('#formFloorClear').addEventListener('click', () => { $('#formFloor').hidden = true; $('#f-floor').value = ''; });
+  $('#formFloorClear')?.addEventListener('click', () => { $('#formFloor').hidden = true; $('#f-floor').value = ''; });
+  });
 
   /* =======================================================
      7 · The building — sticky image follows the text
      ======================================================= */
+  section("7 · The building", () => {
   const bImgs = $$('.building__img');
   const amenities = $$('.amenity');
   const amIO = new IntersectionObserver((entries) => {
@@ -746,10 +773,12 @@
   }, { rootMargin: '-45% 0px -45% 0px' });
   amenities.forEach((a) => amIO.observe(a));
   amenities[0].classList.add('is-active');
+  });
 
   /* =======================================================
      8 · A day at AURA — pinned horizontal (desktop), snap carousel (phones)
      ======================================================= */
+  section("8 · A day at AURA", () => {
   const day = $('#day'), track = $('#dayTrack'), dayVP = $('.day__viewport');
   const cards = $$('.day__card', track);
   const HOURS = cards.map((c) => +c.dataset.t);
@@ -780,10 +809,12 @@
   }, { passive: true });
   desktopMQ.addEventListener('change', () => { track.style.transform = ''; requestJobs(); });
   setDay(0);
+  });
 
   /* =======================================================
      9 · Location — Leaflet + CARTO light, loaded only when near
      ======================================================= */
+  section("9 · Location", () => {
   const mapEl = $('#map');
   const AURA_LL = [32.1668, 34.8072];
   const PLACES = {
@@ -807,7 +838,7 @@
     }).addTo(map);
     // until tiles arrive the static map shows through; if none arrive, it stays
     let tilesOk = 0;
-    base.on('tileload', () => { if (!tilesOk++) mapEl.classList.add('is-ready'); });
+    if (mapEl) base.on('tileload', () => { if (!tilesOk++) mapEl.classList.add('is-ready'); });
     setTimeout(() => { if (!tilesOk) mapEl.classList.add('is-failed'); }, 8000);
     L.tileLayer(ESRI + 'World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}', { maxZoom: 16, pane: 'overlayPane' }).addTo(map);
     L.marker(AURA_LL, { icon: L.divIcon({ className: 'aura-pin', html: '<i></i><b>AURA</b>', iconSize: [16, 16] }), keyboard: false, title: 'AURA' }).addTo(map);
@@ -837,14 +868,12 @@
     const off = () => { li.classList.remove('is-hot'); const p = pins[k]; if (p) { p.getElement()?.classList.remove('is-hot'); p.closeTooltip(); } };
     li.addEventListener('pointerenter', on); li.addEventListener('pointerleave', off);
   });
+  });
 
   /* =======================================================
      Forms (demo only — nothing is sent)
      ======================================================= */
-  function setApt(value) {
-    const r = $$('input[name="apt"]').find((x) => x.value === value);
-    if (r) r.checked = true;
-  }
+  section("Forms (demo only", () => {
   const normPhone = (v) => v.replace(/[\s\-().]/g, '').replace(/^\+?972/, '0');
   const RULES = {
     name: (v) => v.trim().length < 2 ? 'נא להזין שם מלא' : (v.trim().split(/\s+/).length < 2 ? 'נא להזין שם פרטי ושם משפחה' : ''),
@@ -881,7 +910,9 @@
     form.hidden = true;
     const s = $('#success'); s.hidden = false; s.focus();
   });
-  const brDlg = $('#brochureDlg'), brForm = $('#brForm');
-  $('#brochureBtn').addEventListener('click', () => openDlg(brDlg));
-  wireForm(brForm, ['name', 'phone'], () => { brForm.hidden = true; const s = $('#brSuccess'); s.hidden = false; s.focus(); });
+  const brDlg = $('#brochureDlg'), brForm = $('#brForm'), brBtn = $('#brochureBtn');
+  if (brBtn && brDlg) brBtn.addEventListener('click', () => openDlg(brDlg));
+  if (brForm) wireForm(brForm, ['name', 'phone'], () => { brForm.hidden = true; const s = $('#brSuccess'); s.hidden = false; s.focus(); });
+  });
+
 })();
