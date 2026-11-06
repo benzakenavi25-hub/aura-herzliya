@@ -1,0 +1,10 @@
+﻿import { chromium } from 'playwright';
+const b = await chromium.launch();
+const p = await b.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1.5 });
+await p.goto('http://localhost:5173/', { waitUntil: 'load' }); await p.waitForSelector('#loader', { state: 'detached' });
+await p.evaluate(() => document.getElementById('map').scrollIntoView({ block: 'center' }));
+await p.waitForFunction(() => document.getElementById('map').classList.contains('is-ready'), null, { timeout: 20000 });
+await p.waitForTimeout(2500);
+await p.addStyleTag({ content: '.leaflet-control-zoom{display:none}' });
+await p.locator('#map').screenshot({ path: 'C:/Users/B4CF~1/AppData/Local/Temp/claude/5d22664aff4202dc/561a0b0a-e77b-4826-87fc-f0a3314315f4/scratchpad/map-static.png' });
+await b.close();

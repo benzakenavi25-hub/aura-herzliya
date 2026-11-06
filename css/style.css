@@ -635,8 +635,8 @@ figcaption { font-size: 13px; color: var(--ink-2); margin-top: 14px; }
 .map__activate { position: absolute; z-index: 500; inset: auto 50% 18px auto; transform: translateX(50%); padding: 10px 18px; background: rgba(28,26,23,.82); color: var(--stone); font-size: 13px; border-radius: 40px; display: none; }
 .map.is-locked .map__activate { display: block; }
 .map__note { margin-top: 10px; font-size: 12px; color: var(--ink-2); }
-.aura-pin { display: grid; place-items: center; }
-.aura-pin i { width: 16px; height: 16px; border-radius: 50%; background: var(--ink); box-shadow: 0 0 0 6px rgba(154,116,72,.28); }
+.aura-pin { display: grid; place-items: center; overflow: visible; }
+.aura-pin i { display: block; width: 16px; height: 16px; border-radius: 50%; background: var(--ink); box-shadow: 0 0 0 6px rgba(154,116,72,.28); }
 .aura-pin b { position: absolute; top: -30px; font-family: var(--f-en); font-weight: 400; font-size: 15px; letter-spacing: .2em; color: var(--ink); background: var(--stone); padding: 2px 8px 2px 10px; white-space: nowrap; }
 .place-pin i { display: block; width: 10px; height: 10px; border-radius: 50%; background: var(--stone); border: 2px solid var(--bronze-ink); transition: transform .2s var(--ease-out), background .2s ease; }
 .place-pin.is-hot i { transform: scale(1.5); background: var(--bronze-ink); }
@@ -805,6 +805,148 @@ figcaption { font-size: 13px; color: var(--ink-2); margin-top: 14px; }
 .legal h2 { font-family: var(--f-he-display); font-weight: 400; font-size: 24px; margin: 40px 0 12px; }
 .legal p, .legal li { color: var(--ink-2); margin-bottom: 12px; }
 .legal ul { list-style: disc; padding-inline-start: 22px; }
+
+/* =========================================================
+   POLISH PASS — rhythm, readability, contact, mobile bar
+   ========================================================= */
+
+/* --- rhythm: ~25% tighter on desktop, ~40% on phones --- */
+:root { --sec: clamp(62px, 10.5vw, 158px); }
+.manifesto { padding-top: clamp(72px, 15vh, 180px); }
+.manifesto__fig { margin-top: clamp(48px, 10vh, 135px); }
+.manifesto + .project { padding-top: clamp(58px, 9vw, 135px); }
+.project { padding-bottom: clamp(58px, 9vw, 135px); }
+.floors { padding-block: clamp(58px, 8.25vw, 128px); }
+.materials { padding-block: clamp(66px, 9.75vw, 150px); }
+.materials__grid { margin-top: clamp(34px, 6vw, 90px); }
+.mat--2 { margin-top: clamp(48px, 12vh, 150px); }
+.mat--3 { margin-top: clamp(36px, 7.5vh, 90px); }
+.mat--4 { margin-top: clamp(24px, 4.5vh, 60px); }
+.acc--spec { margin-top: clamp(48px, 7.5vw, 105px); }
+.building__text { padding-block: clamp(66px, 12vh, 135px); }
+.building__title { margin-bottom: 5vh; }
+@media (min-width: 901px) { .amenity { min-height: 52vh; } .amenity--text { min-height: 34vh; } .day { height: 440vh; } }
+.location__fig { margin-top: clamp(40px, 6vw, 90px); }
+.team { padding-block: clamp(66px, 9.75vw, 150px); }
+.faq { padding-block: clamp(24px, 3.75vw, 60px) clamp(66px, 9.75vw, 142px); }
+@media (max-width: 900px) {
+  .building__text { padding-block: 58px; }
+  .building__title { margin-bottom: 28px; }
+  .amenity { padding-bottom: 40px; }
+  .day { padding-block: 58px 48px; }
+  .mat--2 { margin-top: 34px; }
+  .mat--3 { margin-top: 72px; }
+  .mat--4 { margin-top: 34px; }
+}
+
+/* --- reveals: shorter, start sooner (trigger in JS at ~92% of the viewport) --- */
+.js [data-reveal] { transform: translateY(16px); transition: opacity .8s var(--ease) var(--d, 0ms), transform .9s var(--ease) var(--d, 0ms); }
+.js [data-reveal-lines] > span > span { transition-duration: .95s; }
+.js [data-reveal-lines].is-in > span:nth-child(2) > span { transition-delay: .05s; }
+.js [data-reveal-lines].is-in > span:nth-child(3) > span { transition-delay: .1s; }
+.js .img-reveal { clip-path: inset(8% 0 0 0); transition-duration: .95s; }
+.js .img-reveal img { transform: scale(1.06); transition-duration: 1.2s; }
+
+/* --- readability: body ≥16/17px, secondary ≥15px, AA contrast on stone + lime --- */
+:root { --ink-2: #5A534A; }   /* ≥5.8:1 on #E8E0D3, ≥6.4:1 on #F3EEE6 */
+body { font-size: 16px; }
+@media (min-width: 761px) { body { font-size: 17px; } }
+figcaption, .map__note, .team__demo, .plan__note, .floors__demo { font-size: 15px; }
+.places li { font-size: 17px; }
+.places__d, .floors__list .sz, .res__facts dt, .floors__dl dt { font-size: 15px; }
+.floors__list button, .floors__dl div, .res__facts dd { font-size: 16px; }
+.floors__hint, .floors__legend, .status { font-size: 15px; }
+.acc__body { font-size: 17px; }
+.acc__demo { font-size: 13px; }
+.mat figcaption, .spec-cols li { font-size: 16px; }
+.views__cap { font-size: 16px; }
+.contact__office { font-size: 16px; }
+.check, .field--choice legend { font-size: 15px; }
+.form__demo { font-size: 13px; color: rgba(243,238,230,.78); }
+.team__quote footer { font-size: 15px; }
+@media (max-width: 900px) { .mat--2 figcaption, .mat--3 figcaption { font-size: 15px; } }
+
+/* --- team: one quiet line under the quote --- */
+.team__line { margin-top: clamp(36px, 5vw, 64px); padding-top: 22px; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 10px 0; color: var(--ink-2); font-size: 16px; }
+.team__line span + span::before { content: "·"; margin-inline: 16px; color: var(--bronze); }
+.team__line b { color: var(--ink); font-weight: 400; margin-inline-end: 4px; }
+@media (max-width: 760px) {
+  .team__line { display: grid; gap: 8px; }
+  .team__line span + span::before { content: none; }
+}
+
+/* --- residences: the interior image leads (~60% width, bleeds to the edge) --- */
+@media (min-width: 901px) {
+  .res__panel { grid-template-columns: 1.55fr 1fr; align-items: start; gap: clamp(36px, 4vw, 72px); }
+  .res__media { margin-inline-start: calc(-1 * var(--gutter)); }
+  .res__img { aspect-ratio: 16 / 11; }
+  .res__info { padding-top: 12px; }
+}
+
+/* --- contact: lighter veil, form in a panel; the lit tower reads beside it --- */
+.contact { padding-block: 0; }
+.contact__bg::after { background:
+  linear-gradient(to left, rgba(14,18,26,.62) 0%, rgba(14,18,26,.38) 42%, rgba(14,18,26,.08) 72%),
+  linear-gradient(to top, rgba(14,18,26,.45) 0%, rgba(14,18,26,0) 30%); }
+.contact__bg img { object-position: 100% 45%; }
+.contact__grid { display: block; padding-block: clamp(72px, 9vw, 130px); }
+.contact__panel {
+  width: min(560px, 44vw); display: flex; flex-direction: column;
+  padding: clamp(28px, 3vw, 48px); background: rgba(16, 20, 28, .74);
+  -webkit-backdrop-filter: blur(14px) saturate(1.1); backdrop-filter: blur(14px) saturate(1.1);
+  border: 1px solid rgba(243,238,230,.1);
+}
+.contact__intro { display: contents; }
+.contact__intro .eyebrow { order: 1; }
+.contact__intro .display { order: 2; font-size: clamp(34px, 3.4vw, 54px); }
+.contact__intro .lead { order: 3; margin-top: 18px; font-size: 17px; }
+.contact__formwrap { order: 4; margin-top: 28px; }
+#brochureBtn { order: 5; align-self: flex-start; margin-top: 32px; }
+.contact__office { order: 6; margin-top: 28px; }
+@media (max-width: 900px) {
+  /* phones: the tower is a full image above the form, the form sits on dusk */
+  .contact__bg { position: relative; z-index: 0; height: 58svh; min-height: 360px; }
+  .contact__bg img { object-position: 46% 40%; }
+  .contact__bg::after { background: linear-gradient(to bottom, rgba(20,26,36,0) 55%, var(--dusk) 100%); }
+  .contact__grid { padding-block: 8px 64px; margin-top: -72px; position: relative; }
+  .contact__panel { width: auto; padding: 0; background: none; border: 0; -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+
+/* --- hero: rooftop chapter gets its own soft shade --- */
+.chapter--scrim { isolation: isolate; }
+.chapter--scrim::before {
+  content: ""; position: absolute; z-index: -1; inset: -90px -110px -70px -110px; pointer-events: none;
+  background: radial-gradient(closest-side, rgba(14,18,26,.72), rgba(14,18,26,.45) 55%, rgba(14,18,26,0));
+}
+@media (max-width: 760px) {
+  .chapter--scrim::before { inset: -110px calc(-1 * var(--gutter)) calc(-40px - var(--safe-b)); background: linear-gradient(to top, rgba(14,18,26,.84) 35%, rgba(14,18,26,0)); }
+}
+
+/* --- map: static image behind the live map, and as the fallback --- */
+#map { background: #EEE8DD url("../img/map-static.webp") center / cover no-repeat; }
+#map.is-ready { background-image: none; }
+#map.is-failed .leaflet-pane, #map.is-failed .leaflet-control-container { display: none; }
+#map.is-failed::after { content: "תצוגת מפה סטטית"; position: absolute; inset: auto auto 10px 10px; font-size: 12px; background: rgba(243,238,230,.9); padding: 2px 8px; }
+
+/* --- mobile: slim bottom bar replaces the floating pill --- */
+.mbar { display: none; }
+@media (max-width: 760px) {
+  .wa { display: none; }
+  .mbar {
+    position: fixed; z-index: 80; inset: auto 0 0 0; display: grid; grid-template-columns: 1fr auto;
+    padding-bottom: var(--safe-b); background: var(--ink); color: var(--stone);
+    box-shadow: 0 -8px 24px rgba(20,26,36,.18);
+    transform: translateY(100%); transition: transform .35s var(--ease-out);
+  }
+  .mbar.is-visible { transform: none; }
+  .mbar a { display: flex; align-items: center; justify-content: center; gap: 10px; height: 54px; text-decoration: none; font-size: 15px; font-weight: 400; transition: background .15s ease; }
+  .mbar a:active { background: rgba(243,238,230,.08); }
+  .mbar__wa { padding-inline: 20px; border-inline-start: 1px solid rgba(243,238,230,.18); }
+  .mbar svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.4; }
+  .mbar .wa__phone { fill: currentColor; stroke: none; }
+  html.menu-open .mbar { transform: translateY(100%); }
+  .footer { padding-bottom: calc(40px + var(--safe-b)); }
+}
 
 /* ---------- press feedback (any pointer) ---------- */
 .btn:active:not(:disabled), .header__cta:active { transform: scale(.97); }

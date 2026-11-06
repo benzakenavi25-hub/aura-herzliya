@@ -105,7 +105,7 @@
         <p class="chapter__text">שתים־עשרה קומות של מגורים, ומרפסות מעוגלות שפונות אל המערב.</p>
       </div>
 
-      <div class="chapter" data-from="0.62" data-to="0.72" data-m="bottom">
+      <div class="chapter chapter--scrim" data-from="0.62" data-to="0.72" data-m="bottom">
         <p class="chapter__num">04 — הגג</p>
         <p class="chapter__en chapter__en--sm">Above everything</p>
         <h2 class="chapter__title">הקומה שבה השמיים מתחילים.</h2>
@@ -353,16 +353,16 @@
     <div class="day__viewport">
       <ol class="day__track" id="dayTrack">
         <li class="day__card" data-t="7">
-          <img src="img/new/L1-1024.webp" srcset="img/new/L1-640.webp 640w, img/new/L1-1024.webp 1024w, img/new/L1-1672.webp 1672w" sizes="(min-width: 900px) 62vw, 86vw" alt="קפה של בוקר על המרפסת מול הים" loading="lazy" decoding="async" width="1672" height="941">
-          <p class="day__cap"><span class="day__t">07:00</span>הקפה הראשון, כשהים עוד שקט.</p>
+          <img src="img/new/P2-1024.webp" srcset="img/new/P2-640.webp 640w, img/new/P2-1024.webp 1024w, img/new/P2-1672.webp 1672w" sizes="(min-width: 900px) 62vw, 86vw" alt="מטבח מואר בבוקר: אי שיש, ארונות אלון ושולחן ערוך מול חלון לים" loading="lazy" decoding="async" width="1672" height="941">
+          <p class="day__cap"><span class="day__t">07:00</span>בוקר במטבח, והים כבר בחלון.</p>
         </li>
         <li class="day__card" data-t="9.5">
           <img src="img/new/L2-1024.webp" srcset="img/new/L2-640.webp 640w, img/new/L2-1024.webp 1024w, img/new/L2-1672.webp 1672w" sizes="(min-width: 900px) 62vw, 86vw" alt="זוג הולך יחף לאורך קו המים בחוף רחב, צוק אבן חול ודקלים ברקע" loading="lazy" decoding="async" width="1672" height="941">
           <p class="day__cap"><span class="day__t">09:30</span>ארבע דקות הליכה, והחול עדיין קריר.</p>
         </li>
         <li class="day__card" data-t="16">
-          <img src="img/new/A2-1024.webp" srcset="img/new/A2-640.webp 640w, img/new/A2-1024.webp 1024w, img/new/A2-1672.webp 1672w" sizes="(min-width: 900px) 62vw, 86vw" alt="הספא של הבניין: בריכה מקורה ומיטות מנוחה באור חם" loading="lazy" decoding="async" width="1672" height="941">
-          <p class="day__cap"><span class="day__t">16:00</span>שעה בספא. האור נשאר בחוץ.</p>
+          <img src="img/new/P5-1024.webp" srcset="img/new/P5-640.webp 640w, img/new/P5-1024.webp 1024w, img/new/P5-1672.webp 1672w" sizes="(min-width: 900px) 62vw, 86vw" alt="סלון דירת גן נפתח אל גינה עם עצי זית ולבנדר באור אחר הצהריים" loading="lazy" decoding="async" width="1672" height="941">
+          <p class="day__cap"><span class="day__t">16:00</span>צל של זית בגינה, ואור אחר הצהריים.</p>
         </li>
         <li class="day__card" data-t="19">
           <img src="img/new/L3-1024.webp" srcset="img/new/L3-640.webp 640w, img/new/L3-1024.webp 1024w, img/new/L3-1672.webp 1672w" sizes="(min-width: 900px) 62vw, 86vw" alt="חברים סביב שולחן ארוחת ערב מתחת לפרגולת ברונזה על הגג, נרות ובריכה מוארת" loading="lazy" decoding="async" width="1672" height="941">
@@ -417,12 +417,12 @@
       <footer>נועה ברק, אדריכלית ראשית</footer>
     </blockquote>
     <h2 class="sr-only" id="team-title">הצוות</h2>
-    <dl class="team__list">
-      <div data-reveal><dt>אדריכלות</dt><dd><b>ברק · לוין אדריכלים</b>תכנון הבניין, החזיתות והמרפסות המעוגלות.</dd></div>
-      <div data-reveal><dt>עיצוב פנים</dt><dd><b>אטלייה מאיה שחר</b>הלובי, השטחים המשותפים ומפרט הדירות.</dd></div>
-      <div data-reveal><dt>אדריכלות נוף</dt><dd><b>מרום נוף</b>גן הזיתים וחצרות דירות הגן.</dd></div>
-      <div data-reveal><dt>יזמות ובנייה</dt><dd><b>סלע ים יזמות</b>שלושים שנה של בנייה למגורים בשרון.</dd></div>
-    </dl>
+    <p class="team__line" data-reveal>
+      <span><b>ברק · לוין אדריכלים</b> אדריכלות</span>
+      <span><b>אטלייה מאיה שחר</b> עיצוב פנים</span>
+      <span><b>מרום נוף</b> אדריכלות נוף</span>
+      <span><b>סלע ים יזמות</b> יזמות ובנייה</span>
+    </p>
     <p class="team__demo">שמות בדיוניים · אתר תצוגה</p>
   </div>
 </section>
@@ -455,6 +455,7 @@
     <img src="img/new/N2-1024.webp" srcset="img/new/N2-640.webp 640w, img/new/N2-1024.webp 1024w, img/new/N2-1672.webp 1672w" sizes="100vw" alt="" loading="lazy" decoding="async" width="1672" height="941">
   </div>
   <div class="wrap contact__grid">
+   <div class="contact__panel">
     <div class="contact__intro">
       <p class="eyebrow eyebrow--light" data-reveal>הרשמה מוקדמת</p>
       <h2 class="display" id="contact-title" data-reveal-lines><span>הבית הבא שלכם</span><span>מתחיל בשיחה.</span></h2>
@@ -511,6 +512,7 @@
         <p class="success__small">בינתיים, הים לא הולך לשום מקום.</p>
       </div>
     </div>
+   </div>
   </div>
 </section>
 
@@ -538,6 +540,14 @@
   <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 4.5C9.6 4.5 4.5 9.4 4.5 15.6c0 2.2.6 4.2 1.8 6L5 27.5l6.1-1.6c1.5.8 3.2 1.2 4.9 1.2 6.4 0 11.5-5 11.5-11.2S22.4 4.5 16 4.5Z"/><path d="M12.2 10.8c.3 0 .6 0 .8.6l1 2.3c.1.3 0 .6-.2.8l-.7.8c.8 1.5 2 2.7 3.6 3.5l.8-.9c.2-.3.5-.3.8-.2l2.2 1c.4.2.5.4.4.8-.2 1.3-1.3 2.1-2.6 2-3.9-.4-7.4-3.7-7.9-7.6-.1-1.4.6-2.6 1.8-3.1Z" class="wa__phone"/></svg>
   <span class="wa__label">שיחה עם יועץ</span>
 </a>
+
+<nav class="mbar" id="mbar" aria-label="יצירת קשר מהירה">
+  <a class="mbar__main" href="#contact">תיאום פגישה</a>
+  <a class="mbar__wa" href="https://wa.me/972500000000?text=%D7%A9%D7%9C%D7%95%D7%9D%2C%20%D7%90%D7%A9%D7%9E%D7%97%20%D7%9C%D7%A9%D7%9E%D7%95%D7%A2%20%D7%A2%D7%9C%20AURA" target="_blank" rel="noopener" aria-label="וואטסאפ (קישור הדגמה)">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 4.5C9.6 4.5 4.5 9.4 4.5 15.6c0 2.2.6 4.2 1.8 6L5 27.5l6.1-1.6c1.5.8 3.2 1.2 4.9 1.2 6.4 0 11.5-5 11.5-11.2S22.4 4.5 16 4.5Z"/><path d="M12.2 10.8c.3 0 .6 0 .8.6l1 2.3c.1.3 0 .6-.2.8l-.7.8c.8 1.5 2 2.7 3.6 3.5l.8-.9c.2-.3.5-.3.8-.2l2.2 1c.4.2.5.4.4.8-.2 1.3-1.3 2.1-2.6 2-3.9-.4-7.4-3.7-7.9-7.6-.1-1.4.6-2.6 1.8-3.1Z" class="wa__phone"/></svg>
+    <span>וואטסאפ</span>
+  </a>
+</nav>
 
 
 <dialog class="sheet" id="planDlg" aria-labelledby="planDlgTitle">

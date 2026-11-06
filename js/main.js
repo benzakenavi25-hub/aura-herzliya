@@ -331,8 +331,8 @@
   // Floating contact: hidden in the hero, while the form or footer is on screen,
   // and (on phones) while scrolling down through content — it returns when scrolling up
   // or when the page comes to rest, so it never parks on top of text being read.
-  let waBlocked = false, waScrollingDown = matchMedia('(max-width: 760px)').matches, waIdle = null;
-  const narrow = matchMedia('(max-width: 760px)');
+  let waBlocked = false;
+  const mbar = $('#mbar');
   const waIO = new IntersectionObserver((entries) => {
     entries.forEach((en) => { en.target._inView = en.isIntersecting; });
     waBlocked = [$('#contact'), $('.footer')].some((n) => n._inView);
@@ -347,16 +347,9 @@
     const menuOpen = menuBtn.getAttribute('aria-expanded') === 'true';
     header.classList.toggle('is-hidden-by-scroll', past && y > lastY + 4 && y > heroEnd + 400 && !menuOpen);
     if (y < lastY - 4) header.classList.remove('is-hidden-by-scroll');
-    if (narrow.matches) {
-      // phones: appears on scroll-up (intent), tucks away again when reading resumes
-      if (y > lastY + 2) waScrollingDown = true;
-      else if (y < lastY - 2) {
-        waScrollingDown = false;
-        clearTimeout(waIdle);
-        waIdle = setTimeout(() => { waScrollingDown = true; wa.classList.remove('is-visible'); }, 3200);
-      }
-    } else waScrollingDown = false;
-    wa.classList.toggle('is-visible', past && !waBlocked && !waScrollingDown);
+    // desktop: floating pill · phones: slim bottom bar (CSS hides the other one)
+    wa.classList.toggle('is-visible', past && !waBlocked);
+    mbar.classList.toggle('is-visible', past && !waBlocked);
     lastY = y;
   }
   addEventListener('scroll', onScroll, { passive: true });
@@ -425,7 +418,7 @@
       en.target.classList.add('is-in');
       io.unobserve(en.target);
     });
-  }, { rootMargin: '0px 0px -12% 0px', threshold: 0.05 });
+  }, { rootMargin: '0px 0px -8% 0px', threshold: 0 });
   $$('[data-reveal], [data-reveal-lines], .img-reveal').forEach((el) => io.observe(el));
   $$('.team__list > [data-reveal]').forEach((el, n) => el.style.setProperty('--d', `${n * 70}ms`));
 
@@ -794,8 +787,8 @@
   const mapEl = $('#map');
   const AURA_LL = [32.1668, 34.8072];
   const PLACES = {
-    beach: { ll: [32.1712, 34.8026], name: 'חוף אכדיה' },
-    marina: { ll: [32.1622, 34.7985], name: 'מרינה הרצליה' },
+    beach: { ll: [32.1712, 34.7996], name: 'חוף אכדיה' },
+    marina: { ll: [32.1618, 34.7950], name: 'מרינה הרצליה' },
     biz: { ll: [32.1622, 34.8088], name: 'אזור התעסוקה פיתוח' },
     road2: { ll: [32.1700, 34.8172], name: 'כביש החוף (2)' },
     train: { ll: [32.1636, 34.8178], name: 'תחנת רכבת הרצליה' },
@@ -809,9 +802,13 @@
     // CARTO's free basemaps now answer with an "API key required" tile, so the keyless
     // Esri Light Gray Canvas (base + labels) is used instead, warmed with a CSS filter.
     const ESRI = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/';
-    L.tileLayer(ESRI + 'World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+    const base = L.tileLayer(ESRI + 'World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
       maxZoom: 16, attribution: 'Tiles &copy; <a href="https://www.esri.com">Esri</a> &mdash; Esri, HERE, Garmin, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     }).addTo(map);
+    // until tiles arrive the static map shows through; if none arrive, it stays
+    let tilesOk = 0;
+    base.on('tileload', () => { if (!tilesOk++) mapEl.classList.add('is-ready'); });
+    setTimeout(() => { if (!tilesOk) mapEl.classList.add('is-failed'); }, 8000);
     L.tileLayer(ESRI + 'World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}', { maxZoom: 16, pane: 'overlayPane' }).addTo(map);
     L.marker(AURA_LL, { icon: L.divIcon({ className: 'aura-pin', html: '<i></i><b>AURA</b>', iconSize: [16, 16] }), keyboard: false, title: 'AURA' }).addTo(map);
     Object.entries(PLACES).forEach(([k, v]) => {
