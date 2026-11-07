@@ -18,7 +18,7 @@
   }
   // shared helpers used by more than one section
   function setApt(value) {
-    const r = $('input[name="apt"]').find((x) => x.value === value);
+    const r = $$('input[name="apt"]').find((x) => x.value === value);
     if (r) r.checked = true;
   }
   function openDlg(d) { d.showModal(); root.classList.add('menu-open'); }
@@ -579,7 +579,7 @@
 
 
   /* =======================================================
-     4 · Residences — image-led tabs; the plan lives in a dialog
+     4 · Residences — pinned horizontal panels (desktop) / snap carousel (phones); plan + spec dialogs
      ======================================================= */
   section("4 · Residences", () => {
   const R = (x, y, w, h, label, area) => ({ x, y, w, h, label, area });
@@ -654,62 +654,47 @@
     },
   ];
 
-  const tabs = $$('.res__tabs [role="tab"]');
-  const resApp = $('#resApp');
-  const tabBar = $('.res__tabs');
-  const resImg = $('#resImg'), resInset = $('#resInset');
-  const ind = document.createElement('span');
-  ind.className = 'res__ind'; ind.setAttribute('aria-hidden', 'true');
-  tabBar.appendChild(ind);
-  let current = 0, firstPaint = true;
-  function moveIndicator(i, instant) {
-    const t = tabs[i];
-    if (instant) ind.style.transition = 'none';
-    ind.style.transform = `translate(${t.offsetLeft}px, ${t.offsetTop + t.offsetHeight - 2}px) scaleX(${t.offsetWidth / 100})`;
-    if (instant) { ind.offsetWidth; ind.style.transition = ''; }
+  // One full-screen panel per type. Desktop: the section pins and the track travels right as you
+  // scroll down (RTL: panel 1 sits at the right, the next ones come in from the left).
+  // Phones: a native swipe carousel with snap.
+  const resScroll = $('#resScroll'), resVP = $('#resVP'), resTrack = $('#resTrack');
+  const panels = $$('.rpanel', resTrack), N = panels.length;
+  const resNow = $('#resNow'), resBar = $('.res__bar');
+  const setPW = () => resScroll.style.setProperty('--pw', `${resVP.clientWidth}px`);
+  setPW(); addEventListener('resize', () => { setPW(); requestJobs(); });
+  new IntersectionObserver(([en], obs) => { if (en.isIntersecting) { $$('img', resTrack).forEach((im) => { im.loading = 'eager'; }); obs.disconnect(); } }, { rootMargin: '1200px 0px' }).observe(resScroll);
+  let shownPanel = -1;
+  function markRes(p) {
+    const i = Math.round(p * (N - 1));
+    if (i !== shownPanel) { shownPanel = i; resNow.textContent = String(i + 1).padStart(2, '0'); }
+    resBar.style.setProperty('--p', p.toFixed(3));
   }
-  addEventListener('resize', () => moveIndicator(current, true));
-  function applyPlan(p, i) {
-    resImg.srcset = p.img.srcset; resImg.src = p.img.src; resImg.alt = p.alt;
-    if (p.inset) { resInset.srcset = p.inset.srcset; resInset.src = p.inset.src; resInset.alt = p.insetAlt; resInset.sizes = '(min-width: 900px) 24vw, 44vw'; resInset.hidden = false; }
-    else resInset.hidden = true;
-    $('#resName').textContent = p.name;
-    $('#resDesc').textContent = p.desc;
-    $('#resFacts').innerHTML = p.facts.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('');
-    $('#resCta').dataset.apt = i;
-    resApp.classList.remove('is-swapping');
+  function resDesktop() {
+    if (!desktopMQ.matches) return;
+    const r = resScroll.getBoundingClientRect();
+    const p = clamp(-r.top / (r.height - innerHeight), 0, 1);
+    const max = resTrack.scrollWidth - resVP.clientWidth;
+    resTrack.style.transform = `translate3d(${(p * max).toFixed(1)}px, 0, 0)`;
+    markRes(p);
   }
-  // Keyboard-initiated switches are instant: no swap, no indicator travel.
-  function showPlan(i, keyboard) {
-    tabs.forEach((t, n) => { t.setAttribute('aria-selected', String(n === i)); t.tabIndex = n === i ? 0 : -1; });
-    $('#panel-res').setAttribute('aria-labelledby', tabs[i].id);
-    if (keyboard) tabs[i].focus();
-    moveIndicator(i, keyboard || firstPaint);
-    if (i === current && !firstPaint) return;
-    current = i;
-    const instant = keyboard || firstPaint;
-    firstPaint = false;
-    if (instant) applyPlan(PLANS[i], i);
-    else {
-      resApp.classList.add('is-swapping');
-      // warm the next image while the old one fades
-      const pre = new Image(); pre.srcset = PLANS[i].img.srcset; pre.sizes = resImg.sizes; pre.src = PLANS[i].img.src;
-      setTimeout(() => applyPlan(PLANS[i], i), 180);
-    }
-  }
-  tabs.forEach((t, n) => {
-    t.addEventListener('click', () => showPlan(n));
-    t.addEventListener('keydown', (e) => {
-      const k = e.key; let to = null;
-      if (k === 'ArrowLeft') to = (n + 1) % tabs.length;
-      if (k === 'ArrowRight') to = (n - 1 + tabs.length) % tabs.length;
-      if (k === 'Home') to = 0;
-      if (k === 'End') to = tabs.length - 1;
-      if (to !== null) { e.preventDefault(); showPlan(to, true); }
-    });
+  whileVisible(resScroll, resDesktop, '0px');
+  resVP.addEventListener('scroll', () => {
+    if (desktopMQ.matches) { resVP.scrollLeft = 0; return; }   // focus must not shift the pinned track
+    const max = resVP.scrollWidth - resVP.clientWidth;
+    markRes(max > 0 ? clamp(Math.abs(resVP.scrollLeft) / max, 0, 1) : 0);
+  }, { passive: true });
+  desktopMQ.addEventListener('change', () => { resTrack.style.transform = ''; resVP.scrollLeft = 0; setPW(); requestJobs(); });
+  // keyboard: tabbing into a panel scrolls the page to the spot where that panel is in view
+  resTrack.addEventListener('focusin', (e) => {
+    const pnl = e.target.closest('.rpanel');
+    if (!pnl || !desktopMQ.matches) return;
+    const y = resScroll.offsetTop + (resScroll.offsetHeight - innerHeight) * (+pnl.dataset.i / (N - 1));
+    window.scrollTo({ top: Math.round(y), behavior: 'instant' });
   });
-  showPlan(0);
-  $('#resCta').addEventListener('click', () => setApt(PLANS[+$('#resCta').dataset.apt || 0].apt));
+  markRes(0);
+  $$('[data-plan]', resTrack).forEach((b) => b.addEventListener('click', () => { renderPlan(PLANS[+b.dataset.plan]); openDlg(planDlg); }));
+  $$('[data-apt]', resTrack).forEach((a) => a.addEventListener('click', () => setApt(PLANS[+a.dataset.apt].apt)));
+  $('#specBtn').addEventListener('click', () => openDlg($('#specDlg')));
 
   // --- plan dialog: thin lines, numbered rooms, legend beside ---
   const planDlg = $('#planDlg'), planSvg = $('#planSvg'), planLegend = $('#planLegend');
@@ -744,7 +729,7 @@
       planLegend.appendChild(li);
     });
     const [ex, ey] = p.entry;
-    el('path', { d: `M${ex - 12} ${ey} h24`, stroke: '#F3EEE6', 'stroke-width': 4 }, planSvg);
+    el('path', { d: `M${ex - 12} ${ey} h24`, stroke: '#1A2029', 'stroke-width': 4 }, planSvg);
     el('path', { d: `M${ex} ${ey + 20} v-13 m-4 4 l4 -4 l4 4`, class: 'pl-entry' }, planSvg);
     // fit the drawing; sea arrow points west (left)
     const boxes = [...p.outs, { x: ox, y: oy, w: ow, h: oh }, ...(p.pool ? [p.pool] : [])];
@@ -753,7 +738,6 @@
     el('path', { d: `M${minX + 4} ${maxY - 6} h40 M${minX + 4} ${maxY - 6} l6 -3.5 M${minX + 4} ${maxY - 6} l6 3.5`, class: 'pl-sea' }, planSvg);
     planSvg.setAttribute('viewBox', `${minX} ${minY} ${maxX - minX} ${maxY - minY}`);
   }
-  $('#planBtn').addEventListener('click', () => { renderPlan(PLANS[current]); openDlg(planDlg); });
   bridge.openPlan = (i) => { renderPlan(PLANS[i]); openDlg(planDlg); };
   });
 

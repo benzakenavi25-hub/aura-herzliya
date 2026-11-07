@@ -17,12 +17,12 @@ Page order: hero → views → residences → floors → day → location → co
 - Loader/header/menu: `#header`, `#mbar` → CSS "header" ~120 → JS "Header / floating contact / mobile nav" ~338: `onScroll`, `setMenu`, `whileVisible`
 - Hero `#top` → "HERO" ~182 → JS "HERO" ~28: `loadFrames`, `initScrub`, `draw`, `placement`, `drawSky`, `updateUI`, `setProgress`, `hideLoader`; scroll pacing in `PACE` table
 - Descent `#views` (+ elevator `#lift`; floor-12 caption holds the project line + facts) → "1 · THE DESCENT" ~374 → JS "1 · The descent" ~444: `render`, `goFloor`, `setBase`, `animateExtra`, `camera`
-- Residences `#residences` → "4 · RESIDENCES" ~468 → JS ~582: `showPlan`, `applyPlan`, `moveIndicator`, `renderPlan`
+- Residences `#residences` (4 full-screen `.rpanel`s in `#resTrack`, pinned via `#resScroll` on desktop / snap carousel on phones; materials strip `.mats` below) → "4 · RESIDENCES" ~468 → JS ~582: `PLANS` data, `resDesktop`, `markRes`, `renderPlan`; `[data-plan]` opens `#planDlg`, `[data-apt]` pre-selects the form type
 - Floor finder `#floors` → "5 · FLOOR FINDER" ~509 → JS ~772: data `FLOORS`/`BANDS`, `light`, `drawPlate`, `openPlan`, `closePlan`, `showCard`, `closeCard`
 - Day `#day` (8 timed cards incl. gym/lobby/spa) → "8 · A DAY AT AURA" ~694 → JS ~1009: `setDay`, `dayDesktop`
 - Location `#location` → "9 · LOCATION" ~728 → JS ~1045: `initMap`
 - Contact `#contact` → "CONTACT" ~765 → JS "Forms" ~1104: `wireForm`, `check`, `normPhone`; dialogs JS ~761
-- Spec content lives in `<template id="specTpl">` (not rendered) → CSS "SPEC" ~686
+- Full spec lives in `<dialog id="specDlg">` (opened by `#specBtn` in the materials strip) → CSS "SPEC"
 - Shared CSS (reveals, buttons, dialogs) ~292; footer ~846; "POLISH PASS" overrides ~882 (check here before editing a section's rules)
 
 ## Media

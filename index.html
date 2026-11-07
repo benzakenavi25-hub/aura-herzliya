@@ -20,7 +20,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;1,6..96,400&family=Frank+Ruhl+Libre:wght@300;400&family=IBM+Plex+Sans+Hebrew:wght@300;400;500&display=swap">
 <link rel="preload" href="frames/manifest.json" as="fetch" crossorigin>
-<link rel="stylesheet" href="css/style.css?v=202611071745">
+<link rel="stylesheet" href="css/style.css?v=202611071755">
 <script>document.documentElement.classList.add('js');</script>
 </head>
 <body>
@@ -182,40 +182,97 @@
 </section>
 
 
-<!-- ============ 4 · RESIDENCES ============ -->
-<section class="section residences" id="residences" aria-labelledby="res-title">
-  <div class="wrap">
-    <div class="sec-head sec-head--split">
-      <div>
-        <p class="eyebrow" data-reveal>הדירות</p>
-        <h2 class="display" id="res-title" data-reveal-lines><span>ארבעה סוגי בתים.</span><span>אותו אופק.</span></h2>
+<!-- ============ 4 · RESIDENCES (pinned horizontal on desktop, snap carousel on phones) ============ -->
+<section class="res" id="residences" aria-labelledby="res-title">
+  <div class="res__scroll" id="resScroll">
+    <div class="res__pin">
+      <div class="res__head">
+        <h2 class="res__title" id="res-title">הדירות</h2>
+        <p class="res__count" aria-hidden="true"><span id="resNow">01</span> / 04</p>
       </div>
+      <div class="res__viewport" id="resVP">
+        <ol class="res__track" id="resTrack">
+          <li class="rpanel" data-i="0" aria-labelledby="rp0">
+            <img src="img/new/P6-1024.webp" srcset="img/new/P6-640.webp 640w, img/new/P6-1024.webp 1024w, img/new/P6-1672.webp 1672w" sizes="100vw" alt="סלון דירת 4 חדרים: ספה בהירה, שולחן טרוורטין, פרקט אדרה ויציאה למרפסת מעוגלת מול הים" loading="lazy" decoding="async" width="1672" height="941">
+            <div class="rpanel__info">
+              <p class="rpanel__num" aria-hidden="true">4</p>
+              <h3 class="rpanel__name" id="rp0">דירת 4 חדרים</h3>
+              <dl class="rpanel__facts">
+                <div><dt>שטח פנים</dt><dd>118 מ״ר</dd></div>
+                <div><dt>מרפסת</dt><dd>14 מ״ר</dd></div>
+                <div><dt>כיוונים</dt><dd>מערב · צפון</dd></div>
+              </dl>
+              <div class="rpanel__actions">
+                <button class="btn-line" type="button" data-plan="0" aria-haspopup="dialog">לתוכנית</button>
+                <a class="link-arrow" href="#contact" data-apt="0">לתיאום</a>
+              </div>
+            </div>
+          </li>
+          <li class="rpanel" data-i="1" aria-labelledby="rp1">
+            <img src="img/new/P2-1024.webp" srcset="img/new/P2-640.webp 640w, img/new/P2-1024.webp 1024w, img/new/P2-1672.webp 1672w" sizes="100vw" alt="מטבח ופינת אוכל בדירת 5 חדרים: אי שיש, ארונות אלון ושולחן ערוך מול חלון לים" loading="lazy" decoding="async" width="1672" height="941">
+            <div class="rpanel__info">
+              <p class="rpanel__num" aria-hidden="true">5</p>
+              <h3 class="rpanel__name" id="rp1">דירת 5 חדרים</h3>
+              <dl class="rpanel__facts">
+                <div><dt>שטח פנים</dt><dd>146 מ״ר</dd></div>
+                <div><dt>מרפסת</dt><dd>18 מ״ר</dd></div>
+                <div><dt>כיוונים</dt><dd>מערב · דרום</dd></div>
+              </dl>
+              <div class="rpanel__actions">
+                <button class="btn-line" type="button" data-plan="1" aria-haspopup="dialog">לתוכנית</button>
+                <a class="link-arrow" href="#contact" data-apt="1">לתיאום</a>
+              </div>
+            </div>
+          </li>
+          <li class="rpanel" data-i="2" aria-labelledby="rp2">
+            <img src="img/new/P5-1024.webp" srcset="img/new/P5-640.webp 640w, img/new/P5-1024.webp 1024w, img/new/P5-1672.webp 1672w" sizes="100vw" alt="סלון דירת הגן נפתח אל גינה פרטית עם עצי זית, לבנדר ושולחן אבן, והים מעבר לחומה" loading="lazy" decoding="async" width="1672" height="941">
+            <div class="rpanel__info">
+              <p class="rpanel__num" aria-hidden="true">5</p>
+              <h3 class="rpanel__name" id="rp2">דירת גן · מיני פנטהאוז</h3>
+              <dl class="rpanel__facts">
+                <div><dt>שטח פנים</dt><dd>168 מ״ר</dd></div>
+                <div><dt>גינה / מרפסת גג</dt><dd>85 מ״ר</dd></div>
+                <div><dt>כיוונים</dt><dd>מערב · צפון · דרום</dd></div>
+              </dl>
+              <div class="rpanel__actions">
+                <button class="btn-line" type="button" data-plan="2" aria-haspopup="dialog">לתוכנית</button>
+                <a class="link-arrow" href="#contact" data-apt="2">לתיאום</a>
+              </div>
+            </div>
+          </li>
+          <li class="rpanel" data-i="3" aria-labelledby="rp3">
+            <img src="img/09-living-room-1024.webp" srcset="img/09-living-room-640.webp 640w, img/09-living-room-1024.webp 1024w, img/09-living-room-1672.webp 1672w" sizes="100vw" alt="סלון הפנטהאוז: ספות בהירות, שולחן טרוורטין וקיר זכוכית פתוח אל מרפסת הגג והים בשעת דמדומים" loading="lazy" decoding="async" width="1672" height="941">
+            <div class="rpanel__info">
+              <p class="rpanel__num" aria-hidden="true">6</p>
+              <h3 class="rpanel__name" id="rp3">פנטהאוז גג</h3>
+              <dl class="rpanel__facts">
+                <div><dt>שטח פנים</dt><dd>245 מ״ר</dd></div>
+                <div><dt>מרפסת גג</dt><dd>160 מ״ר</dd></div>
+                <div><dt>כיוונים</dt><dd>ארבעה כיוונים</dd></div>
+              </dl>
+              <div class="rpanel__actions">
+                <button class="btn-line" type="button" data-plan="3" aria-haspopup="dialog">לתוכנית</button>
+                <a class="link-arrow" href="#contact" data-apt="3">לתיאום</a>
+              </div>
+            </div>
+          </li>
+        </ol>
+      </div>
+      <div class="res__bar" aria-hidden="true"><span></span></div>
     </div>
+  </div>
 
-    <div class="res" id="resApp">
-      <div class="res__tabs" role="tablist" aria-label="סוגי דירות">
-        <button role="tab" id="tab-4" aria-controls="panel-res" aria-selected="true" data-type="0"><span class="res__tabnum">4</span><span>חדרים</span></button>
-        <button role="tab" id="tab-5" aria-controls="panel-res" aria-selected="false" tabindex="-1" data-type="1"><span class="res__tabnum">5</span><span>חדרים</span></button>
-        <button role="tab" id="tab-mp" aria-controls="panel-res" aria-selected="false" tabindex="-1" data-type="2"><span class="res__tabnum">5</span><span>גן · מיני פנטהאוז</span></button>
-        <button role="tab" id="tab-ph" aria-controls="panel-res" aria-selected="false" tabindex="-1" data-type="3"><span class="res__tabnum">6</span><span>פנטהאוז גג</span></button>
-      </div>
-
-      <div class="res__panel" id="panel-res" role="tabpanel" aria-labelledby="tab-4" tabindex="0">
-        <figure class="res__media" id="resMedia">
-          <img class="res__img" id="resImg" src="img/new/P6-1024.webp" srcset="img/new/P6-640.webp 640w, img/new/P6-1024.webp 1024w, img/new/P6-1672.webp 1672w" sizes="(min-width: 900px) 62vw, 100vw" alt="" loading="lazy" decoding="async" width="1672" height="941">
-          <img class="res__inset" id="resInset" alt="" loading="lazy" decoding="async" width="1672" height="941" hidden>
-        </figure>
-        <div class="res__info" aria-live="polite">
-          <h3 class="res__name" id="resName">דירת 4 חדרים</h3>
-          <p class="res__desc" id="resDesc"></p>
-          <dl class="res__facts" id="resFacts"></dl>
-          <div class="res__actions">
-            <button class="btn-line" id="planBtn" type="button" aria-haspopup="dialog">לתוכנית הדירה</button>
-            <a class="link-arrow" href="#contact" id="resCta">לתיאום פגישה</a>
-          </div>
-        </div>
-      </div>
+  <div class="mats wrap">
+    <div class="mats__head">
+      <h3 class="mats__title">ארבעה חומרים.</h3>
+      <button class="mats__spec" type="button" id="specBtn" aria-haspopup="dialog">למפרט המלא</button>
     </div>
+    <ul class="mats__strip">
+      <li><img src="img/new/M1-480.webp" srcset="img/new/M1-480.webp 480w, img/new/M1-800.webp 800w" sizes="(min-width: 900px) 22vw, 44vw" alt="ברז ברונזה מוברשת וטיפת מים נופלת אל כיור טרוורטין" loading="lazy" decoding="async" width="1122" height="1402"><p><b>ברונזה מוברשת</b>מתבגרת עם הידיים שנוגעות בה.</p></li>
+      <li><img src="img/new/M2-480.webp" srcset="img/new/M2-480.webp 480w, img/new/M2-800.webp 800w" sizes="(min-width: 900px) 22vw, 44vw" alt="פינת אי שיש לבן עם עורקים אפורים, כוס קרמיקה וענף זית" loading="lazy" decoding="async" width="1122" height="1402"><p><b>שיש בהיר</b>עורק אחד רציף, מהאי ועד הרצפה.</p></li>
+      <li><img src="img/new/M3-480.webp" srcset="img/new/M3-480.webp 480w, img/new/M3-800.webp 800w" sizes="(min-width: 900px) 22vw, 44vw" alt="פרקט אלון טבעי בדוגמת אדרה ואור אחר הצהריים עליו" loading="lazy" decoding="async" width="1122" height="1402"><p><b>אלון טבעי</b>בדוגמת אדרה, חם תחת כף הרגל.</p></li>
+      <li><img src="img/new/M4-480.webp" srcset="img/new/M4-480.webp 480w, img/new/M4-800.webp 800w" sizes="(min-width: 900px) 22vw, 44vw" alt="משטח טרוורטין עם פס ברונזה מוברשת לאורך הקצה" loading="lazy" decoding="async" width="1122" height="1402"><p><b>טרוורטין וברונזה</b>המקום שבו האבן פוגשת את המתכת.</p></li>
+    </ul>
   </div>
 </section>
 
@@ -466,9 +523,13 @@
 </nav>
 
 
-<!-- Full specification: not rendered; moves into a dialog in part 4 -->
-<template id="specTpl">
-      <div class="spec-cols">
+<dialog class="sheet" id="specDlg" aria-labelledby="specDlgTitle">
+  <div class="sheet__inner">
+    <header class="sheet__head">
+      <h2 class="sheet__title" id="specDlgTitle">המפרט המלא</h2>
+      <button class="sheet__close" type="button" data-close aria-label="סגירה"><i></i><i></i></button>
+    </header>
+<div class="spec-cols">
         <div><h3>חזית ומעטפת</h3><ul><li>חיפוי אבן טבעית בגוון חול, גמר מוברש</li><li>מערכות אלומיניום בפרופיל דק, זיגוג בידודי כפול</li><li>מעקות זכוכית שקופים ללא מסגרת עליונה</li></ul></div>
         <div><h3>ריצוף וחיפויים</h3><ul><li>פרקט עץ אלון בדוגמת אדרה בחללי המגורים</li><li>טרוורטין במרפסות ובחדרי הרחצה</li><li>אריחי פורצלן גדולי מידות, 120×120 ס״מ</li></ul></div>
         <div><h3>מטבח</h3><ul><li>מטבח בתכנון אדריכלי, חזיתות פורניר אלון</li><li>משטח ואי משיש טבעי</li><li>הכנה למקרר ומקפיא אינטגרליים, כיור כפול</li></ul></div>
@@ -476,7 +537,8 @@
         <div><h3>מערכות ובית חכם</h3><ul><li>מיזוג VRF מרכזי עם שליטה נפרדת לכל חדר</li><li>תשתית בית חכם: תאורה, תריסים ומיזוג</li><li>תריסים חשמליים וקיר זכוכית נגרר למרפסת</li></ul></div>
         <div><h3>הבניין</h3><ul><li>לובי בגובה כפול בעיצוב אדריכל פנים</li><li>שתי מעליות, אחת מהן מעלית שבת</li><li>חניון תת־קרקעי, מחסן ועמדת טעינה לכל דירה</li></ul></div>
       </div>
-</template>
+  </div>
+</dialog>
 
 <dialog class="sheet" id="planDlg" aria-labelledby="planDlgTitle">
   <div class="sheet__inner">
@@ -523,6 +585,6 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
-<script src="js/main.js?v=202611071745" defer></script>
+<script src="js/main.js?v=202611071755" defer></script>
 </body>
 </html>

@@ -465,44 +465,64 @@ figcaption { font-size: 13px; color: var(--ink-2); margin-top: 14px; }
 }
 
 /* =========================================================
-   4 · RESIDENCES
+   4 · RESIDENCES — full-screen panels: pinned horizontal (desktop), snap carousel (phones)
    ========================================================= */
-.residences { background: var(--bg); }
-.sec-head { margin-bottom: clamp(48px, 6vw, 88px); }
-.res__tabs { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); position: relative; }
-.res__tabs button {
-  display: flex; align-items: baseline; gap: 12px; padding: 22px 0; padding-inline-end: 12px; text-align: start;
-  font-size: 15px; color: var(--ink-2); position: relative; transition: color .2s ease, transform var(--press) var(--ease-out);
-}
-.res__tabs button + button { padding-inline-start: clamp(14px, 2vw, 28px); border-inline-start: 1px solid var(--line); }
-.res__ind { position: absolute; left: 0; top: 0; width: 100px; height: 2px; background: var(--bronze); transform-origin: 0 0; transition: transform .42s var(--ease-io); pointer-events: none; }
-.res__tabs button[aria-selected="true"] { color: var(--ink); }
-.res__tabnum { font-family: var(--f-en); font-size: clamp(30px, 3vw, 44px); line-height: 1; color: var(--ink); }
-.res__panel { display: grid; grid-template-columns: 1.7fr 1fr; gap: clamp(36px, 5vw, 88px); padding-top: clamp(40px, 5vw, 72px); align-items: center; }
-.res__panel:focus-visible { outline-offset: 12px; }
-.res__media { position: relative; }
-.res__img { width: 100%; aspect-ratio: 16 / 10.4; object-fit: cover; }
-.res__inset { position: absolute; left: -2%; bottom: -10%; width: 38%; aspect-ratio: 4 / 3; object-fit: cover; border: 8px solid var(--bg); }
-.res__name { font-family: var(--f-he-display); font-weight: 300; font-size: clamp(32px, 3.2vw, 48px); line-height: 1.1; }
-.res__desc { margin-top: 16px; color: var(--ink-2); max-width: 42ch; }
-.res__facts { margin-top: 30px; border-top: 1px solid var(--line); }
-.res__facts div { display: flex; justify-content: space-between; align-items: baseline; padding: 13px 0; border-bottom: 1px solid var(--line); gap: 20px; }
-.res__facts dt { font-size: 14px; color: var(--ink-2); }
-.res__facts dd { font-size: 16px; font-weight: 400; font-variant-numeric: tabular-nums; }
-.res__actions { margin-top: 30px; display: flex; flex-wrap: wrap; align-items: center; gap: 18px 28px; }
+.res { background: var(--bg); }
+.res__scroll { position: relative; height: 400vh; --pw: 100vw; }
+.res__pin { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
+.res__head { position: absolute; z-index: 3; top: calc(var(--header-h) + var(--safe-t) + clamp(16px, 3vh, 32px)); right: var(--gutter); left: var(--gutter); display: flex; justify-content: space-between; align-items: baseline; pointer-events: none; }
+.res__title { font-family: var(--f-he); font-size: 14px; font-weight: 500; letter-spacing: .08em; color: var(--bronze); display: flex; align-items: center; gap: 14px; }
+.res__title::after { content: ""; width: 48px; height: 1px; background: currentColor; opacity: .6; }
+.res__count { font-family: var(--f-en); font-size: 16px; color: var(--text); font-variant-numeric: tabular-nums; direction: ltr; }
+.res__viewport { height: 100%; overflow: hidden; }
+.res__track { display: flex; height: 100%; width: max-content; will-change: transform; }
+.rpanel { position: relative; flex: 0 0 auto; width: var(--pw); height: 100%; overflow: hidden; }
+.rpanel > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+/* scrim on the reading side (RTL start = right) so the type stays AA over any image */
+.rpanel::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(to left, rgba(18,22,29,.9) 0%, rgba(18,22,29,.72) 30%, rgba(18,22,29,0) 60%),
+              linear-gradient(to top, rgba(18,22,29,.55) 0%, rgba(18,22,29,0) 35%); }
+.rpanel__info { position: absolute; z-index: 2; right: var(--gutter); bottom: clamp(64px, 11vh, 120px); width: min(440px, 36vw); color: var(--text); }
+.rpanel__num { font-family: var(--f-en); font-weight: 400; font-size: clamp(150px, 16vw, 270px); line-height: .78; color: var(--text); }
+.rpanel__name { margin-top: 22px; font-family: var(--f-he-display); font-weight: 300; font-size: clamp(30px, 2.6vw, 42px); line-height: 1.12; }
+.rpanel__facts { margin-top: 24px; border-top: 1px solid var(--line); }
+.rpanel__facts div { display: flex; justify-content: space-between; align-items: baseline; gap: 20px; padding: 11px 0; border-bottom: 1px solid var(--line); }
+.rpanel__facts dt { font-size: 15px; color: var(--text-2); }
+.rpanel__facts dd { font-size: 16px; font-weight: 400; font-variant-numeric: tabular-nums; }
+.rpanel__actions { margin-top: 26px; display: flex; flex-wrap: wrap; align-items: center; gap: 14px 28px; }
 .link-arrow { display: inline-flex; align-items: center; gap: 12px; font-size: 15px; font-weight: 400; text-decoration: none; position: relative; padding-bottom: 6px; color: var(--bronze-ink); }
 .link-arrow::before { content: "←"; order: 2; transition: transform .3s var(--ease-out); }
-.res__media, .res__info { transition: opacity .28s var(--ease-out), transform .32s var(--ease-out), filter .28s var(--ease-out); }
-.res.is-swapping .res__media, .res.is-swapping .res__info { opacity: 0; transform: translateY(6px); filter: blur(3px); transition-duration: .18s; }
+.rpanel .link-arrow { color: #D2AE7E; }   /* lighter bronze over the image scrim */
+.res__bar { position: absolute; z-index: 3; bottom: clamp(28px, 5vh, 48px); right: var(--gutter); left: var(--gutter); height: 1px; background: var(--line-light); }
+.res__bar span { position: absolute; inset: 0; background: var(--bronze); transform-origin: right; transform: scaleX(var(--p, 0)); }
+
+/* materials strip under the panels */
+.mats { padding-block: clamp(64px, 9vw, 128px); }
+.mats__head { display: flex; justify-content: space-between; align-items: baseline; gap: 20px; margin-bottom: clamp(24px, 3vw, 40px); }
+.mats__title { font-family: var(--f-he-display); font-weight: 300; font-size: clamp(28px, 3vw, 44px); line-height: 1.1; }
+.mats__spec { font-size: 15px; color: var(--bronze); padding: 10px 0; border-bottom: 1px solid currentColor; }
+.mats__strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: clamp(14px, 2vw, 28px); }
+.mats__strip img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; }
+.mats__strip p { margin-top: 14px; font-size: 15px; line-height: 1.55; color: var(--text-2); }
+.mats__strip b { display: block; font-family: var(--f-he-display); font-weight: 400; font-size: 20px; color: var(--text); margin-bottom: 2px; }
+
 @media (max-width: 900px) {
-  .res__tabs { grid-template-columns: 1fr 1fr; }
-  .res__tabs button:nth-child(3) { border-inline-start: 0; padding-inline-start: 0; }
-  .res__tabs button:nth-child(n+3) { border-top: 1px solid var(--line); }
-  .res__panel { grid-template-columns: 1fr; }
-  .res__media { margin-inline: calc(-1 * var(--gutter)); }
-  .res__img { aspect-ratio: 4 / 3.3; }
-  .res__inset { left: var(--gutter); bottom: -14%; width: 44%; border-width: 6px; }
-  .res__info { margin-top: 18px; }
+  .res__scroll { height: auto; }
+  .res__pin { position: relative; height: auto; }
+  .res__head { top: 20px; }
+  .res__viewport { height: auto; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; }
+  .res__viewport::-webkit-scrollbar { display: none; }
+  .res__track { height: auto; transform: none !important; }
+  .rpanel { height: min(92svh, 780px); min-height: 560px; scroll-snap-align: start; scroll-snap-stop: always; }
+  .rpanel::after { background: linear-gradient(to top, rgba(18,22,29,.95) 0%, rgba(18,22,29,.82) 45%, rgba(18,22,29,0) 72%),
+                                linear-gradient(to bottom, rgba(18,22,29,.55) 0%, rgba(18,22,29,0) 18%); }
+  .rpanel__info { right: var(--gutter); left: var(--gutter); width: auto; bottom: 40px; }
+  .rpanel__num { font-size: clamp(104px, 30vw, 140px); }
+  .rpanel__name { margin-top: 14px; }
+  .rpanel__facts { margin-top: 16px; }
+  .rpanel__actions { margin-top: 20px; }
+  .res__bar { bottom: 18px; }
+  .mats__strip { grid-template-columns: 1fr 1fr; gap: 28px 14px; }
 }
 
 /* =========================================================
@@ -903,8 +923,8 @@ body { font-size: 16px; }
 @media (min-width: 761px) { body { font-size: 17px; } }
 figcaption, .map__note, .plan__note { font-size: 15px; }
 .places li { font-size: 17px; }
-.places__d, .floors__list .sz, .res__facts dt, .floors__dl dt { font-size: 15px; }
-.floors__list button, .floors__dl div, .res__facts dd { font-size: 16px; }
+.places__d, .floors__list .sz, .floors__dl dt { font-size: 15px; }
+.floors__list button, .floors__dl div { font-size: 16px; }
 .floors__hint, .floors__legend, .status { font-size: 15px; }
 .acc__body { font-size: 17px; }
 .acc__demo { font-size: 13px; }
@@ -912,14 +932,6 @@ figcaption, .map__note, .plan__note { font-size: 15px; }
 .contact__office { font-size: 16px; }
 .check, .field--choice legend { font-size: 15px; }
 .form__demo { font-size: 13px; color: rgba(243,238,230,.78); }
-
-/* --- residences: the interior image leads (~60% width, bleeds to the edge) --- */
-@media (min-width: 901px) {
-  .res__panel { grid-template-columns: 1.55fr 1fr; align-items: start; gap: clamp(36px, 4vw, 72px); }
-  .res__media { margin-inline-start: calc(-1 * var(--gutter)); }
-  .res__img { aspect-ratio: 16 / 11; }
-  .res__info { padding-top: 12px; }
-}
 
 /* --- contact: lighter veil, form in a panel; the lit tower reads beside it --- */
 .contact { padding-block: 0; }
@@ -988,13 +1000,11 @@ figcaption, .map__note, .plan__note { font-size: 15px; }
 
 /* ---------- press feedback (any pointer) ---------- */
 .btn:active:not(:disabled), .header__cta:active { transform: scale(.97); }
-.res__tabs button:active { transform: scale(.98); }
 
 /* ---------- hover: only where hover is real (no sticky taps on touch) ---------- */
 @media (hover: hover) and (pointer: fine) {
   .header__nav a:hover::after, .link-arrow:hover::after, .footer a:hover::after { transform: scaleX(1); }
   .header__cta:hover { background: var(--text); color: var(--bg); }
-  .res__tabs button:hover { color: var(--ink); }
   .link-arrow:hover::before { transform: translateX(-6px); }
   .places li:hover { color: var(--bronze-ink); }
   .places li:hover > span:first-child { transform: translateX(-8px); }
