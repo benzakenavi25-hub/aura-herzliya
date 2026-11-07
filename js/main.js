@@ -1026,62 +1026,31 @@
   });
 
   /* =======================================================
-     9 · Location — Leaflet + CARTO light, loaded only when near
+     9 · Location — one full-bleed image; pins light up one after another as you scroll
      ======================================================= */
   section("9 · Location", () => {
-  const mapEl = $('#map');
-  const AURA_LL = [32.1668, 34.8072];
-  const PLACES = {
-    beach: { ll: [32.1712, 34.7996], name: 'חוף אכדיה' },
-    marina: { ll: [32.1618, 34.7950], name: 'מרינה הרצליה' },
-    biz: { ll: [32.1622, 34.8088], name: 'אזור התעסוקה פיתוח' },
-    road2: { ll: [32.1700, 34.8172], name: 'כביש החוף (2)' },
-    train: { ll: [32.1636, 34.8178], name: 'תחנת רכבת הרצליה' },
-  };
-  const loadAsset = (tag, attrs) => new Promise((res, rej) => { const n = document.createElement(tag); Object.assign(n, attrs); n.onload = res; n.onerror = rej; document.head.appendChild(n); });
-  let map = null; const pins = {};
-  function initMap() {
-    const L = window.L;
-    const touch = matchMedia('(pointer: coarse)').matches;
-    map = L.map(mapEl, { center: AURA_LL, zoom: 14, maxZoom: 16, scrollWheelZoom: false, dragging: !touch, touchZoom: !touch, tap: false, zoomControl: true, attributionControl: true });
-    // CARTO's free basemaps now answer with an "API key required" tile, so the keyless
-    // Esri Light Gray Canvas (base + labels) is used instead, warmed with a CSS filter.
-    const ESRI = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/';
-    const base = L.tileLayer(ESRI + 'World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
-      maxZoom: 16, attribution: 'Tiles &copy; <a href="https://www.esri.com">Esri</a> &mdash; Esri, HERE, Garmin, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-    }).addTo(map);
-    // until tiles arrive the static map shows through; if none arrive, it stays
-    let tilesOk = 0;
-    if (mapEl) base.on('tileload', () => { if (!tilesOk++) mapEl.classList.add('is-ready'); });
-    setTimeout(() => { if (!tilesOk) mapEl.classList.add('is-failed'); }, 8000);
-    L.tileLayer(ESRI + 'World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}', { maxZoom: 16, pane: 'overlayPane' }).addTo(map);
-    L.marker(AURA_LL, { icon: L.divIcon({ className: 'aura-pin', html: '<i></i><b>AURA</b>', iconSize: [16, 16] }), keyboard: false, title: 'AURA' }).addTo(map);
-    Object.entries(PLACES).forEach(([k, v]) => {
-      pins[k] = L.marker(v.ll, { icon: L.divIcon({ className: 'place-pin', html: '<i></i>', iconSize: [10, 10] }), keyboard: false })
-        .bindTooltip(v.name, { direction: 'top', offset: [0, -8], className: 'place-tip' }).addTo(map);
-    });
-    map.fitBounds(L.latLngBounds([AURA_LL, ...Object.values(PLACES).map((p) => p.ll)]), { padding: [36, 36] });
-    if (touch) {
-      mapEl.classList.add('is-locked');
-      $('#mapActivate').addEventListener('click', () => {
-        map.dragging.enable(); map.touchZoom.enable(); mapEl.classList.remove('is-locked');
-      });
+  const scroller = $('#locScroll'), stage = $('#locStage');
+  const pins = $$('.lpin', stage), items = $$('#locList li');
+  const N = pins.length;
+  let lit = -1;
+  function locProgress() {
+    if (desktopMQ.matches) {   // the stage is pinned: progress through the pinned run
+      const r = scroller.getBoundingClientRect();
+      return clamp(-r.top / (r.height - innerHeight), 0, 1);
     }
+    // phones: the image scrolls past; pins light while it travels up the screen
+    const r = stage.getBoundingClientRect();
+    return clamp((innerHeight * 0.85 - r.top) / (r.height + innerHeight * 0.25), 0, 1);
   }
-  new IntersectionObserver(([en], obs) => {
-    if (!en.isIntersecting) return;
-    obs.disconnect();
-    Promise.all([
-      loadAsset('link', { rel: 'stylesheet', href: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css' }),
-      loadAsset('script', { src: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js' }),
-    ]).then(initMap).catch(() => mapEl.classList.add('is-failed'));
-  }, { rootMargin: '600px 0px' }).observe(mapEl);
-  $$('#places li').forEach((li) => {
-    const k = li.dataset.pin;
-    const on = () => { li.classList.add('is-hot'); const p = pins[k]; if (p) { p.getElement()?.classList.add('is-hot'); p.openTooltip(); } };
-    const off = () => { li.classList.remove('is-hot'); const p = pins[k]; if (p) { p.getElement()?.classList.remove('is-hot'); p.closeTooltip(); } };
-    li.addEventListener('pointerenter', on); li.addEventListener('pointerleave', off);
-  });
+  function locPins() {
+    const n = clamp(Math.floor(locProgress() * (N + 1)), 0, N);
+    if (n === lit) return;
+    lit = n;
+    pins.forEach((p, k) => p.classList.toggle('is-lit', k < n));
+    items.forEach((li, k) => li.classList.toggle('is-lit', k < n));
+  }
+  whileVisible(scroller, locPins, '0px');
+  desktopMQ.addEventListener('change', () => { lit = -1; requestJobs(); });
   });
 
   /* =======================================================
