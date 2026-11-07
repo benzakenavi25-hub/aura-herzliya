@@ -1,8 +1,10 @@
 /* AURA · Herzliya Pituach — main script */
 (() => {
   'use strict';
+  if (window.__auraBoot) return;   // already started (the head failsafe may load this file a second way)
+  window.__auraBoot = 1;
 
-  const $ = (s, r = document) => r.querySelector(s);
+  const $ =(s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
   const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
   const lerp = (a, b, t) => a + (b - a) * t;
