@@ -753,6 +753,31 @@
   });
 
   /* =======================================================
+     Interlude — residences → day: pinned stage, sharp → blurred crossfade, veil, one line
+     ======================================================= */
+  section("Interlude", () => {
+  const sec = $('#interlude');
+  if (!sec) return;
+  if (!(window.gsap && window.ScrollTrigger)) { sec.classList.add('no-gsap'); return; }
+  gsap.registerPlugin(ScrollTrigger);
+  const stage = $('.interlude__stage', sec);
+  $$('img', sec).forEach((im) => { im.loading = 'eager'; });   // ready before the pin starts
+  const imgs = $$('.interlude__img', sec);
+  const tl = gsap.timeline({
+    defaults: { ease: 'none' },
+    scrollTrigger: { trigger: sec, start: 'top top', end: '+=150%', pin: stage, scrub: 0.8, invalidateOnRefresh: true },
+  });
+  // 0 → 1 timeline units = the whole 150vh of pinned scroll
+  tl.to(imgs, { scale: 1.04, duration: 0.55 }, 0)
+    .to('.interlude__blur', { opacity: 1, duration: 0.4 }, 0)
+    .to('.interlude__veil', { opacity: 0.7, duration: 0.4 }, 0)
+    .to('.interlude__line', { opacity: 1, y: 0, duration: 0.18, ease: 'power2.out' }, 0.2)
+    .to('.interlude__line', { opacity: 0, y: -12, duration: 0.17, ease: 'power1.in' }, 0.72)
+    .to('.interlude__veil', { opacity: 1, duration: 0.3 }, 0.7);
+  tl.set({}, {}, 1);   // pad to exactly 1 unit
+  });
+
+  /* =======================================================
      8 · A day at AURA — pinned horizontal (desktop), snap carousel (phones)
      ======================================================= */
   section("8 · A day at AURA", () => {
