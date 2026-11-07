@@ -20,7 +20,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;1,6..96,400&family=Frank+Ruhl+Libre:wght@300;400&family=IBM+Plex+Sans+Hebrew:wght@300;400;500&display=swap">
 <link rel="preload" href="frames/manifest.json" as="fetch" crossorigin>
-<link rel="stylesheet" href="css/style.css?v=202611071821">
+<link rel="stylesheet" href="css/style.css?v=202611071901">
 <script>document.documentElement.classList.add('js');</script>
 </head>
 <body>
@@ -52,7 +52,7 @@
     <button class="header__menu" id="menuBtn" aria-expanded="false" aria-controls="mobileNav"><span class="sr-only">תפריט</span><i></i><i></i></button>
   </div>
 </header>
-<div class="mnav" id="mobileNav" data-lenis-prevent aria-hidden="true" inert>
+<div class="mnav" id="mobileNav" aria-hidden="true" inert>
   <nav class="mnav__links" aria-label="ניווט ראשי (נייד)">
     <a href="#views">הנוף</a>
     <a href="#residences">הדירות</a>
@@ -192,7 +192,7 @@
         <h2 class="res__title" id="res-title">הדירות</h2>
         <p class="res__count" aria-hidden="true"><span id="resNow">01</span> / 04</p>
       </div>
-      <div class="res__viewport" id="resVP" data-cursor="drag">
+      <div class="res__viewport" id="resVP">
         <ol class="res__track" id="resTrack">
           <li class="rpanel" data-i="0" aria-labelledby="rp0">
             <img src="img/new/P6-1024.webp" srcset="img/new/P6-640.webp 640w, img/new/P6-1024.webp 1024w, img/new/P6-1672.webp 1672w" sizes="100vw" alt="סלון דירת 4 חדרים: ספה בהירה, שולחן טרוורטין, פרקט אדרה ויציאה למרפסת מעוגלת מול הים" loading="lazy" decoding="async" width="1672" height="941">
@@ -270,10 +270,10 @@
       <button class="mats__spec" type="button" id="specBtn" aria-haspopup="dialog">למפרט המלא</button>
     </div>
     <ul class="mats__strip">
-      <li data-cursor="view"><div class="mats__media"><img src="img/new/M1-480.webp" srcset="img/new/M1-480.webp 480w, img/new/M1-800.webp 800w" sizes="(min-width: 900px) 22vw, 44vw" alt="ברז ברונזה מוברשת וטיפת מים נופלת אל כיור טרוורטין" loading="lazy" decoding="async" width="1122" height="1402"></div><p><b>ברונזה מוברשת</b>מתבגרת עם הידיים שנוגעות בה.</p></li>
-      <li data-cursor="view"><div class="mats__media"><img src="img/new/M2-480.webp" srcset="img/new/M2-480.webp 480w, img/new/M2-800.webp 800w" sizes="(min-width: 900px) 22vw, 44vw" alt="פינת אי שיש לבן עם עורקים אפורים, כוס קרמיקה וענף זית" loading="lazy" decoding="async" width="1122" height="1402"></div><p><b>שיש בהיר</b>עורק אחד רציף, מהאי ועד הרצפה.</p></li>
-      <li data-cursor="view"><div class="mats__media"><img src="img/new/M3-480.webp" srcset="img/new/M3-480.webp 480w, img/new/M3-800.webp 800w" sizes="(min-width: 900px) 22vw, 44vw" alt="פרקט אלון טבעי בדוגמת אדרה ואור אחר הצהריים עליו" loading="lazy" decoding="async" width="1122" height="1402"></div><p><b>אלון טבעי</b>בדוגמת אדרה, חם תחת כף הרגל.</p></li>
-      <li data-cursor="view"><div class="mats__media"><img src="img/new/M4-480.webp" srcset="img/new/M4-480.webp 480w, img/new/M4-800.webp 800w" sizes="(min-width: 900px) 22vw, 44vw" alt="משטח טרוורטין עם פס ברונזה מוברשת לאורך הקצה" loading="lazy" decoding="async" width="1122" height="1402"></div><p><b>טרוורטין וברונזה</b>המקום שבו האבן פוגשת את המתכת.</p></li>
+      <li><div class="mats__media"><img src="img/new/M1-480.webp" srcset="img/new/M1-480.webp 480w, img/new/M1-800.webp 800w" sizes="(min-width: 900px) 22vw, 44vw" alt="ברז ברונזה מוברשת וטיפת מים נופלת אל כיור טרוורטין" loading="lazy" decoding="async" width="1122" height="1402"></div><p><b>ברונזה מוברשת</b>מתבגרת עם הידיים שנוגעות בה.</p></li>
+      <li><div class="mats__media"><img src="img/new/M2-480.webp" srcset="img/new/M2-480.webp 480w, img/new/M2-800.webp 800w" sizes="(min-width: 900px) 22vw, 44vw" alt="פינת אי שיש לבן עם עורקים אפורים, כוס קרמיקה וענף זית" loading="lazy" decoding="async" width="1122" height="1402"></div><p><b>שיש בהיר</b>עורק אחד רציף, מהאי ועד הרצפה.</p></li>
+      <li><div class="mats__media"><img src="img/new/M3-480.webp" srcset="img/new/M3-480.webp 480w, img/new/M3-800.webp 800w" sizes="(min-width: 900px) 22vw, 44vw" alt="פרקט אלון טבעי בדוגמת אדרה ואור אחר הצהריים עליו" loading="lazy" decoding="async" width="1122" height="1402"></div><p><b>אלון טבעי</b>בדוגמת אדרה, חם תחת כף הרגל.</p></li>
+      <li><div class="mats__media"><img src="img/new/M4-480.webp" srcset="img/new/M4-480.webp 480w, img/new/M4-800.webp 800w" sizes="(min-width: 900px) 22vw, 44vw" alt="משטח טרוורטין עם פס ברונזה מוברשת לאורך הקצה" loading="lazy" decoding="async" width="1122" height="1402"></div><p><b>טרוורטין וברונזה</b>המקום שבו האבן פוגשת את המתכת.</p></li>
     </ul>
   </div>
 </section>
@@ -313,7 +313,7 @@
           <p class="ff__plantypes" id="ffPlanTypes"></p>
           <p class="ff__planstat" id="ffPlanStat"></p>
         </div>
-        <div class="ff__planwrap" id="ffPlanWrap" data-lenis-prevent>
+        <div class="ff__planwrap" id="ffPlanWrap">
           <svg class="ff__svg" id="ffSvg" viewBox="0 0 800 520" role="group" aria-labelledby="ffPlanTitle"></svg>
         </div>
         <div class="ff__planfoot">
@@ -353,7 +353,7 @@
         <span class="day__now" id="dayNow">07:00</span>
       </div>
     </div>
-    <div class="day__viewport" data-cursor="drag">
+    <div class="day__viewport">
       <ol class="day__track" id="dayTrack">
         <li class="day__card" data-t="6.5">
           <div class="day__media"><img src="img/new/A1-1024.webp" srcset="img/new/A1-640.webp 640w, img/new/A1-1024.webp 1024w, img/new/A1-1672.webp 1672w" sizes="(min-width: 900px) 62vw, 86vw" alt="חדר כושר מואר עם מכשיר פילאטיס מעץ, הליכון ואופני כושר, פתוח לגן זיתים" loading="lazy" decoding="async" width="1672" height="941"></div>
@@ -398,7 +398,7 @@
 <!-- ============ 9 · LOCATION — one image, pins light up as you scroll ============ -->
 <section class="loc" id="location" aria-labelledby="loc-title">
   <div class="loc__scroll" id="locScroll">
-    <div class="loc__stage" id="locStage" data-cursor="view">
+    <div class="loc__stage" id="locStage">
       <img class="loc__img" src="img/new/N1-1024.webp" srcset="img/new/N1-640.webp 640w, img/new/N1-1024.webp 1024w, img/new/N1-1672.webp 1672w" sizes="100vw" alt="טיילת עץ לאורך מרינה הרצליה, יאכטות ומפרשיות על מים שקטים בשעת ערב" loading="lazy" decoding="async" width="1672" height="941">
       <div class="loc__shade" aria-hidden="true"></div>
       <div class="loc__copy">
@@ -498,7 +498,6 @@
 </a>
 
 <p class="sec-count" id="secCount" aria-hidden="true"><span id="secNow">01</span> / 06</p>
-<div class="cursor" id="cursor" aria-hidden="true"><span class="cursor__ring"><span class="cursor__label" id="cursorLabel"></span></span></div>
 
 <nav class="mbar" id="mbar" aria-label="יצירת קשר מהירה">
   <a class="mbar__main" href="#contact">תיאום פגישה</a>
@@ -509,7 +508,7 @@
 </nav>
 
 
-<dialog data-lenis-prevent class="sheet" id="specDlg" aria-labelledby="specDlgTitle">
+<dialog class="sheet" id="specDlg" aria-labelledby="specDlgTitle">
   <div class="sheet__inner">
     <header class="sheet__head">
       <h2 class="sheet__title" id="specDlgTitle">המפרט המלא</h2>
@@ -526,7 +525,7 @@
   </div>
 </dialog>
 
-<dialog data-lenis-prevent class="sheet" id="planDlg" aria-labelledby="planDlgTitle">
+<dialog class="sheet" id="planDlg" aria-labelledby="planDlgTitle">
   <div class="sheet__inner">
     <header class="sheet__head">
       <h2 class="sheet__title" id="planDlgTitle">תוכנית הדירה</h2>
@@ -540,7 +539,7 @@
   </div>
 </dialog>
 
-<dialog data-lenis-prevent class="sheet sheet--sm" id="brochureDlg" aria-labelledby="brTitle">
+<dialog class="sheet sheet--sm" id="brochureDlg" aria-labelledby="brTitle">
   <div class="sheet__inner">
     <header class="sheet__head">
       <h2 class="sheet__title" id="brTitle">חוברת הפרויקט</h2>
@@ -571,7 +570,6 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js" defer></script>
-<script src="js/main.js?v=202611071821" defer></script>
+<script src="js/main.js?v=202611071901" defer></script>
 </body>
 </html>

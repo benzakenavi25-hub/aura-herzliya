@@ -382,7 +382,7 @@ figcaption { font-size: 13px; color: var(--ink-2); margin-top: 14px; }
 .descent { position: relative; z-index: 1; height: 360vh; margin-top: -100vh; margin-top: -100lvh; background: #1C1A17; }
 .descent__stage { position: sticky; top: 0; height: 100vh; height: 100lvh; overflow: hidden; background: #1C1A17; color: var(--stone); }
 .descent__strip { position: absolute; inset: 0; }
-.dpanel, .dslab { position: absolute; left: 0; top: 0; width: 100%; will-change: transform; }
+.dpanel, .dslab { position: absolute; left: 0; top: 0; width: 100%; }
 .dpanel { height: 100%; overflow: hidden; }
 .dpanel img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 50%; display: block; }
 /* the hero's final scrim (blue hour), so the first panel matches the last hero frame exactly */
@@ -399,7 +399,6 @@ figcaption { font-size: 13px; color: var(--ink-2); margin-top: 14px; }
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .3 0 0 0 0 .23 0 0 0 0 .15 0 0 0 .36 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='600'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.006 .02' numOctaves='3' seed='4'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .4 0 0 0 0 .29 0 0 0 .42 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23m)'/%3E%3C/svg%3E"),
     linear-gradient(100deg, #D6C8B2 0%, #CBBBA3 38%, #D2C3AC 62%, #C4B39A 100%);
-  will-change: transform;
 }
 .dslab::before, .dslab::after { content: ""; position: absolute; left: 0; right: 0; height: 26%; z-index: 1; pointer-events: none; }
 .dslab::before { top: 0; background: linear-gradient(to bottom, rgba(38,28,18,.62), rgba(38,28,18,.18) 45%, rgba(38,28,18,0)); box-shadow: inset 0 1px 0 rgba(255,244,226,.35); }
@@ -475,7 +474,7 @@ figcaption { font-size: 13px; color: var(--ink-2); margin-top: 14px; }
 .res__title::after { content: ""; width: 48px; height: 1px; background: currentColor; opacity: .6; }
 .res__count { font-family: var(--f-en); font-size: 16px; color: var(--text); font-variant-numeric: tabular-nums; direction: ltr; }
 .res__viewport { height: 100%; overflow: hidden; }
-.res__track { display: flex; height: 100%; width: max-content; will-change: transform; }
+.res__track { display: flex; height: 100%; width: max-content; }
 .rpanel { position: relative; flex: 0 0 auto; width: var(--pw); height: 100%; overflow: hidden; }
 .rpanel > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 /* scrim on the reading side (RTL start = right) so the type stays AA over any image */
@@ -724,7 +723,7 @@ figcaption { font-size: 13px; color: var(--ink-2); margin-top: 14px; }
 .day__pivot { fill: var(--ink); stroke: none; }
 .day__now { font-family: var(--f-en); font-size: clamp(26px, 2.4vw, 36px); font-variant-numeric: tabular-nums; min-width: 3.2em; direction: ltr; }
 .day__viewport { overflow: hidden; }
-.day__track { display: flex; gap: clamp(20px, 2.4vw, 40px); padding-inline: var(--gutter); width: max-content; will-change: transform; }
+.day__track { display: flex; gap: clamp(20px, 2.4vw, 40px); padding-inline: var(--gutter); width: max-content; }
 .day__card { width: min(62vw, 980px); flex: 0 0 auto; }
 .day__card img { width: 100%; aspect-ratio: 16 / 9.6; object-fit: cover; max-height: 62vh; }
 .day__cap { margin-top: 16px; display: flex; align-items: baseline; gap: 18px; font-family: var(--f-he-display); font-size: clamp(19px, 1.7vw, 26px); font-weight: 300; }
@@ -1015,20 +1014,16 @@ figcaption, .plan__note { font-size: 15px; }
 
 }
 /* =========================================================
-   MOTION — Lenis, word masks, image masks, cursor, marquee, tone, progress, hovers
+   MOTION — line rises, image curtains, marquee, tone, progress, hovers
    (initial states are set by GSAP only, so the page reads fine without JS)
    ========================================================= */
-html.lenis, html.lenis body { height: auto; }
-.lenis.lenis-smooth { scroll-behavior: auto !important; }
-.lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
-.lenis.lenis-stopped { overflow: hidden; }
-
-/* words rise out of a mask (padding keeps Hebrew ascenders/descenders inside the mask) */
-.w { display: inline-block; overflow: hidden; vertical-align: top; padding: .08em .03em .16em; margin: -.08em -.03em -.16em; }
-.w__i { display: inline-block; will-change: transform; }
-
+/* headlines: each line rises once with a soft fade (initial state only once JS has split the lines) */
+.split-ready .ln { display: block; opacity: 0; transform: translateY(.45em); transition: opacity .9s var(--ease-out), transform 1s var(--ease-out); transition-delay: calc(var(--i) * .12s); }
+.split-ready.is-in .ln { opacity: 1; transform: none; }
 /* image masks */
-.mats__media { position: relative; overflow: hidden; aspect-ratio: 4 / 5; will-change: clip-path; }
+.mats__media { position: relative; overflow: hidden; aspect-ratio: 4 / 5; }
+.curtain { clip-path: inset(12%); transition: clip-path 1.2s var(--ease-out); }
+.curtain.is-in { clip-path: inset(0); }
 .mats__media img, .mats__strip .mats__media img { position: absolute; left: 0; top: -6%; width: 100%; height: 112%; aspect-ratio: auto; object-fit: cover; }
 .finale__media { position: absolute; inset: 0; z-index: -2; overflow: hidden; }
 .finale__media .finale__bg { z-index: auto; top: -6%; bottom: auto; height: 112%; }
@@ -1055,33 +1050,23 @@ html.menu-open .sec-count { opacity: 0; }
 
 /* marquee: one outlined serif line between the day and the location */
 .marquee { overflow: hidden; padding-block: clamp(28px, 5vw, 72px); }
-.marquee__track { display: flex; width: max-content; will-change: transform; }
+.marquee__track { display: flex; width: max-content; }
 .marquee__track span { font-family: var(--f-en); font-weight: 400; font-size: clamp(72px, 13vw, 210px); line-height: 1; white-space: nowrap;
   color: transparent; -webkit-text-stroke: 1px var(--bronze); padding-inline-end: .3em; }
 
-/* custom cursor (mouse only) */
-.cursor { display: none; }
-html.has-cursor .cursor { display: block; position: fixed; left: 0; top: 0; z-index: 300; pointer-events: none; opacity: 0; transition: opacity .3s ease; }
-html.has-cursor .cursor.is-on { opacity: 1; }
-.cursor__ring { position: absolute; left: -40px; top: -40px; width: 80px; height: 80px; border-radius: 50%; display: grid; place-items: center;
-  background: var(--bronze); transform: scale(.1); transition: transform .45s var(--ease-out), background .3s ease; }
-.cursor[data-mode="link"] .cursor__ring { transform: scale(.42); background: rgba(176,138,90,.4); }
-.cursor[data-mode="view"] .cursor__ring, .cursor[data-mode="drag"] .cursor__ring { transform: scale(1); background: rgba(176,138,90,.94); }
-.cursor__label { font-family: var(--f-he); font-size: 14px; font-weight: 500; color: var(--bg); opacity: 0; transition: opacity .25s ease; }
-.cursor[data-mode="view"] .cursor__label, .cursor[data-mode="drag"] .cursor__label { opacity: 1; transition-delay: .1s; }
-html.has-cursor, html.has-cursor * { cursor: none !important; }
-html.has-cursor input[type="text"], html.has-cursor input[type="tel"], html.has-cursor input[type="email"] { cursor: text !important; }
-html.has-cursor.menu-open .cursor { opacity: 0; }
-html.has-cursor.menu-open, html.has-cursor.menu-open * { cursor: auto !important; }
 html.is-dragging, html.is-dragging * { user-select: none; -webkit-user-select: none; }
 .rpanel > img, .day__media img { -webkit-user-drag: none; }
 
-/* hover: slow image zoom + a thin line that draws in (residence panels, day cards) */
+/* hover (mouse only): slow 1.03 image zoom, a thin line that draws in, subtle link colour */
 @media (hover: hover) and (pointer: fine) {
-  .rpanel > img, .day__media img { transition: transform 1.8s var(--ease-out); }
-  .rpanel:hover > img, .day__card:hover .day__media img { transform: scale(1.05); }
+  .rpanel > img, .day__media img, .mats__media img { transition: transform .8s var(--ease-out); }
+  .rpanel:hover > img, .day__card:hover .day__media img, .mats__media:hover img { transform: scale(1.03); }
   .rpanel__info::before { content: ""; display: block; width: 72px; height: 1px; margin-bottom: 18px; background: var(--bronze); transform: scaleX(0); transform-origin: right; transition: transform .9s var(--ease-out); }
   .rpanel:hover .rpanel__info::before { transform: scaleX(1); }
   .day__media::after { content: ""; position: absolute; inset: auto 0 0 0; height: 2px; background: var(--bronze); transform: scaleX(0); transform-origin: right; transition: transform .9s var(--ease-out); }
   .day__card:hover .day__media::after { transform: scaleX(1); }
+  .mats__spec, .loc__nav, .finale__brochure { transition: color .25s ease, border-color .25s ease; }
+  .mats__spec:hover { color: var(--text); }
+  .loc__nav:hover { color: #fff; }
+  .finale__brochure:hover { color: var(--bronze-ink); }
 }
