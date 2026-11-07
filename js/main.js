@@ -462,6 +462,7 @@
   }).catch(() => {});
   new IntersectionObserver(([en], obs) => {
     if (!en.isIntersecting) return;
+    $$('source[data-srcset]', stage).forEach((s) => { s.srcset = s.dataset.srcset; s.removeAttribute('data-srcset'); });
     $$('img[data-src]', stage).forEach((im) => { im.srcset = im.dataset.srcset; im.src = im.dataset.src; im.removeAttribute('data-src'); });
     obs.disconnect();
   }, { rootMargin: '1600px 0px' }).observe(sec);

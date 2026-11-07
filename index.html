@@ -20,7 +20,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;1,6..96,400&family=Frank+Ruhl+Libre:wght@300;400&family=IBM+Plex+Sans+Hebrew:wght@300;400;500&display=swap">
 <link rel="preload" href="frames/manifest.json" as="fetch" crossorigin>
-<link rel="stylesheet" href="css/style.css?v=202611080118">
+<link rel="stylesheet" href="css/style.css?v=202611080131">
 <script>document.documentElement.classList.add('js');</script>
 </head>
 <body>
@@ -139,15 +139,24 @@
       </div>
       <div class="dslab" aria-hidden="true"><div class="dslab__tex"></div></div>
       <div class="dpanel" data-k="1">
-        <img data-src="img/new/V3-1024.webp" data-srcset="img/new/V3-640.webp 640w, img/new/V3-1024.webp 1024w, img/new/V3-1672.webp 1672w" sizes="100vw" alt="הנוף מקומה 12: אופק פתוח, המפרץ כולו ושקיעה מעל המים" decoding="async" width="1672" height="941">
+        <picture>
+          <source media="(orientation: portrait)" data-srcset="img/new/V3m-720.webp 720w, img/new/V3m-900.webp 900w" sizes="100vw">
+          <img data-src="img/new/V3-1024.webp" data-srcset="img/new/V3-640.webp 640w, img/new/V3-1024.webp 1024w, img/new/V3-1672.webp 1672w" sizes="100vw" alt="הנוף מקומה 12: אופק פתוח, המפרץ כולו ושקיעה מעל המים" decoding="async" width="1672" height="941">
+        </picture>
       </div>
       <div class="dslab" aria-hidden="true"><div class="dslab__tex"></div></div>
       <div class="dpanel" data-k="2">
-        <img data-src="img/new/V2-1024.webp" data-srcset="img/new/V2-640.webp 640w, img/new/V2-1024.webp 1024w, img/new/V2-1672.webp 1672w" sizes="100vw" alt="הנוף מקומה 7: הווילות מתחת, רצועת החוף הרחבה והמפרץ" decoding="async" width="1672" height="941">
+        <picture>
+          <source media="(orientation: portrait)" data-srcset="img/new/V2m-720.webp 720w, img/new/V2m-900.webp 900w" sizes="100vw">
+          <img data-src="img/new/V2-1024.webp" data-srcset="img/new/V2-640.webp 640w, img/new/V2-1024.webp 1024w, img/new/V2-1672.webp 1672w" sizes="100vw" alt="הנוף מקומה 7: הווילות מתחת, רצועת החוף הרחבה והמפרץ" decoding="async" width="1672" height="941">
+        </picture>
       </div>
       <div class="dslab" aria-hidden="true"><div class="dslab__tex"></div></div>
       <div class="dpanel" data-k="3">
-        <img data-src="img/new/V1-1024.webp" data-srcset="img/new/V1-640.webp 640w, img/new/V1-1024.webp 1024w, img/new/V1-1672.webp 1672w" sizes="100vw" alt="הנוף מקומה 3: גגות רעפים, דקלים ובוגנוויליה, והים מבצבץ מעליהם" decoding="async" width="1672" height="941">
+        <picture>
+          <source media="(orientation: portrait)" data-srcset="img/new/V1m-720.webp 720w, img/new/V1m-900.webp 900w" sizes="100vw">
+          <img data-src="img/new/V1-1024.webp" data-srcset="img/new/V1-640.webp 640w, img/new/V1-1024.webp 1024w, img/new/V1-1672.webp 1672w" sizes="100vw" alt="הנוף מקומה 3: גגות רעפים, דקלים ובוגנוויליה, והים מבצבץ מעליהם" decoding="async" width="1672" height="941">
+        </picture>
       </div>
     </div>
 
@@ -181,8 +190,14 @@
 <section class="interlude" id="interlude" aria-label="מעבר">
   <div class="interlude__stage">
     <div class="interlude__media">
-      <img class="interlude__img interlude__sharp" src="img/new/V3-1024.webp" srcset="img/new/V3-640.webp 640w, img/new/V3-1024.webp 1024w, img/new/V3-1672.webp 1672w" sizes="100vw" alt="" loading="lazy" decoding="async" width="1672" height="941">
-      <img class="interlude__img interlude__blur" src="img/new/V3-blur.webp" alt="" loading="lazy" decoding="async" width="900" height="506">
+      <picture>
+        <source media="(orientation: portrait)" srcset="img/new/V3m-720.webp 720w, img/new/V3m-900.webp 900w" sizes="100vw">
+        <img class="interlude__img interlude__sharp" src="img/new/V3-1024.webp" srcset="img/new/V3-640.webp 640w, img/new/V3-1024.webp 1024w, img/new/V3-1672.webp 1672w" sizes="100vw" alt="" loading="lazy" decoding="async" width="1672" height="941">
+      </picture>
+      <picture>
+        <source media="(orientation: portrait)" srcset="img/new/V3m-blur.webp">
+        <img class="interlude__img interlude__blur" src="img/new/V3-blur.webp" alt="" loading="lazy" decoding="async" width="900" height="506">
+      </picture>
     </div>
     <div class="interlude__vignette" aria-hidden="true"></div>
     <div class="interlude__veil" aria-hidden="true"></div>
@@ -207,7 +222,10 @@
       <div class="res__viewport" id="resVP">
         <ol class="res__track" id="resTrack">
           <li class="rpanel" data-i="0" aria-labelledby="rp0">
-            <img src="img/new/P6-1024.webp" srcset="img/new/P6-640.webp 640w, img/new/P6-1024.webp 1024w, img/new/P6-1672.webp 1672w" sizes="100vw" alt="סלון דירת 4 חדרים: ספה בהירה, שולחן טרוורטין, פרקט אדרה ויציאה למרפסת מעוגלת מול הים" loading="lazy" decoding="async" width="1672" height="941">
+            <picture>
+              <source media="(orientation: portrait)" srcset="img/new/P6m-720.webp 720w, img/new/P6m-900.webp 900w" sizes="100vw">
+              <img src="img/new/P6-1024.webp" srcset="img/new/P6-640.webp 640w, img/new/P6-1024.webp 1024w, img/new/P6-1672.webp 1672w" sizes="100vw" alt="סלון דירת 4 חדרים: ספה בהירה, שולחן טרוורטין, פרקט אדרה ויציאה למרפסת מעוגלת מול הים" loading="lazy" decoding="async" width="1672" height="941">
+            </picture>
             <div class="rpanel__info">
               <p class="rpanel__num" aria-hidden="true">4</p>
               <h3 class="rpanel__name" id="rp0">דירת 4 חדרים</h3>
@@ -223,7 +241,10 @@
             </div>
           </li>
           <li class="rpanel" data-i="1" aria-labelledby="rp1">
-            <img src="img/new/P2-1024.webp" srcset="img/new/P2-640.webp 640w, img/new/P2-1024.webp 1024w, img/new/P2-1672.webp 1672w" sizes="100vw" alt="מטבח ופינת אוכל בדירת 5 חדרים: אי שיש, ארונות אלון ושולחן ערוך מול חלון לים" loading="lazy" decoding="async" width="1672" height="941">
+            <picture>
+              <source media="(orientation: portrait)" srcset="img/new/P2m-720.webp 720w, img/new/P2m-900.webp 900w" sizes="100vw">
+              <img src="img/new/P2-1024.webp" srcset="img/new/P2-640.webp 640w, img/new/P2-1024.webp 1024w, img/new/P2-1672.webp 1672w" sizes="100vw" alt="מטבח ופינת אוכל בדירת 5 חדרים: אי שיש, ארונות אלון ושולחן ערוך מול חלון לים" loading="lazy" decoding="async" width="1672" height="941">
+            </picture>
             <div class="rpanel__info">
               <p class="rpanel__num" aria-hidden="true">5</p>
               <h3 class="rpanel__name" id="rp1">דירת 5 חדרים</h3>
@@ -239,7 +260,10 @@
             </div>
           </li>
           <li class="rpanel" data-i="2" aria-labelledby="rp2">
-            <img src="img/new/P5-1024.webp" srcset="img/new/P5-640.webp 640w, img/new/P5-1024.webp 1024w, img/new/P5-1672.webp 1672w" sizes="100vw" alt="סלון דירת הגן נפתח אל גינה פרטית עם עצי זית, לבנדר ושולחן אבן, והים מעבר לחומה" loading="lazy" decoding="async" width="1672" height="941">
+            <picture>
+              <source media="(orientation: portrait)" srcset="img/new/P5m-720.webp 720w, img/new/P5m-900.webp 900w" sizes="100vw">
+              <img src="img/new/P5-1024.webp" srcset="img/new/P5-640.webp 640w, img/new/P5-1024.webp 1024w, img/new/P5-1672.webp 1672w" sizes="100vw" alt="סלון דירת הגן נפתח אל גינה פרטית עם עצי זית, לבנדר ושולחן אבן, והים מעבר לחומה" loading="lazy" decoding="async" width="1672" height="941">
+            </picture>
             <div class="rpanel__info">
               <p class="rpanel__num" aria-hidden="true">5</p>
               <h3 class="rpanel__name" id="rp2">דירת גן · מיני פנטהאוז</h3>
@@ -255,7 +279,10 @@
             </div>
           </li>
           <li class="rpanel" data-i="3" aria-labelledby="rp3">
-            <img src="img/09-living-room-1024.webp" srcset="img/09-living-room-640.webp 640w, img/09-living-room-1024.webp 1024w, img/09-living-room-1672.webp 1672w" sizes="100vw" alt="סלון הפנטהאוז: ספות בהירות, שולחן טרוורטין וקיר זכוכית פתוח אל מרפסת הגג והים בשעת דמדומים" loading="lazy" decoding="async" width="1672" height="941">
+            <picture>
+              <source media="(orientation: portrait)" srcset="img/new/PHm-720.webp 720w, img/new/PHm-900.webp 900w" sizes="100vw">
+              <img src="img/09-living-room-1024.webp" srcset="img/09-living-room-640.webp 640w, img/09-living-room-1024.webp 1024w, img/09-living-room-1672.webp 1672w" sizes="100vw" alt="סלון הפנטהאוז: ספות בהירות, שולחן טרוורטין וקיר זכוכית פתוח אל מרפסת הגג והים בשעת דמדומים" loading="lazy" decoding="async" width="1672" height="941">
+            </picture>
             <div class="rpanel__info">
               <p class="rpanel__num" aria-hidden="true">6</p>
               <h3 class="rpanel__name" id="rp3">פנטהאוז גג</h3>
@@ -446,6 +473,6 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
-<script src="js/main.js?v=202611080118" defer></script>
+<script src="js/main.js?v=202611080131" defer></script>
 </body>
 </html>
