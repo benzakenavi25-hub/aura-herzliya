@@ -694,7 +694,7 @@
   markRes(0);
   $$('[data-plan]', resTrack).forEach((b) => b.addEventListener('click', () => { renderPlan(PLANS[+b.dataset.plan]); openDlg(planDlg); }));
   $$('[data-apt]', resTrack).forEach((a) => a.addEventListener('click', () => setApt(PLANS[+a.dataset.apt].apt)));
-  $('#specBtn').addEventListener('click', () => openDlg($('#specDlg')));
+  $('#specBtn')?.addEventListener('click', () => openDlg($('#specDlg')));
 
   // --- plan dialog: thin lines, numbered rooms, legend beside ---
   const planDlg = $('#planDlg'), planSvg = $('#planSvg'), planLegend = $('#planLegend');
