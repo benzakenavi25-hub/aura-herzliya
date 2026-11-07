@@ -206,6 +206,8 @@
     ctx.drawImage(img, pl.dx, pl.dy, iw * pl.s, ih * pl.s);
     if (b >= 0) { ctx.globalAlpha = f; ctx.drawImage(frames[b], pl.dx, pl.dy, iw * pl.s, ih * pl.s); }
     ctx.globalAlpha = 1;
+    // final frame on screen → hand the descent's first panel an exact pixel copy of this canvas
+    if (a === times.length - 1 && b < 0 && window.__homeSync) window.__homeSync(canvas);
     if (pl.dy > 0.5) { buildStrip(b >= 0 && f > 0.5 ? frames[b] : img, b >= 0 && f > 0.5 ? b : a); drawSky(pl, iw); }
   }
 
@@ -233,8 +235,10 @@
     if (c !== lastActive) { railItems.forEach((li, n) => li.classList.toggle('is-active', n === c)); lastActive = c; }
     if (railFill) railFill.parentElement.style.setProperty('--p', progress.toFixed(3));
     hero.classList.toggle('is-started', progress > 0.03);
-    hero.classList.toggle('is-ending', progress >= 0.985);
+    hero.classList.toggle('is-ending', progress >= 0.96);
   }
+  // let the descent force the hero onto its final frame (scrub smoothing can lag a fast flick) just before the swap
+  window.__heroFinish = () => { if (progress < 1) { lastDrawKey = ''; setProgress(1); } };
 
   function setProgress(p) { progress = clamp(p, 0, 1); draw(); updateUI(); }
 
@@ -253,6 +257,7 @@
       const push = (i) => { if (i >= 0 && i < n && !seen.has(i)) { seen.add(i); order.push(i); } };
       for (let i = 0; i < 12; i++) push(i);
       for (let i = 0; i < n; i += 24) push(i);
+      push(n - 1);      // the final frame is the descent's first panel: it must be ready before the hand-off
       const gate = order.length;
       for (let i = 0; i < n; i++) push(i);
 
@@ -460,6 +465,14 @@
     const n = m.sets[key] && m.sets[key].count;
     if (n && home) home.src = `frames/${key}/${String(n).padStart(4, '0')}.webp`;
   }).catch(() => {});
+  // …and, once the hero has drawn that frame, a 1:1 canvas copy of it (identical resampling → pixel-identical swap)
+  const homeCv = $('#descentHomeCv');
+  window.__homeSync = (src) => {
+    if (!homeCv) return;
+    if (homeCv.width !== src.width || homeCv.height !== src.height) { homeCv.width = src.width; homeCv.height = src.height; }
+    homeCv.getContext('2d', { alpha: false }).drawImage(src, 0, 0);
+    homeCv.classList.add('is-synced');
+  };
   new IntersectionObserver(([en], obs) => {
     if (!en.isIntersecting) return;
     $$('source[data-srcset]', stage).forEach((s) => { s.srcset = s.dataset.srcset; s.removeAttribute('data-srcset'); });
@@ -469,7 +482,7 @@
 
   // scroll drives only penthouse → slab → floor 12 (section is 100vh + 260vh tall);
   // floors 7 and 3 are reached through the elevator, which animates the stage without moving the page
-  const SEG = [['hold', .35], ['move', 1.6], ['hold', .65]];
+  const SEG = [['hold', .17], ['move', 1.6], ['hold', .83]];
   const TOTAL = SEG.reduce((s, [, d]) => s + d, 0);
   const ease = (x) => (x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
   const camera = (u) => {           // → 0 (penthouse) … 1 (floor 12)
@@ -489,9 +502,12 @@
   // …and the same at the other end: the interlude opens on this V3 frame, pinned beneath the stage.
   // Over the last ~35vh before the release the captions, shade and elevator fade out, so the frames match.
   const ilu = window.gsap && window.ScrollTrigger ? $('#interlude') : null;
-  let out = 0;
+  let out = 0, liftIn = '';
   const handOff = () => {
+    if (hero && scrollY >= sec.offsetTop - innerHeight * .3 && window.__heroFinish) window.__heroFinish();
     if (hero) hero.classList.toggle('is-handed', scrollY >= sec.offsetTop - 1);
+    const li = clamp((scrollY - sec.offsetTop) / (innerHeight * .12), 0, 1).toFixed(3);
+    if (li !== liftIn) { liftIn = li; stage.style.setProperty('--lift-in', li); }
     if (!ilu) return;
     const end = ilu.offsetTop, span = innerHeight * .35;
     const o = clamp((scrollY - (end - span)) / span, 0, 1);
