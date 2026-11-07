@@ -20,20 +20,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;1,6..96,400&family=Frank+Ruhl+Libre:wght@300;400&family=IBM+Plex+Sans+Hebrew:wght@300;400;500&display=swap">
 <link rel="preload" href="frames/manifest.json" as="fetch" crossorigin>
-<link rel="stylesheet" href="css/style.css?v=202611072031">
-<script>document.documentElement.classList.add('js');
-/* Failsafe for slow phones: if the CDN scripts (GSAP) hang, deferred main.js never runs and the loader stays forever. */
-(function () {
-  setTimeout(function () {
-    if (window.__auraBoot) return;
-    var s = document.createElement('script'); s.src = 'js/main.js'; document.head.appendChild(s);
-  }, 5000);
-  setTimeout(function () {
-    var l = document.getElementById('loader');
-    if (l) { l.classList.add('is-done'); document.body.classList.remove('is-loading'); }
-  }, 16000);
-})();
-</script>
+<link rel="stylesheet" href="css/style.css?v=202611072313">
+<script>document.documentElement.classList.add('js');</script>
 </head>
 <body>
 <a class="skip" href="#main">דילוג לתוכן הראשי</a>
@@ -403,43 +391,58 @@
   </div>
 </section>
 
-<!-- ============ 9 · LOCATION — one image, pins light up as you scroll ============ -->
-<section class="loc" id="location" aria-labelledby="loc-title">
-  <div class="loc__scroll" id="locScroll">
-    <div class="loc__stage" id="locStage">
-      <img class="loc__img" src="img/new/N1-1024.webp" srcset="img/new/N1-640.webp 640w, img/new/N1-1024.webp 1024w, img/new/N1-1672.webp 1672w" sizes="100vw" alt="טיילת עץ לאורך מרינה הרצליה, יאכטות ומפרשיות על מים שקטים בשעת ערב" loading="lazy" decoding="async" width="1672" height="941">
-      <div class="loc__shade" aria-hidden="true"></div>
-      <div class="loc__copy">
-        <h2 class="loc__title" id="loc-title">הים במרחק הליכה.<br>כל השאר — קרוב.</h2>
-        <a class="loc__nav" href="https://www.google.com/maps/search/?api=1&amp;query=32.1668%2C34.8072" target="_blank" rel="noopener">לניווט<span class="sr-only"> (Google Maps, נפתח בחלון חדש)</span></a>
+<!-- ============ 9 · LOCATION ============ -->
+<section class="section location" id="location" aria-labelledby="loc-title">
+  <div class="wrap">
+    <div class="location__grid">
+      <div class="location__copy">
+        <p class="eyebrow" data-reveal>מיקום</p>
+        <h2 class="display" id="loc-title" data-reveal-lines><span>הים במרחק הליכה.</span><span>כל השאר — קרוב.</span></h2>
+        <p class="lead" data-reveal>ברחוב שקט בהרצליה פיתוח, בין החוף למרינה ובמרחק דקות ממרכז העסקים.</p>
+        <ul class="places" id="places">
+          <li data-pin="beach"><span>חוף אכדיה</span><span class="places__d">4 דק׳ הליכה</span></li>
+          <li data-pin="marina"><span>מרינה הרצליה</span><span class="places__d">1.2 ק״מ</span></li>
+          <li data-pin="biz"><span>אזור התעסוקה פיתוח</span><span class="places__d">1.5 ק״מ</span></li>
+          <li data-pin="road2"><span>כביש החוף (2)</span><span class="places__d">3 דק׳ נסיעה</span></li>
+          <li data-pin="train"><span>תחנת רכבת הרצליה</span><span class="places__d">8 דק׳ נסיעה</span></li>
+          <li data-pin="tlv"><span>מרכז תל אביב</span><span class="places__d">15 דק׳ נסיעה</span></li>
+        </ul>
       </div>
-      <ol class="loc__pins" aria-hidden="true">
-        <li class="lpin" data-k="0" style="left: 16%; top: 52%"><span class="lpin__dot">1</span><span class="lpin__line"></span><span class="lpin__label"><b>חוף אכדיה</b> · 4 דק׳ הליכה</span></li>
-        <li class="lpin" data-k="1" style="left: 50%; top: 62%"><span class="lpin__dot">2</span><span class="lpin__line"></span><span class="lpin__label"><b>מרינה הרצליה</b> · 1.2 ק״מ</span></li>
-        <li class="lpin" data-k="2" style="left: 70%; top: 40%"><span class="lpin__dot">3</span><span class="lpin__line"></span><span class="lpin__label"><b>אזור התעסוקה</b> · 1.5 ק״מ</span></li>
-        <li class="lpin" data-k="3" style="left: 86%; top: 50%"><span class="lpin__dot">4</span><span class="lpin__line"></span><span class="lpin__label"><b>כביש החוף</b> · 3 דק׳ נסיעה</span></li>
-        <li class="lpin" data-k="4" style="left: 34%; top: 36%"><span class="lpin__dot">5</span><span class="lpin__line"></span><span class="lpin__label"><b>רכבת הרצליה</b> · 8 דק׳ נסיעה</span></li>
-      </ol>
+      <div class="location__map">
+        <div class="map" id="map" role="region" aria-label="מפת הסביבה של AURA בהרצליה פיתוח">
+          <button class="map__activate" id="mapActivate" type="button">הקישו כדי להזיז את המפה</button>
+        </div>
+        <p class="map__note">מיקום הפרויקט להמחשה בלבד</p>
+      </div>
     </div>
-    <ol class="loc__list" id="locList" aria-label="מה קרוב">
-      <li data-k="0"><span class="loc__n" aria-hidden="true">1</span><b>חוף אכדיה</b><span>4 דק׳ הליכה</span></li>
-      <li data-k="1"><span class="loc__n" aria-hidden="true">2</span><b>מרינה הרצליה</b><span>1.2 ק״מ</span></li>
-      <li data-k="2"><span class="loc__n" aria-hidden="true">3</span><b>אזור התעסוקה</b><span>1.5 ק״מ</span></li>
-      <li data-k="3"><span class="loc__n" aria-hidden="true">4</span><b>כביש החוף</b><span>3 דק׳ נסיעה</span></li>
-      <li data-k="4"><span class="loc__n" aria-hidden="true">5</span><b>רכבת הרצליה</b><span>8 דק׳ נסיעה</span></li>
-    </ol>
+    <figure class="location__fig img-reveal">
+      <img src="img/new/N1-1024.webp" srcset="img/new/N1-640.webp 640w, img/new/N1-1024.webp 1024w, img/new/N1-1672.webp 1672w" sizes="(min-width: 900px) 70vw, 100vw" alt="טיילת עץ לאורך מרינה, יאכטות ומפרשיות על מים שקטים בשעת ערב" loading="lazy" decoding="async" width="1672" height="941">
+      <figcaption>החיים על קו החוף</figcaption>
+    </figure>
   </div>
-  <p class="loc__note">המיקומים על התמונה להמחשה בלבד</p>
 </section>
 
-<!-- ============ 12 · FINALE + CONTACT ============ -->
-<section class="finale" id="contact" aria-labelledby="contact-title">
-  <img class="finale__bg" src="img/new/N2-1024.webp" srcset="img/new/N2-640.webp 640w, img/new/N2-1024.webp 1024w, img/new/N2-1672.webp 1672w" sizes="100vw" alt="מגדל AURA בלילה, המרפסות מוארות מעל קו החוף" loading="lazy" decoding="async" width="1672" height="941">
-  <div class="finale__shade" aria-hidden="true"></div>
-  <div class="finale__grid wrap">
-    <h2 class="finale__line" id="contact-title">רק 38 משפחות<br>יגורו כאן.</h2>
-    <div class="finale__card">
-      <p class="finale__eyebrow">הרשמה מוקדמת · תיאום פגישה במשרדי המכירות</p>
+<!-- ============ 12 · CONTACT ============ -->
+<section class="section contact" id="contact" aria-labelledby="contact-title">
+  <div class="contact__bg" aria-hidden="true">
+    <img src="img/new/N2-1024.webp" srcset="img/new/N2-640.webp 640w, img/new/N2-1024.webp 1024w, img/new/N2-1672.webp 1672w" sizes="100vw" alt="" loading="lazy" decoding="async" width="1672" height="941">
+  </div>
+  <div class="wrap contact__grid">
+   <div class="contact__panel">
+    <div class="contact__intro">
+      <p class="eyebrow eyebrow--light" data-reveal>הרשמה מוקדמת</p>
+      <h2 class="display" id="contact-title" data-reveal-lines><span>הבית הבא שלכם</span><span>מתחיל בשיחה.</span></h2>
+      <p class="lead" data-reveal>השאירו פרטים להרשמה מוקדמת או לתיאום פגישה אישית במשרדי המכירות. נחזור אליכם תוך יום עסקים אחד.</p>
+      <button class="btn-line btn-line--light" type="button" id="brochureBtn" aria-haspopup="dialog">להורדת החוברת</button>
+      <address class="contact__office" data-reveal>
+        <span class="contact__label">משרדי המכירות</span>
+        רח׳ השקמה 8, הרצליה פיתוח<br>
+        א׳–ה׳ <span dir="ltr">10:00-19:00</span> · ו׳ <span dir="ltr">9:00-13:00</span><br>
+        <a href="tel:+97290000000" dir="ltr">09-000-0000</a>
+      </address>
+    </div>
+
+    <div class="contact__formwrap">
       <form class="form" id="leadForm" novalidate>
         <p class="form__floor" id="formFloor" hidden><span id="formFloorText"></span><button type="button" id="formFloorClear" aria-label="הסרת הקומה שנבחרה">×</button></p>
         <input type="hidden" name="floor" id="f-floor">
@@ -481,22 +484,28 @@
         <p>הפרטים התקבלו. נציג מטעם AURA יחזור אליכם בהקדם לתיאום פגישה במשרדי המכירות.</p>
         <p class="success__small">בינתיים, הים לא הולך לשום מקום.</p>
       </div>
-      <button class="finale__brochure" type="button" id="brochureBtn" aria-haspopup="dialog">להורדת החוברת</button>
     </div>
+   </div>
   </div>
 </section>
 
 </main>
 
 <footer class="footer">
-  <div class="wrap footer__row">
-    <p class="footer__mark">AURA</p>
-    <nav aria-label="קישורים משפטיים">
-      <a href="privacy.html">מדיניות פרטיות</a>
-      <a href="accessibility.html">הצהרת נגישות</a>
-      <a href="terms.html">תנאי שימוש</a>
-    </nav>
-    <p class="footer__demo">אתר תצוגה · שמות, נתונים והדמיות להמחשה בלבד</p>
+  <div class="wrap">
+    <div class="footer__top">
+      <p class="footer__mark">AURA</p>
+      <p class="footer__dev">יזמות ובנייה: <strong>סלע ים יזמות בע״מ</strong></p>
+    </div>
+    <div class="footer__bottom">
+      <nav aria-label="קישורים משפטיים">
+        <a href="privacy.html">מדיניות פרטיות</a>
+        <a href="accessibility.html">הצהרת נגישות</a>
+        <a href="terms.html">תנאי שימוש</a>
+      </nav>
+      <p class="footer__demo">אתר תצוגה · ההדמיות להמחשה בלבד</p>
+      <p class="footer__copy">© 2026 AURA הרצליה פיתוח</p>
+    </div>
   </div>
 </footer>
 
@@ -576,6 +585,6 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
-<script src="js/main.js?v=202611072031" defer></script>
+<script src="js/main.js?v=202611072313" defer></script>
 </body>
 </html>
