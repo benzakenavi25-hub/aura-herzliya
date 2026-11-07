@@ -900,7 +900,12 @@ figcaption, .plan__note { font-size: 15px; }
 .contact__bg::after { background:
   linear-gradient(to left, rgba(14,18,26,.62) 0%, rgba(14,18,26,.38) 42%, rgba(14,18,26,.08) 72%),
   linear-gradient(to top, rgba(14,18,26,.45) 0%, rgba(14,18,26,0) 30%); }
-.contact__bg img { object-position: 100% 45%; }
+/* desktop: tower sits beside the panel (not behind it); image anchored bottom-left, sky colour fills above */
+@media (min-width: 901px) {
+  .contact__bg { background: linear-gradient(to bottom, #14214f 0%, #1c3070 45%, #2b4285 100%); }
+  .contact__bg img { position: absolute; left: 0; bottom: 0; width: 165%; max-width: none; height: auto;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 22%); mask-image: linear-gradient(to bottom, transparent 0, #000 22%); }
+}
 .contact__grid { display: block; padding-block: clamp(72px, 9vw, 130px); }
 .contact__panel {
   width: min(560px, 44vw); display: flex; flex-direction: column;
