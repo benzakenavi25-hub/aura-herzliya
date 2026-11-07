@@ -20,7 +20,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;1,6..96,400&family=Frank+Ruhl+Libre:wght@300;400&family=IBM+Plex+Sans+Hebrew:wght@300;400;500&display=swap">
 <link rel="preload" href="frames/manifest.json" as="fetch" crossorigin>
-<link rel="stylesheet" href="css/style.css?v=202611072343">
+<link rel="stylesheet" href="css/style.css?v=202611072353">
 <script>document.documentElement.classList.add('js');</script>
 </head>
 <body>
@@ -43,7 +43,6 @@
       <a href="#views">הנוף</a>
       <a href="#residences">הדירות</a>
       <a href="#day">יום ב־AURA</a>
-      <a href="#location">מיקום</a>
     </nav>
     <a class="header__cta" href="#contact">תיאום פגישה</a>
     <button class="header__menu" id="menuBtn" aria-expanded="false" aria-controls="mobileNav"><span class="sr-only">תפריט</span><i></i><i></i></button>
@@ -54,7 +53,6 @@
     <a href="#views">הנוף</a>
     <a href="#residences">הדירות</a>
     <a href="#day">יום ב־AURA</a>
-    <a href="#location">מיקום</a>
     <a href="#contact">תיאום פגישה</a>
   </nav>
   <div class="mnav__foot">
@@ -311,37 +309,6 @@
   </div>
 </section>
 
-<!-- ============ 9 · LOCATION ============ -->
-<section class="section location" id="location" aria-labelledby="loc-title">
-  <div class="wrap">
-    <div class="location__grid">
-      <div class="location__copy">
-        <p class="eyebrow" data-reveal>מיקום</p>
-        <h2 class="display" id="loc-title" data-reveal-lines><span>הים במרחק הליכה.</span><span>כל השאר — קרוב.</span></h2>
-        <p class="lead" data-reveal>ברחוב שקט בהרצליה פיתוח, בין החוף למרינה ובמרחק דקות ממרכז העסקים.</p>
-        <ul class="places" id="places">
-          <li data-pin="beach"><span>חוף אכדיה</span><span class="places__d">4 דק׳ הליכה</span></li>
-          <li data-pin="marina"><span>מרינה הרצליה</span><span class="places__d">1.2 ק״מ</span></li>
-          <li data-pin="biz"><span>אזור התעסוקה פיתוח</span><span class="places__d">1.5 ק״מ</span></li>
-          <li data-pin="road2"><span>כביש החוף (2)</span><span class="places__d">3 דק׳ נסיעה</span></li>
-          <li data-pin="train"><span>תחנת רכבת הרצליה</span><span class="places__d">8 דק׳ נסיעה</span></li>
-          <li data-pin="tlv"><span>מרכז תל אביב</span><span class="places__d">15 דק׳ נסיעה</span></li>
-        </ul>
-      </div>
-      <div class="location__map">
-        <div class="map" id="map" role="region" aria-label="מפת הסביבה של AURA בהרצליה פיתוח">
-          <button class="map__activate" id="mapActivate" type="button">הקישו כדי להזיז את המפה</button>
-        </div>
-        <p class="map__note">מיקום הפרויקט להמחשה בלבד</p>
-      </div>
-    </div>
-    <figure class="location__fig img-reveal">
-      <img src="img/new/N1-1024.webp" srcset="img/new/N1-640.webp 640w, img/new/N1-1024.webp 1024w, img/new/N1-1672.webp 1672w" sizes="(min-width: 900px) 70vw, 100vw" alt="טיילת עץ לאורך מרינה, יאכטות ומפרשיות על מים שקטים בשעת ערב" loading="lazy" decoding="async" width="1672" height="941">
-      <figcaption>החיים על קו החוף</figcaption>
-    </figure>
-  </div>
-</section>
-
 <!-- ============ 12 · CONTACT ============ -->
 <section class="section contact" id="contact" aria-labelledby="contact-title">
   <div class="contact__bg" aria-hidden="true">
@@ -363,6 +330,7 @@
     </div>
 
     <div class="contact__formwrap">
+      <p class="contact__where">הרצליה פיתוח · 4 דק' הליכה לחוף · מרינה 1.2 ק״מ · כביש 2 במרחק 3 דק' <a href="https://www.google.com/maps/search/?api=1&amp;query=32.1668,34.8072" target="_blank" rel="noopener">לניווט</a></p>
       <form class="form" id="leadForm" novalidate>
         <p class="form__floor" id="formFloor" hidden><span id="formFloorText"></span><button type="button" id="formFloorClear" aria-label="הסרת הקומה שנבחרה">×</button></p>
         <input type="hidden" name="floor" id="f-floor">
@@ -505,6 +473,6 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
-<script src="js/main.js?v=202611072343" defer></script>
+<script src="js/main.js?v=202611072353" defer></script>
 </body>
 </html>

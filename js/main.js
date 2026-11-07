@@ -408,7 +408,7 @@
       if (en.isIntersecting) navLinks.forEach((l) => l.setAttribute('aria-current', String(l.getAttribute('href') === '#' + en.target.id)));
     });
   }, { rootMargin: '-45% 0px -50% 0px' });
-  ['views', 'residences', 'floors', 'day', 'location', 'contact'].forEach((id) => { const s = $('#' + id); if (s) io2.observe(s); });
+  ['views', 'residences', 'floors', 'day', 'contact'].forEach((id) => { const s = $('#' + id); if (s) io2.observe(s); });
 
   // one rAF-throttled scroll loop shared by the scroll-linked sections below
   const scrollJobs = new Set();
@@ -786,65 +786,6 @@
   }, { passive: true });
   desktopMQ.addEventListener('change', () => { track.style.transform = ''; requestJobs(); });
   setDay(0);
-  });
-
-  /* =======================================================
-     9 · Location — Leaflet + CARTO light, loaded only when near
-     ======================================================= */
-  section("9 · Location", () => {
-  const mapEl = $('#map');
-  const AURA_LL = [32.1668, 34.8072];
-  const PLACES = {
-    beach: { ll: [32.1712, 34.7996], name: 'חוף אכדיה' },
-    marina: { ll: [32.1618, 34.7950], name: 'מרינה הרצליה' },
-    biz: { ll: [32.1622, 34.8088], name: 'אזור התעסוקה פיתוח' },
-    road2: { ll: [32.1700, 34.8172], name: 'כביש החוף (2)' },
-    train: { ll: [32.1636, 34.8178], name: 'תחנת רכבת הרצליה' },
-  };
-  const loadAsset = (tag, attrs) => new Promise((res, rej) => { const n = document.createElement(tag); Object.assign(n, attrs); n.onload = res; n.onerror = rej; document.head.appendChild(n); });
-  let map = null; const pins = {};
-  function initMap() {
-    const L = window.L;
-    const touch = matchMedia('(pointer: coarse)').matches;
-    map = L.map(mapEl, { center: AURA_LL, zoom: 14, maxZoom: 16, scrollWheelZoom: false, dragging: !touch, touchZoom: !touch, tap: false, zoomControl: true, attributionControl: true });
-    // CARTO's free basemaps now answer with an "API key required" tile, so the keyless
-    // Esri Light Gray Canvas (base + labels) is used instead, warmed with a CSS filter.
-    const ESRI = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/';
-    const base = L.tileLayer(ESRI + 'World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
-      maxZoom: 16, attribution: 'Tiles &copy; <a href="https://www.esri.com">Esri</a> &mdash; Esri, HERE, Garmin, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-    }).addTo(map);
-    // until tiles arrive the static map shows through; if none arrive, it stays
-    let tilesOk = 0;
-    if (mapEl) base.on('tileload', () => { if (!tilesOk++) mapEl.classList.add('is-ready'); });
-    setTimeout(() => { if (!tilesOk) mapEl.classList.add('is-failed'); }, 8000);
-    L.tileLayer(ESRI + 'World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}', { maxZoom: 16, pane: 'overlayPane' }).addTo(map);
-    L.marker(AURA_LL, { icon: L.divIcon({ className: 'aura-pin', html: '<i></i><b>AURA</b>', iconSize: [16, 16] }), keyboard: false, title: 'AURA' }).addTo(map);
-    Object.entries(PLACES).forEach(([k, v]) => {
-      pins[k] = L.marker(v.ll, { icon: L.divIcon({ className: 'place-pin', html: '<i></i>', iconSize: [10, 10] }), keyboard: false })
-        .bindTooltip(v.name, { direction: 'top', offset: [0, -8], className: 'place-tip' }).addTo(map);
-    });
-    map.fitBounds(L.latLngBounds([AURA_LL, ...Object.values(PLACES).map((p) => p.ll)]), { padding: [36, 36] });
-    if (touch) {
-      mapEl.classList.add('is-locked');
-      $('#mapActivate').addEventListener('click', () => {
-        map.dragging.enable(); map.touchZoom.enable(); mapEl.classList.remove('is-locked');
-      });
-    }
-  }
-  new IntersectionObserver(([en], obs) => {
-    if (!en.isIntersecting) return;
-    obs.disconnect();
-    Promise.all([
-      loadAsset('link', { rel: 'stylesheet', href: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css' }),
-      loadAsset('script', { src: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js' }),
-    ]).then(initMap).catch(() => mapEl.classList.add('is-failed'));
-  }, { rootMargin: '600px 0px' }).observe(mapEl);
-  $$('#places li').forEach((li) => {
-    const k = li.dataset.pin;
-    const on = () => { li.classList.add('is-hot'); const p = pins[k]; if (p) { p.getElement()?.classList.add('is-hot'); p.openTooltip(); } };
-    const off = () => { li.classList.remove('is-hot'); const p = pins[k]; if (p) { p.getElement()?.classList.remove('is-hot'); p.closeTooltip(); } };
-    li.addEventListener('pointerenter', on); li.addEventListener('pointerleave', off);
-  });
   });
 
   /* =======================================================
