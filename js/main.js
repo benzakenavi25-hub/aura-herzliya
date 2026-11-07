@@ -778,6 +778,7 @@
   // ready before the pin starts (the sharp frame is the descent's own V3, already in cache)
   new IntersectionObserver(([en], obs) => { if (en.isIntersecting) { $$('img', sec).forEach((im) => { im.loading = 'eager'; }); obs.disconnect(); } }, { rootMargin: '2000px 0px' }).observe(sec);
   const lines = [q('.interlude__l1'), q('.interlude__l2')];
+  const tail = [q('.interlude__rule'), q('.interlude__mark')];
   const tl = gsap.timeline({
     defaults: { ease: 'none' },
     scrollTrigger: { trigger: sec, start: 'top top', end: '+=150%', pin: stage, scrub: 0.8, invalidateOnRefresh: true },
@@ -787,11 +788,36 @@
     .to(q('.interlude__blur'), { opacity: 1, duration: 0.42, ease: 'power1.inOut' }, 0.02)
     .to(q('.interlude__vignette'), { opacity: 1, duration: 0.46, ease: 'power1.inOut' }, 0.02)
     .to(lines[0], { opacity: 1, y: 0, duration: 0.2, ease: 'power2.out' }, 0.12)
-    .to(lines[1], { opacity: 1, y: 0, duration: 0.2, ease: 'power2.out' }, 0.3)
-    // hold 0.5 → 0.62, then both lines leave together as the room goes to the page background
-    .to(lines, { opacity: 0, y: -18, duration: 0.2, ease: 'power1.in' }, 0.62)
-    .to(q('.interlude__veil'), { opacity: 1, duration: 0.36, ease: 'power2.out' }, 0.64);
+    .to(lines[1], { opacity: 1, y: 0, duration: 0.2, ease: 'power2.out' }, 0.26)
+    .to(tail, { opacity: 1, y: 0, duration: 0.16, ease: 'power2.out', stagger: 0.04 }, 0.4)
+    // hold → 0.62, then everything leaves together as the light veil turns into the page background
+    .to([...lines, ...tail], { opacity: 0, y: -18, duration: 0.2, ease: 'power1.in' }, 0.62)
+    .to(q('.interlude__veil'), { opacity: 1, duration: 0.36, ease: 'power1.inOut' }, 0.64);
   tl.set({}, {}, 1);   // pad to exactly 1 unit
+  });
+
+  /* =======================================================
+     Marquee — speed and direction follow scroll velocity; the ticker runs only while it is on screen
+     ======================================================= */
+  section("Marquee", () => {
+  const mq = $('.marquee'), mqTrack = $('.marquee__track');
+  if (!mq || !mqTrack || !window.gsap) return;
+  let x = 0, dir = -1, lastY = scrollY, vel = 0, on = false, half = 1;
+  const measureMq = () => { half = mqTrack.scrollWidth / 2 || 1; };
+  measureMq(); addEventListener('resize', measureMq); document.fonts?.ready.then(measureMq);
+  const tick = (t, dt) => {
+    const y = scrollY, d = y - lastY; lastY = y;
+    vel += (d - vel) * 0.12;
+    if (Math.abs(d) > 0.5) dir = d > 0 ? -1 : 1;
+    x += dir * (0.5 + Math.min(Math.abs(vel) * 0.4, 28)) * (dt / 16.67);
+    if (x <= -half) x += half; else if (x > 0) x -= half;
+    mqTrack.style.transform = `translate3d(${x.toFixed(2)}px, 0, 0)`;
+  };
+  new IntersectionObserver(([en]) => {
+    if (en.isIntersecting === on) return;
+    on = en.isIntersecting;
+    if (on) { lastY = scrollY; vel = 0; gsap.ticker.add(tick); } else gsap.ticker.remove(tick);
+  }, { rootMargin: '120px 0px' }).observe(mq);
   });
 
   /* =======================================================
