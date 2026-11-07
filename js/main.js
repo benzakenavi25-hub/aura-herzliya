@@ -24,11 +24,6 @@
   function openDlg(d) { d.showModal(); root.classList.add('menu-open'); }
   const bridge = {};   // cross-section hooks (e.g. the floor finder opens the residences plan dialog)
 
-  // Native scrolling everywhere. scrollToY is the single place that scrolls programmatically.
-  function scrollToY(y, immediate) {
-    window.scrollTo({ top: y, behavior: immediate ? 'instant' : 'smooth' });
-  }
-
   /* =======================================================
      HERO — scroll-scrubbed image sequence
      ======================================================= */
@@ -144,7 +139,7 @@
     if (stripFor === idx) return;
     stripFor = idx;
     sampleX.clearRect(0, 0, 64, 2);
-    sampleX.drawImage(img, 0, 0, img.width, 4, 0, 0, 64, 2);
+    sampleX.drawImage(img, 0, 0, img.naturalWidth, 4, 0, 0, 64, 2);
     let src;
     try { src = sampleX.getImageData(0, 0, 64, 2).data; } catch (e) { stripFor = -2; return; }
     const out = stripX.createImageData(64, 1);
@@ -192,28 +187,26 @@
     if (!set || !cw) return;
     const t = interp(PACE, progress);
     const i = frameIndexAt(t);
-    const a0 = nearestReady(i);
-    if (a0 < 0) return;
-    // frames are kept as compressed blobs; only the ones being drawn are decoded (ImageBitmap, small LRU)
-    let a = a0, img = getBmp(a0);
-    if (!img) { a = nearestBmp(a0); if (a < 0) return; img = bmps.get(a); }
+    const a = nearestReady(i);
+    if (a < 0) return;
     // cross-dissolve to the next frame for sub-frame smoothness
-    let b = -1, f = 0, imgB = null;
-    if (a0 === i && a === i && i < times.length - 1 && ready[i + 1]) {
+    let b = -1, f = 0;
+    if (a === i && i < times.length - 1 && ready[i + 1]) {
       f = clamp((t - times[i]) / (times[i + 1] - times[i]), 0, 1);
-      if (f > 0.02) { imgB = getBmp(i + 1); if (imgB) b = i + 1; }
+      if (f > 0.02) b = i + 1;
     }
     const key = a + ':' + b + ':' + f.toFixed(2) + ':' + t.toFixed(2);
     if (key === lastDrawKey) return;
     lastDrawKey = key;
-    const iw = img.width, ih = img.height;
+    const img = frames[a];
+    const iw = img.naturalWidth, ih = img.naturalHeight;
     const pl = placement(iw, ih, t);
     if (pl.dy > 0.5) { ctx.fillStyle = '#C9C6DA'; ctx.fillRect(0, 0, cw, Math.ceil(pl.dy) + 1); }
     ctx.globalAlpha = 1;
     ctx.drawImage(img, pl.dx, pl.dy, iw * pl.s, ih * pl.s);
-    if (b >= 0) { ctx.globalAlpha = f; ctx.drawImage(imgB, pl.dx, pl.dy, iw * pl.s, ih * pl.s); }
+    if (b >= 0) { ctx.globalAlpha = f; ctx.drawImage(frames[b], pl.dx, pl.dy, iw * pl.s, ih * pl.s); }
     ctx.globalAlpha = 1;
-    if (pl.dy > 0.5) { buildStrip(b >= 0 && f > 0.5 ? imgB : img, b >= 0 && f > 0.5 ? b : a); drawSky(pl, iw); }
+    if (pl.dy > 0.5) { buildStrip(b >= 0 && f > 0.5 ? frames[b] : img, b >= 0 && f > 0.5 ? b : a); drawSky(pl, iw); }
   }
 
   // Light arc: golden hour (ink on light veil) → blue hour (cream on dusk veil)
@@ -243,67 +236,47 @@
     hero.classList.toggle('is-ending', progress >= 0.985);
   }
 
-  // Frames stay compressed (Blob per frame). Only the frames being drawn are decoded into ImageBitmaps,
-  // kept in a tiny LRU and closed when evicted, so memory stays low on phones.
-  const blobs = [], bmps = new Map(), decoding = new Set(), BMP_MAX = 8;
-  const frameUrl = (k) => `frames/${setKey}/${String(k + 1).padStart(4, '0')}.webp`;
-  const decodeBlob = (blob) => window.createImageBitmap ? createImageBitmap(blob) : new Promise((res, rej) => {
-    const u = URL.createObjectURL(blob), im = new Image();
-    im.onload = () => { URL.revokeObjectURL(u); res(im); }; im.onerror = rej; im.src = u;
-  });
-  function getBmp(k) {
-    const b = bmps.get(k);
-    if (b) { bmps.delete(k); bmps.set(k, b); return b; }
-    if (blobs[k] && !decoding.has(k)) {
-      decoding.add(k);
-      decodeBlob(blobs[k]).then((bm) => {
-        decoding.delete(k); bmps.set(k, bm);
-        while (bmps.size > BMP_MAX) { const [ok, ob] = bmps.entries().next().value; bmps.delete(ok); if (ob.close) ob.close(); }
-        lastDrawKey = ''; draw();
-      }).catch(() => decoding.delete(k));
-    }
-    return null;
-  }
-  function nearestBmp(i) {
-    let best = -1;
-    bmps.forEach((_, k) => { if (best < 0 || Math.abs(k - i) < Math.abs(best - i)) best = k; });
-    return best;
-  }
-
   function setProgress(p) { progress = clamp(p, 0, 1); draw(); updateUI(); }
 
   // -------- preloading --------
-  // Loader gate: the opening frames plus a coarse pass over the whole film. Every other frame keeps
-  // downloading in the background at low priority (so images further down the page are not starved).
   function loadFrames() {
     const portrait = innerWidth / innerHeight < 1;
     setKey = portrait ? 'm' : 'd';
     return fetch('frames/manifest.json').then((r) => r.json()).then((m) => {
       set = m.sets[setKey];
       times = set.t;
+      frames = new Array(set.count);
       ready = new Array(set.count).fill(false);
       const n = set.count;
+      // priority: opening frames → coarse pass across the whole film → the rest
       const order = [], seen = new Set();
       const push = (i) => { if (i >= 0 && i < n && !seen.has(i)) { seen.add(i); order.push(i); } };
-      for (let i = 0; i < 8; i++) push(i);
-      for (let i = 0; i < n; i += 14) push(i);
+      for (let i = 0; i < 12; i++) push(i);
+      for (let i = 0; i < n; i += 24) push(i);
       const gate = order.length;
       for (let i = 0; i < n; i++) push(i);
 
-      let gateLoaded = 0, cursor = 0, released = false;
+      let loaded = 0, gateLoaded = 0, cursor = 0, released = false;
       const bar = $('#loaderBar'), pct = $('#loaderPct');
       return new Promise((resolve) => {
         const release = () => { if (!released) { released = true; resolve(); } };
+        // after the gate, the rest of the film waits for the first sign of intent (or idle time)
+        let resumed = false, parked = 0;
+        const resume = () => { if (resumed) return; resumed = true; const k = Math.max(parked, 4); parked = 0; for (let c = 0; c < k; c++) next(); };
+        ['scroll', 'wheel', 'touchstart', 'keydown', 'pointerdown'].forEach((ev) => addEventListener(ev, resume, { once: true, passive: true }));
+        setTimeout(resume, 6000);
         const next = () => {
           if (cursor >= order.length) return;
+          if (cursor >= gate && !resumed) { parked++; return; }
           const idx = order[cursor];
           const isGate = cursor < gate;
           cursor++;
-          const get = (tries) => fetch(frameUrl(idx), isGate ? undefined : { priority: 'low' })
-            .then((r) => { if (!r.ok) throw 0; return r.blob(); })
-            .catch((e) => (tries > 0 ? get(tries - 1) : null));
-          get(1).then((blob) => {
-            if (blob) { blobs[idx] = blob; ready[idx] = true; }
+          const img = new Image();
+          img.decoding = 'async';
+          img.src = `frames/${setKey}/${String(idx + 1).padStart(4, '0')}.webp`;
+          const done = (ok) => {
+            if (ok) { frames[idx] = img; ready[idx] = true; }
+            loaded++;
             if (isGate) {
               gateLoaded++;
               const p = gateLoaded / gate;
@@ -311,20 +284,19 @@
               pct.textContent = Math.round(p * 100);
               if (gateLoaded === gate) release();
             }
-            if (blob && Math.abs(interp(PACE, progress) - times[idx]) < 1.5) { lastDrawKey = ''; draw(); }
+            if (ok && Math.abs(interp(PACE, progress) - times[idx]) < 1.5) { lastDrawKey = ''; draw(); }
             next();
-          });
+          };
+          img.onload = () => (img.decode ? img.decode().catch(() => {}) : Promise.resolve()).then(() => done(true));
+          img.onerror = () => done(false);
         };
-        for (let c = 0; c < 4; c++) next();
-        setTimeout(release, 20000); // never trap the visitor behind the loader
+        for (let c = 0; c < 6; c++) next();
+        setTimeout(release, 12000); // never trap the visitor behind the loader
       });
     });
   }
 
   function hideLoader() {
-    // the descent panels move by transform, so native lazy-loading can reach them late: once the hero's
-    // first frames are in, let them start loading (their src/srcset are already real; this only lifts "lazy")
-    $$('#views img').forEach((im) => { im.loading = 'eager'; });
     loader.classList.add('is-done');
     document.body.classList.remove('is-loading');
     setTimeout(() => loader.remove(), 1400);
@@ -424,7 +396,7 @@
     const el = $(id); if (!el) return;
     e.preventDefault();
     const top = id === '#top' ? 0 : el.getBoundingClientRect().top + scrollY - (id === '#contact' ? 0 : 0);
-    scrollToY(top);
+    window.scrollTo({ top, behavior: 'smooth' });
     history.replaceState(null, '', id);
   }));
   });
@@ -487,6 +459,11 @@
     const n = m.sets[key] && m.sets[key].count;
     if (n && home) home.src = `frames/${key}/${String(n).padStart(4, '0')}.webp`;
   }).catch(() => {});
+  new IntersectionObserver(([en], obs) => {
+    if (!en.isIntersecting) return;
+    $$('img[data-src]', stage).forEach((im) => { im.srcset = im.dataset.srcset; im.src = im.dataset.src; im.removeAttribute('data-src'); });
+    obs.disconnect();
+  }, { rootMargin: '1600px 0px' }).observe(sec);
 
   // scroll drives only penthouse → slab → floor 12 (section is 100vh + 260vh tall);
   // floors 7 and 3 are reached through the elevator, which animates the stage without moving the page
@@ -712,7 +689,7 @@
     const pnl = e.target.closest('.rpanel');
     if (!pnl || !desktopMQ.matches) return;
     const y = resScroll.offsetTop + (resScroll.offsetHeight - innerHeight) * (+pnl.dataset.i / (N - 1));
-    scrollToY(Math.round(y), true);
+    window.scrollTo({ top: Math.round(y), behavior: 'instant' });
   });
   markRes(0);
   $$('[data-plan]', resTrack).forEach((b) => b.addEventListener('click', () => { renderPlan(PLANS[+b.dataset.plan]); openDlg(planDlg); }));
@@ -1119,107 +1096,6 @@
   const brDlg = $('#brochureDlg'), brForm = $('#brForm'), brBtn = $('#brochureBtn');
   if (brBtn && brDlg) brBtn.addEventListener('click', () => openDlg(brDlg));
   if (brForm) wireForm(brForm, ['name', 'phone'], () => { brForm.hidden = true; const s = $('#brSuccess'); s.hidden = false; s.focus(); });
-  });
-
-  /* =======================================================
-     Motion layer — one-shot line rises and image curtains, marquee, section tone, progress, drag,
-     marquee, section tone, progress + counter. Transform / opacity / clip-path only.
-     Everything is visible without it: initial states are only applied by GSAP.
-     ======================================================= */
-  section("Motion layer", () => {
-  if (!window.gsap || !window.ScrollTrigger) return;
-  gsap.registerPlugin(ScrollTrigger);
-
-  // headlines: each line (split at <br>) rises once with a soft fade when it enters the viewport
-  const io = new IntersectionObserver((es) => es.forEach((en) => {
-    if (!en.isIntersecting) return;
-    en.target.classList.add('is-in'); io.unobserve(en.target);
-  }), { rootMargin: '0px 0px -8% 0px' });
-  $$('[data-split]').forEach((h) => {
-    const lines = [[]];
-    [...h.childNodes].forEach((n) => { if (n.nodeType === 1 && n.tagName === 'BR') lines.push([]); else lines[lines.length - 1].push(n); });
-    h.textContent = '';
-    lines.forEach((nodes, i) => {
-      const ln = document.createElement('span'); ln.className = 'ln'; ln.style.setProperty('--i', i);
-      nodes.forEach((n) => ln.appendChild(n));
-      h.appendChild(ln);
-    });
-    h.classList.add('split-ready');
-    io.observe(h);
-  });
-
-  // image "curtain": clip-path opens once when the block enters (CSS transition, no scrub)
-  [[$$('.mats__media'), null], [[$('#locStage')], $('#locScroll')], [[$('.finale__media')], $('#contact')], [[$('#resVP')], $('#resScroll')]].forEach(([boxes, trig]) => {
-    boxes.forEach((box) => {
-      if (!box) return;
-      box.classList.add('curtain');
-      const t = trig || box;
-      const cio = new IntersectionObserver(([en]) => { if (en.isIntersecting) { box.classList.add('is-in'); cio.disconnect(); } }, { rootMargin: '0px 0px -6% 0px' });
-      cio.observe(t);
-    });
-  });
-  // one tone change: the day section sits on the lighter panel colour, blended in and out (opacity only)
-  const tone = $('.tone'), daySec = $('#day');
-  if (tone && daySec) {
-    gsap.timeline({ scrollTrigger: { trigger: daySec, start: 'top 85%', end: 'bottom 15%', scrub: true } })
-      .fromTo(tone, { opacity: 0 }, { opacity: 1, ease: 'none', duration: 0.12 })
-      .to(tone, { opacity: 1, duration: 0.76 })
-      .to(tone, { opacity: 0, ease: 'none', duration: 0.12 });
-  }
-
-  // progress line + section counter (hidden during the hero)
-  const pbar = $('.progress span'), counter = $('#secCount'), secNow = $('#secNow');
-  const secs = ['views', 'residences', 'floors', 'day', 'location', 'contact'].map((id) => $('#' + id)).filter(Boolean);
-  let tops = [], shownSec = -1;
-  const cacheTops = () => { tops = secs.map((s) => s.getBoundingClientRect().top + scrollY); };
-  ScrollTrigger.addEventListener('refresh', cacheTops); cacheTops();
-  ScrollTrigger.create({
-    start: 0, end: 'max',
-    onUpdate: (self) => {
-      pbar.style.transform = `scaleX(${self.progress.toFixed(4)})`;
-      const y = scrollY + innerHeight * 0.5;
-      let i = -1; tops.forEach((t, n) => { if (t <= y) i = n; });
-      if (i !== shownSec) { shownSec = i; counter.classList.toggle('is-on', i >= 0); counter.classList.toggle('is-form', i === secs.length - 1); if (i >= 0) secNow.textContent = String(i + 1).padStart(2, '0'); }
-    },
-  });
-
-  // marquee: speed and direction follow scroll velocity
-  const mq = $('.marquee'), mqTrack = $('.marquee__track');
-  if (mq && mqTrack) {
-    let x = 0, dir = -1, lastY = scrollY, vel = 0, on = false, half = 1;
-    const measureMq = () => { half = mqTrack.scrollWidth / 2 || 1; };
-    measureMq(); addEventListener('resize', measureMq); document.fonts?.ready.then(measureMq);
-    new IntersectionObserver(([en]) => { on = en.isIntersecting; }, { rootMargin: '120px 0px' }).observe(mq);
-    gsap.ticker.add((t, dt) => {
-      const y = scrollY, d = y - lastY; lastY = y;
-      if (!on) return;
-      vel += (d - vel) * 0.12;
-      if (Math.abs(d) > 0.5) dir = d > 0 ? -1 : 1;
-      x += dir * (0.5 + Math.min(Math.abs(vel) * 0.4, 28)) * (dt / 16.67);
-      if (x <= -half) x += half; else if (x > 0) x -= half;
-      mqTrack.style.transform = `translate3d(${x.toFixed(2)}px, 0, 0)`;
-    });
-  }
-
-  // drag the horizontal sections (desktop): dragging right moves the content right = scrolling down
-  [[$('#resVP'), $('#resScroll'), $('#resTrack')], [$('.day__viewport'), $('#day'), $('#dayTrack')]].forEach(([vp, sc, tr]) => {
-    if (!vp || !sc || !tr) return;
-    let x0 = null, y0 = 0;
-    vp.addEventListener('pointerdown', (e) => {
-      if (e.pointerType !== 'mouse' || e.button !== 0 || !desktopMQ.matches || e.target.closest('a, button')) return;
-      e.preventDefault();
-      x0 = e.clientX; y0 = scrollY;
-      vp.setPointerCapture(e.pointerId);
-      root.classList.add('is-dragging');
-    });
-    vp.addEventListener('pointermove', (e) => {
-      if (x0 === null) return;
-      const max = Math.max(1, tr.scrollWidth - vp.clientWidth);
-      scrollToY(y0 + (e.clientX - x0) * ((sc.offsetHeight - innerHeight) / max) * 1.4, true);
-    });
-    const end = () => { x0 = null; root.classList.remove('is-dragging'); };
-    vp.addEventListener('pointerup', end); vp.addEventListener('pointercancel', end);
-  });
   });
 
 })();
