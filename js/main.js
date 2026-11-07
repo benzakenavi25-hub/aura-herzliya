@@ -408,7 +408,7 @@
       if (en.isIntersecting) navLinks.forEach((l) => l.setAttribute('aria-current', String(l.getAttribute('href') === '#' + en.target.id)));
     });
   }, { rootMargin: '-45% 0px -50% 0px' });
-  ['project', 'views', 'residences', 'floors', 'building', 'location', 'faq', 'contact'].forEach((id) => { const s = $('#' + id); if (s) io2.observe(s); });
+  ['views', 'residences', 'floors', 'day', 'location', 'contact'].forEach((id) => { const s = $('#' + id); if (s) io2.observe(s); });
 
   // one rAF-throttled scroll loop shared by the scroll-linked sections below
   const scrollJobs = new Set();
@@ -438,7 +438,6 @@
     });
   }, { rootMargin: '0px 0px -8% 0px', threshold: 0 });
   $$('[data-reveal], [data-reveal-lines], .img-reveal').forEach((el) => io.observe(el));
-  $$('.team__list > [data-reveal]').forEach((el, n) => el.style.setProperty('--d', `${n * 70}ms`));
   });
 
   /* =======================================================
@@ -1005,24 +1004,6 @@
   $('#formFloorClear')?.addEventListener('click', () => { $('#formFloor').hidden = true; const x = $('#f-floor'); if (x) x.value = ''; });
   });
 
-
-  /* =======================================================
-     7 · The building — sticky image follows the text
-     ======================================================= */
-  section("7 · The building", () => {
-  const bImgs = $$('.building__img');
-  const amenities = $$('.amenity');
-  const amIO = new IntersectionObserver((entries) => {
-    entries.forEach((en) => {
-      if (!en.isIntersecting) return;
-      amenities.forEach((a) => a.classList.toggle('is-active', a === en.target));
-      const i = +en.target.dataset.i;
-      bImgs.forEach((im) => im.classList.toggle('is-active', +im.dataset.i === i));
-    });
-  }, { rootMargin: '-45% 0px -45% 0px' });
-  amenities.forEach((a) => amIO.observe(a));
-  amenities[0].classList.add('is-active');
-  });
 
   /* =======================================================
      8 · A day at AURA — pinned horizontal (desktop), snap carousel (phones)

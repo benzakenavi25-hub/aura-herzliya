@@ -3,8 +3,8 @@
 ## Reading rules (keep context small)
 - Read only the files and sections a task needs. Locate code with Grep, then Read with offset/limit.
 - Never open `frames/`, `assets/`, `img/` binaries or `frames/manifest.json` (huge one-line JSON).
-- Never read `js/main.js` in full (~1170 lines). Grep the section banner or function name below, read that range only.
-- Same for `css/style.css` (~1140 lines) and `index.html` (~650 lines). Line numbers are approximate; grep to confirm.
+- Never read `js/main.js` in full (~1150 lines). Grep the section banner or function name below, read that range only.
+- Same for `css/style.css` (~1010 lines) and `index.html` (~530 lines). Line numbers are approximate; grep to confirm.
 
 ## Files
 - `index.html` — whole page; `privacy.html`, `terms.html`, `accessibility.html` legal pages.
@@ -12,20 +12,18 @@
 - `tools/` — `serve.mjs` (local server), `bump-version.mjs`, `shots.mjs` + `check-*.mjs` (Playwright), media scripts.
 
 ## Sections (index.html id → CSS banner → main.js banner / key functions)
-Each block in CSS and JS starts with a `/* ====` banner; grep the title.
-- Loader/header/menu: `#header`, `#mbar` → CSS "header" ~113 → JS "Header / floating contact / mobile nav" ~337: `onScroll`, `setMenu`, `whileVisible`
-- Hero `#top` → "HERO" ~170 → JS "HERO" ~27: `loadFrames`, `initScrub`, `draw`, `placement`, `drawSky`, `updateUI`, `setProgress`, `hideLoader`; scroll pacing in `PACE` table
-- Descent `#views` (+ elevator `#lift`) → "1 · THE DESCENT" ~361 → JS "1 · The descent" ~444: `render`, `goFloor`, `setBase`, `animateExtra`, `camera`
-- Project `#project` → "2 · PROJECT" ~454
-- Residences `#residences` → "4 · RESIDENCES" ~475 → JS ~582: `showPlan`, `applyPlan`, `moveIndicator`, `renderPlan`
-- Floor finder `#floors` → "5 · FLOOR FINDER" ~516 → JS ~772: data `FLOORS`/`BANDS`, `light`, `drawPlate`, `openPlan`, `closePlan`, `showCard`, `closeCard`
-- Materials `#materials` → "6 · MATERIALS" ~693
-- Building `#building` → "7 · THE BUILDING" ~724 → JS ~1009
-- Day `#day` → "8 · A DAY AT AURA" ~750 → JS ~1027: `setDay`, `dayDesktop`
-- Location `#location` → "9 · LOCATION" ~784 → JS ~1063: `initMap`
-- Team `#team` ~821, FAQ `#faq` ~840 (CSS only)
-- Contact `#contact` → "CONTACT" ~859 → JS "Forms" ~1122: `wireForm`, `check`, `normPhone`; dialogs JS ~761
-- Shared CSS (reveals, buttons, dialogs) ~280; footer ~940; "POLISH PASS" overrides ~976 (check here before editing a section's rules)
+Page order: hero → views → residences → floors → day → location → contact → footer. Each block in CSS and JS starts with a `/* ====` banner; grep the title.
+- Palette: `:root` tokens (`--bg`, `--panel`, `--text`, `--text-2`, `--bronze`; legacy `--stone`/`--ink` = light text). `.hero, .loader` keep the old light tokens.
+- Loader/header/menu: `#header`, `#mbar` → CSS "header" ~120 → JS "Header / floating contact / mobile nav" ~338: `onScroll`, `setMenu`, `whileVisible`
+- Hero `#top` → "HERO" ~182 → JS "HERO" ~28: `loadFrames`, `initScrub`, `draw`, `placement`, `drawSky`, `updateUI`, `setProgress`, `hideLoader`; scroll pacing in `PACE` table
+- Descent `#views` (+ elevator `#lift`; floor-12 caption holds the project line + facts) → "1 · THE DESCENT" ~374 → JS "1 · The descent" ~444: `render`, `goFloor`, `setBase`, `animateExtra`, `camera`
+- Residences `#residences` → "4 · RESIDENCES" ~468 → JS ~582: `showPlan`, `applyPlan`, `moveIndicator`, `renderPlan`
+- Floor finder `#floors` → "5 · FLOOR FINDER" ~509 → JS ~772: data `FLOORS`/`BANDS`, `light`, `drawPlate`, `openPlan`, `closePlan`, `showCard`, `closeCard`
+- Day `#day` (8 timed cards incl. gym/lobby/spa) → "8 · A DAY AT AURA" ~694 → JS ~1009: `setDay`, `dayDesktop`
+- Location `#location` → "9 · LOCATION" ~728 → JS ~1045: `initMap`
+- Contact `#contact` → "CONTACT" ~765 → JS "Forms" ~1104: `wireForm`, `check`, `normPhone`; dialogs JS ~761
+- Spec content lives in `<template id="specTpl">` (not rendered) → CSS "SPEC" ~686
+- Shared CSS (reveals, buttons, dialogs) ~292; footer ~846; "POLISH PASS" overrides ~882 (check here before editing a section's rules)
 
 ## Media
 - `frames/d/` (landscape, 254) and `frames/m/` (portrait crop, 244): `0001.webp`… hero sequence; timings in `frames/manifest.json`.

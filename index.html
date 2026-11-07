@@ -20,7 +20,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;1,6..96,400&family=Frank+Ruhl+Libre:wght@300;400&family=IBM+Plex+Sans+Hebrew:wght@300;400;500&display=swap">
 <link rel="preload" href="frames/manifest.json" as="fetch" crossorigin>
-<link rel="stylesheet" href="css/style.css?v=202611061901">
+<link rel="stylesheet" href="css/style.css?v=202611071745">
 <script>document.documentElement.classList.add('js');</script>
 </head>
 <body>
@@ -40,13 +40,11 @@
   <div class="header__inner">
     <a class="header__logo" href="#top" aria-label="AURA – חזרה לראש העמוד">AURA</a>
     <nav class="header__nav" aria-label="ניווט ראשי">
-      <a href="#project">הפרויקט</a>
       <a href="#views">הנוף</a>
       <a href="#residences">הדירות</a>
       <a href="#floors">קומות</a>
-      <a href="#building">הבניין</a>
+      <a href="#day">יום ב־AURA</a>
       <a href="#location">מיקום</a>
-      <a href="#faq">שאלות</a>
     </nav>
     <a class="header__cta" href="#contact">תיאום פגישה</a>
     <button class="header__menu" id="menuBtn" aria-expanded="false" aria-controls="mobileNav"><span class="sr-only">תפריט</span><i></i><i></i></button>
@@ -54,13 +52,12 @@
 </header>
 <div class="mnav" id="mobileNav" aria-hidden="true" inert>
   <nav class="mnav__links" aria-label="ניווט ראשי (נייד)">
-    <a href="#project">הפרויקט</a>
     <a href="#views">הנוף</a>
     <a href="#residences">הדירות</a>
     <a href="#floors">קומות</a>
-    <a href="#building">הבניין</a>
+    <a href="#day">יום ב־AURA</a>
     <a href="#location">מיקום</a>
-    <a href="#faq">שאלות</a>
+    <a href="#contact">תיאום פגישה</a>
   </nav>
   <div class="mnav__foot">
     <a href="#contact" class="mnav__cta">תיאום פגישה במשרדי המכירות</a>
@@ -163,7 +160,7 @@
     <div class="descent__shade" aria-hidden="true"></div>
     <div class="descent__copy" aria-live="polite">
       <h2 class="descent__title" id="views-title">הנוף מהקומה שלכם</h2>
-      <p class="descent__cap" data-k="1"><b>קומה 12</b>מעל הכול: אופק פתוח, המפרץ כולו, והשמש נוגעת במים.</p>
+      <p class="descent__cap" data-k="1"><b>קומה 12</b>AURA הוא מגדל בוטיק בשורה הראשונה של הרצליה פיתוח. מעט דירות, הרבה אור, ושקט שקשה למצוא קרוב כל כך לים.<span class="descent__facts">12 קומות · 38 דירות · 350 מ׳ מהחוף · מסירה 2029</span></p>
       <p class="descent__cap" data-k="2"><b>קומה 7</b>מעל הגגות: רצועת החוף נפתחת, והמפרץ נמשך עד ההרים.</p>
       <p class="descent__cap" data-k="3"><b>קומה 3</b>בגובה הצמרות: גגות הרעפים, הדקלים, והים שמציץ ביניהם.</p>
     </div>
@@ -184,23 +181,6 @@
   </div>
 </section>
 
-
-<!-- ============ 2 · THE PROJECT ============ -->
-<section class="section project" id="project" aria-labelledby="project-title">
-  <div class="wrap project__grid">
-    <div class="project__copy">
-      <p class="eyebrow" data-reveal>הפרויקט</p>
-      <h2 class="display" id="project-title" data-reveal-lines><span>בניין אחד.</span><span>שלושים ושמונה בתים.</span></h2>
-      <p class="lead" data-reveal>AURA הוא מגדל בוטיק בשורה הראשונה של הרצליה פיתוח. מעט דירות, הרבה אור, ושקט שקשה למצוא קרוב כל כך לים.</p>
-      <p class="project__more" data-reveal>קווים אופקיים רכים, מרפסות מעוגלות שעוטפות את הבניין, וחזית אבן בגוון חול שמשנה את צבעה במהלך היום. בפנים — תקרות גבוהות וחלונות מהרצפה עד התקרה, כך שכל בית מקבל את המערב במלואו.</p>
-      <p class="facts" data-reveal><span>12 קומות</span><span>38 דירות</span><span>350 מ׳ מהחוף</span><span>מסירה 2029</span></p>
-    </div>
-    <figure class="project__fig img-reveal">
-      <img src="img/05-finished-street-1024.webp" srcset="img/05-finished-street-640.webp 640w, img/05-finished-street-1024.webp 1024w, img/05-finished-street-1672.webp 1672w" sizes="(min-width: 900px) 58vw, 100vw" alt="חזית מגדל AURA מהרחוב בשעת שקיעה, עם דקלים, לובי מואר ומרפסות זכוכית" loading="lazy" decoding="async" width="1672" height="941">
-      <figcaption>חזית הבניין מרחוב השקמה · הדמיה</figcaption>
-    </figure>
-  </div>
-</section>
 
 <!-- ============ 4 · RESIDENCES ============ -->
 <section class="section residences" id="residences" aria-labelledby="res-title">
@@ -304,88 +284,6 @@
   </div>
 </section>
 
-
-<!-- ============ 6 · MATERIALS ============ -->
-<section class="materials" id="materials" aria-labelledby="materials-title">
-  <div class="wrap">
-    <h2 class="materials__intro" id="materials-title" data-reveal>ארבעה חומרים. <em>שום קישוט מיותר.</em></h2>
-    <div class="materials__grid">
-      <figure class="mat mat--1 img-reveal">
-        <img src="img/new/M1-800.webp" srcset="img/new/M1-480.webp 480w, img/new/M1-800.webp 800w, img/new/M1-1122.webp 1122w" sizes="(min-width: 900px) 34vw, 80vw" alt="ברז ברונזה מוברשת וטיפת מים נופלת אל כיור טרוורטין" loading="lazy" decoding="async" width="1122" height="1402">
-        <figcaption><b>ברונזה מוברשת</b>מתבגרת עם הידיים שנוגעות בה.</figcaption>
-      </figure>
-      <figure class="mat mat--2 img-reveal">
-        <img src="img/new/M2-800.webp" srcset="img/new/M2-480.webp 480w, img/new/M2-800.webp 800w, img/new/M2-1122.webp 1122w" sizes="(min-width: 900px) 26vw, 64vw" alt="פינת אי שיש לבן עם עורקים אפורים, כוס קרמיקה וענף זית" loading="lazy" decoding="async" width="1122" height="1402">
-        <figcaption><b>שיש בהיר</b>עורק אחד רציף, מקצה האי ועד הרצפה.</figcaption>
-      </figure>
-      <figure class="mat mat--3 img-reveal">
-        <img src="img/new/M3-800.webp" srcset="img/new/M3-480.webp 480w, img/new/M3-800.webp 800w, img/new/M3-1122.webp 1122w" sizes="(min-width: 900px) 26vw, 64vw" alt="פרקט אלון טבעי בדוגמת אדרה ואור אחר הצהריים עליו" loading="lazy" decoding="async" width="1122" height="1402">
-        <figcaption><b>אלון טבעי</b>בדוגמת אדרה, חם תחת כף הרגל.</figcaption>
-      </figure>
-      <figure class="mat mat--4 img-reveal">
-        <img src="img/new/M4-800.webp" srcset="img/new/M4-480.webp 480w, img/new/M4-800.webp 800w, img/new/M4-1122.webp 1122w" sizes="(min-width: 900px) 34vw, 80vw" alt="משטח טרוורטין עם פס ברונזה מוברשת לאורך הקצה" loading="lazy" decoding="async" width="1122" height="1402">
-        <figcaption><b>טרוורטין וברונזה</b>המקום שבו האבן פוגשת את המתכת.</figcaption>
-      </figure>
-    </div>
-
-    <details class="acc acc--spec">
-      <summary><span>המפרט המלא</span><i aria-hidden="true"></i></summary>
-      <div class="acc__body spec-cols">
-        <div><h3>חזית ומעטפת</h3><ul><li>חיפוי אבן טבעית בגוון חול, גמר מוברש</li><li>מערכות אלומיניום בפרופיל דק, זיגוג בידודי כפול</li><li>מעקות זכוכית שקופים ללא מסגרת עליונה</li></ul></div>
-        <div><h3>ריצוף וחיפויים</h3><ul><li>פרקט עץ אלון בדוגמת אדרה בחללי המגורים</li><li>טרוורטין במרפסות ובחדרי הרחצה</li><li>אריחי פורצלן גדולי מידות, 120×120 ס״מ</li></ul></div>
-        <div><h3>מטבח</h3><ul><li>מטבח בתכנון אדריכלי, חזיתות פורניר אלון</li><li>משטח ואי משיש טבעי</li><li>הכנה למקרר ומקפיא אינטגרליים, כיור כפול</li></ul></div>
-        <div><h3>רחצה</h3><ul><li>כלים סניטריים תלויים וניקוז רצפתי לינארי</li><li>ברזים בגימור ברונזה מוברשת</li><li>חימום תת־רצפתי בחדר הרחצה הראשי</li></ul></div>
-        <div><h3>מערכות ובית חכם</h3><ul><li>מיזוג VRF מרכזי עם שליטה נפרדת לכל חדר</li><li>תשתית בית חכם: תאורה, תריסים ומיזוג</li><li>תריסים חשמליים וקיר זכוכית נגרר למרפסת</li></ul></div>
-        <div><h3>הבניין</h3><ul><li>לובי בגובה כפול בעיצוב אדריכל פנים</li><li>שתי מעליות, אחת מהן מעלית שבת</li><li>חניון תת־קרקעי, מחסן ועמדת טעינה לכל דירה</li></ul></div>
-      </div>
-    </details>
-  </div>
-</section>
-
-<!-- ============ 7 · THE BUILDING (sticky image + scrolling text) ============ -->
-<section class="building" id="building" aria-labelledby="building-title">
-  <div class="building__grid">
-    <div class="building__media" aria-hidden="true">
-      <div class="building__sticky">
-        <img class="building__img is-active" data-i="0" src="img/new/P1-1024.webp" srcset="img/new/P1-1024.webp 1024w, img/new/P1-1672.webp 1672w" sizes="50vw" alt="" loading="lazy" decoding="async" width="1672" height="941">
-        <img class="building__img" data-i="1" src="img/new/A1-1024.webp" srcset="img/new/A1-1024.webp 1024w, img/new/A1-1672.webp 1672w" sizes="50vw" alt="" loading="lazy" decoding="async" width="1672" height="941">
-        <img class="building__img" data-i="2" src="img/new/A2-1024.webp" srcset="img/new/A2-1024.webp 1024w, img/new/A2-1672.webp 1672w" sizes="50vw" alt="" loading="lazy" decoding="async" width="1672" height="941">
-      </div>
-    </div>
-    <div class="building__text">
-      <h2 class="building__title" id="building-title">הבניין</h2>
-      <article class="amenity" data-i="0">
-        <img class="amenity__img" src="img/new/P1-640.webp" srcset="img/new/P1-640.webp 640w, img/new/P1-1024.webp 1024w" sizes="100vw" alt="לובי בגובה כפול עם עץ זית עתיק מתחת לחלון גג, קירות טרוורטין ודלפק אבן" loading="lazy" decoding="async" width="1672" height="941">
-        <p class="amenity__k">01</p>
-        <h3>לובי בגובה כפול</h3>
-        <p>עץ זית עתיק מתחת לחלון גג, קירות טרוורטין ואור מערבי שנכנס דרך חזית זכוכית. הבית מתחיל כבר בכניסה.</p>
-      </article>
-      <article class="amenity" data-i="1">
-        <img class="amenity__img" src="img/new/A1-640.webp" srcset="img/new/A1-640.webp 640w, img/new/A1-1024.webp 1024w" sizes="100vw" alt="חדר כושר מואר עם מכשיר פילאטיס מעץ, הליכון ואופני כושר, פתוח לגן זיתים" loading="lazy" decoding="async" width="1672" height="941">
-        <p class="amenity__k">02</p>
-        <h3>חדר כושר וסטודיו</h3>
-        <p>מכשיר פילאטיס, אימון כוח וקרדיו בחלל אחד שנפתח אל גן הזיתים. פתוח לדיירים מ־05:30.</p>
-      </article>
-      <article class="amenity" data-i="2">
-        <img class="amenity__img" src="img/new/A2-640.webp" srcset="img/new/A2-640.webp 640w, img/new/A2-1024.webp 1024w" sizes="100vw" alt="ספא עם בריכה מקורה, מיטות שיזוף מעץ, סאונה וקירות טרוורטין מוארים" loading="lazy" decoding="async" width="1672" height="941">
-        <p class="amenity__k">03</p>
-        <h3>ספא ובריכה מקורה</h3>
-        <p>בריכת מים חמימים, סאונה יבשה וחדר מנוחה. שקט מוחלט, שתי קומות מתחת לרחוב.</p>
-      </article>
-      <article class="amenity amenity--text" data-i="2">
-        <p class="amenity__k">04</p>
-        <h3>קונסיירז׳</h3>
-        <p>קבלת חבילות, ניקיון, הזמנות במסעדות ותיאום ספקים — דרך אדם אחד שמכיר את הבניין ואת הדיירים בשמם.</p>
-      </article>
-      <article class="amenity amenity--text" data-i="2">
-        <p class="amenity__k">05</p>
-        <h3>חניה ומחסן</h3>
-        <p>חניון תת־קרקעי עם כניסה שקטה מהרחוב האחורי, מחסן לכל דירה ועמדת טעינה לרכב חשמלי בכל חניה.</p>
-      </article>
-    </div>
-  </div>
-</section>
-
 <!-- ============ 8 · A DAY AT AURA (pinned horizontal) ============ -->
 <section class="day" id="day" aria-labelledby="day-title">
   <div class="day__pin">
@@ -398,6 +296,10 @@
     </div>
     <div class="day__viewport">
       <ol class="day__track" id="dayTrack">
+        <li class="day__card" data-t="6.5">
+          <img src="img/new/A1-1024.webp" srcset="img/new/A1-640.webp 640w, img/new/A1-1024.webp 1024w, img/new/A1-1672.webp 1672w" sizes="(min-width: 900px) 62vw, 86vw" alt="חדר כושר מואר עם מכשיר פילאטיס מעץ, הליכון ואופני כושר, פתוח לגן זיתים" loading="lazy" decoding="async" width="1672" height="941">
+          <p class="day__cap"><span class="day__t">06:30</span>פילאטיס בחדר הכושר, מול גן הזיתים.</p>
+        </li>
         <li class="day__card" data-t="7">
           <img src="img/new/P2-1024.webp" srcset="img/new/P2-640.webp 640w, img/new/P2-1024.webp 1024w, img/new/P2-1672.webp 1672w" sizes="(min-width: 900px) 62vw, 86vw" alt="מטבח מואר בבוקר: אי שיש, ארונות אלון ושולחן ערוך מול חלון לים" loading="lazy" decoding="async" width="1672" height="941">
           <p class="day__cap"><span class="day__t">07:00</span>בוקר במטבח, והים כבר בחלון.</p>
@@ -406,9 +308,17 @@
           <img src="img/new/L2-1024.webp" srcset="img/new/L2-640.webp 640w, img/new/L2-1024.webp 1024w, img/new/L2-1672.webp 1672w" sizes="(min-width: 900px) 62vw, 86vw" alt="זוג הולך יחף לאורך קו המים בחוף רחב, צוק אבן חול ודקלים ברקע" loading="lazy" decoding="async" width="1672" height="941">
           <p class="day__cap"><span class="day__t">09:30</span>ארבע דקות הליכה, והחול עדיין קריר.</p>
         </li>
+        <li class="day__card" data-t="13">
+          <img src="img/new/P1-1024.webp" srcset="img/new/P1-640.webp 640w, img/new/P1-1024.webp 1024w, img/new/P1-1672.webp 1672w" sizes="(min-width: 900px) 62vw, 86vw" alt="לובי בגובה כפול עם עץ זית עתיק מתחת לחלון גג, קירות טרוורטין ודלפק אבן" loading="lazy" decoding="async" width="1672" height="941">
+          <p class="day__cap"><span class="day__t">13:00</span>הזית בלובי, והקונסיירז׳ כבר אסף את החבילות.</p>
+        </li>
         <li class="day__card" data-t="16">
           <img src="img/new/P5-1024.webp" srcset="img/new/P5-640.webp 640w, img/new/P5-1024.webp 1024w, img/new/P5-1672.webp 1672w" sizes="(min-width: 900px) 62vw, 86vw" alt="סלון דירת גן נפתח אל גינה עם עצי זית ולבנדר באור אחר הצהריים" loading="lazy" decoding="async" width="1672" height="941">
           <p class="day__cap"><span class="day__t">16:00</span>צל של זית בגינה, ואור אחר הצהריים.</p>
+        </li>
+        <li class="day__card" data-t="17.5">
+          <img src="img/new/A2-1024.webp" srcset="img/new/A2-640.webp 640w, img/new/A2-1024.webp 1024w, img/new/A2-1672.webp 1672w" sizes="(min-width: 900px) 62vw, 86vw" alt="ספא עם בריכה מקורה, מיטות שיזוף מעץ, סאונה וקירות טרוורטין מוארים" loading="lazy" decoding="async" width="1672" height="941">
+          <p class="day__cap"><span class="day__t">17:30</span>בריכה חמימה וסאונה, שתי קומות מתחת לרחוב.</p>
         </li>
         <li class="day__card" data-t="19">
           <img src="img/new/L3-1024.webp" srcset="img/new/L3-640.webp 640w, img/new/L3-1024.webp 1024w, img/new/L3-1672.webp 1672w" sizes="(min-width: 900px) 62vw, 86vw" alt="חברים סביב שולחן ארוחת ערב מתחת לפרגולת ברונזה על הגג, נרות ובריכה מוארת" loading="lazy" decoding="async" width="1672" height="941">
@@ -452,46 +362,6 @@
       <img src="img/new/N1-1024.webp" srcset="img/new/N1-640.webp 640w, img/new/N1-1024.webp 1024w, img/new/N1-1672.webp 1672w" sizes="(min-width: 900px) 70vw, 100vw" alt="טיילת עץ לאורך מרינה, יאכטות ומפרשיות על מים שקטים בשעת ערב" loading="lazy" decoding="async" width="1672" height="941">
       <figcaption>החיים על קו החוף</figcaption>
     </figure>
-  </div>
-</section>
-
-<!-- ============ 10 · THE TEAM ============ -->
-<section class="team" id="team" aria-labelledby="team-title">
-  <div class="wrap">
-    <blockquote class="team__quote" data-reveal>
-      <p>„לא רצינו בניין שמתחרה בים. רצינו בניין שממסגר אותו.”</p>
-      <footer>נועה ברק, אדריכלית ראשית</footer>
-    </blockquote>
-    <h2 class="sr-only" id="team-title">הצוות</h2>
-    <p class="team__line" data-reveal>
-      <span><b>ברק · לוין אדריכלים</b> אדריכלות</span>
-      <span><b>אטלייה מאיה שחר</b> עיצוב פנים</span>
-      <span><b>מרום נוף</b> אדריכלות נוף</span>
-      <span><b>סלע ים יזמות</b> יזמות ובנייה</span>
-    </p>
-    <p class="team__demo">שמות בדיוניים · אתר תצוגה</p>
-  </div>
-</section>
-
-<!-- ============ 11 · FAQ ============ -->
-<section class="faq" id="faq" aria-labelledby="faq-title">
-  <div class="wrap faq__grid">
-    <div class="faq__side">
-      <div class="status" role="status">
-        <span class="status__dot" aria-hidden="true"></span>
-        <span>היסודות בביצוע · מסירה מתוכננת 2029</span>
-      </div>
-      <div class="status__track" aria-hidden="true"><span style="--p: .22"></span></div>
-      <h2 class="faq__title" id="faq-title">שאלות שרוכשים שואלים</h2>
-    </div>
-    <div class="faq__list">
-      <details class="acc"><summary><span>האם הפרויקט בליווי בנקאי?</span><i aria-hidden="true"></i></summary><div class="acc__body"><p>כן. הפרויקט מלווה בליווי פיננסי סגור של בנק מוביל, וכל תשלום מופקד ישירות לחשבון הליווי של הפרויקט.</p><p class="acc__demo">תשובה להמחשה</p></div></details>
-      <details class="acc"><summary><span>אילו ערבויות אקבל לפי חוק המכר?</span><i aria-hidden="true"></i></summary><div class="acc__body"><p>על כל תשלום תקבלו ערבות בנקאית לפי חוק המכר (דירות) או פוליסת ביטוח מקבילה, עד מסירת הדירה ורישום הזכויות.</p><p class="acc__demo">תשובה להמחשה</p></div></details>
-      <details class="acc"><summary><span>מה תנאי התשלום?</span><i aria-hidden="true"></i></summary><div class="acc__body"><p>מבנה תשלומים מדורג לפי התקדמות הבנייה, כולל מסלול 20/80. תנאים אישיים נבנים בפגישה במשרדי המכירות.</p><p class="acc__demo">תשובה להמחשה</p></div></details>
-      <details class="acc"><summary><span>מתי מתוכננת המסירה?</span><i aria-hidden="true"></i></summary><div class="acc__body"><p>המסירה מתוכננת לרבעון השלישי של 2029. המועד המחייב, וההתחייבות בגין איחור, מופיעים בחוזה הרכישה.</p><p class="acc__demo">תשובה להמחשה</p></div></details>
-      <details class="acc"><summary><span>אפשר לבצע שינויי דיירים?</span><i aria-hidden="true"></i></summary><div class="acc__body"><p>כן. מחלקת שינויי דיירים מלווה כל רוכש בהזזת קירות פנים, בחירת גמרים ותכנון תאורה, עד מועד שנקבע לכל קומה.</p><p class="acc__demo">תשובה להמחשה</p></div></details>
-      <details class="acc"><summary><span>מה לגבי חניה ומחסן?</span><i aria-hidden="true"></i></summary><div class="acc__body"><p>לכל דירה חניה תת־קרקעית (שתיים בדירות 5 חדרים ומעלה), מחסן צמוד ועמדת טעינה לרכב חשמלי.</p><p class="acc__demo">תשובה להמחשה</p></div></details>
-    </div>
   </div>
 </section>
 
@@ -596,6 +466,18 @@
 </nav>
 
 
+<!-- Full specification: not rendered; moves into a dialog in part 4 -->
+<template id="specTpl">
+      <div class="spec-cols">
+        <div><h3>חזית ומעטפת</h3><ul><li>חיפוי אבן טבעית בגוון חול, גמר מוברש</li><li>מערכות אלומיניום בפרופיל דק, זיגוג בידודי כפול</li><li>מעקות זכוכית שקופים ללא מסגרת עליונה</li></ul></div>
+        <div><h3>ריצוף וחיפויים</h3><ul><li>פרקט עץ אלון בדוגמת אדרה בחללי המגורים</li><li>טרוורטין במרפסות ובחדרי הרחצה</li><li>אריחי פורצלן גדולי מידות, 120×120 ס״מ</li></ul></div>
+        <div><h3>מטבח</h3><ul><li>מטבח בתכנון אדריכלי, חזיתות פורניר אלון</li><li>משטח ואי משיש טבעי</li><li>הכנה למקרר ומקפיא אינטגרליים, כיור כפול</li></ul></div>
+        <div><h3>רחצה</h3><ul><li>כלים סניטריים תלויים וניקוז רצפתי לינארי</li><li>ברזים בגימור ברונזה מוברשת</li><li>חימום תת־רצפתי בחדר הרחצה הראשי</li></ul></div>
+        <div><h3>מערכות ובית חכם</h3><ul><li>מיזוג VRF מרכזי עם שליטה נפרדת לכל חדר</li><li>תשתית בית חכם: תאורה, תריסים ומיזוג</li><li>תריסים חשמליים וקיר זכוכית נגרר למרפסת</li></ul></div>
+        <div><h3>הבניין</h3><ul><li>לובי בגובה כפול בעיצוב אדריכל פנים</li><li>שתי מעליות, אחת מהן מעלית שבת</li><li>חניון תת־קרקעי, מחסן ועמדת טעינה לכל דירה</li></ul></div>
+      </div>
+</template>
+
 <dialog class="sheet" id="planDlg" aria-labelledby="planDlgTitle">
   <div class="sheet__inner">
     <header class="sheet__head">
@@ -641,6 +523,6 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
-<script src="js/main.js?v=202611061901" defer></script>
+<script src="js/main.js?v=202611071745" defer></script>
 </body>
 </html>
