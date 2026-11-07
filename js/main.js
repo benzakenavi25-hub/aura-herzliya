@@ -201,14 +201,48 @@
     const img = frames[a];
     const iw = img.naturalWidth, ih = img.naturalHeight;
     const pl = placement(iw, ih, t);
-    if (pl.dy > 0.5) { ctx.fillStyle = '#C9C6DA'; ctx.fillRect(0, 0, cw, Math.ceil(pl.dy) + 1); }
+    // wipe the whole canvas every draw: nothing from a previous frame may survive
     ctx.globalAlpha = 1;
+    ctx.fillStyle = '#141A24'; ctx.fillRect(0, 0, cw, ch);
+    if (pl.dy > 0.5) { ctx.fillStyle = '#C9C6DA'; ctx.fillRect(0, 0, cw, Math.ceil(pl.dy) + 1); }
     ctx.drawImage(img, pl.dx, pl.dy, iw * pl.s, ih * pl.s);
     if (b >= 0) { ctx.globalAlpha = f; ctx.drawImage(frames[b], pl.dx, pl.dy, iw * pl.s, ih * pl.s); }
     ctx.globalAlpha = 1;
     // final frame on screen → hand the descent's first panel an exact pixel copy of this canvas
     if (a === times.length - 1 && b < 0 && window.__homeSync) window.__homeSync(canvas);
     if (pl.dy > 0.5) { buildStrip(b >= 0 && f > 0.5 ? frames[b] : img, b >= 0 && f > 0.5 ? b : a); drawSky(pl, iw); }
+    drawGround(pl, iw, ih, b >= 0 && f > 0.5 ? frames[b] : img, b >= 0 && f > 0.5 ? b : a);
+  }
+
+  // Ground extension: below the (shrunken) frame, continue the road colour of the frame's
+  // bottom rows and ease it into the dark page colour, feathered into the image (no seam).
+  let groundFor = -1, groundRGB = '20,26,36';
+  function drawGround(pl, iw, ih, img, idx) {
+    const bot = pl.dy + ih * pl.s;
+    if (bot >= ch - 0.5) return;
+    if (groundFor !== idx) {
+      groundFor = idx;
+      try {
+        sampleX.clearRect(0, 0, 64, 2);
+        sampleX.drawImage(img, 0, ih - 4, iw, 4, 0, 0, 64, 2);
+        const d = sampleX.getImageData(0, 0, 64, 2).data;
+        let r = 0, g = 0, bl = 0;
+        for (let n = 0; n < d.length; n += 4) { r += d[n]; g += d[n + 1]; bl += d[n + 2]; }
+        const k = d.length / 4;
+        groundRGB = `${Math.round(r / k)},${Math.round(g / k)},${Math.round(bl / k)}`;
+      } catch (e) { /* keep the previous colour */ }
+    }
+    const top = Math.floor(bot);
+    const fade = Math.round(18 * Math.min(window.devicePixelRatio || 1, 2));
+    const y0 = Math.max(0, top - fade);
+    const gr = ctx.createLinearGradient(0, y0, 0, ch);
+    const at = (top - y0) / Math.max(1, ch - y0);
+    gr.addColorStop(0, `rgba(${groundRGB},0)`);
+    gr.addColorStop(at, `rgba(${groundRGB},1)`);
+    gr.addColorStop(Math.min(1, at + (1 - at) * 0.85), 'rgb(20,26,36)');
+    gr.addColorStop(1, 'rgb(20,26,36)');
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = gr; ctx.fillRect(0, y0, cw, ch - y0);
   }
 
   // Light arc: golden hour (ink on light veil) → blue hour (cream on dusk veil)

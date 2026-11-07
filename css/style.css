@@ -465,6 +465,21 @@ figcaption { font-size: 13px; color: var(--ink-2); margin-top: 14px; }
   .lift__track { width: auto; height: 2px; }
   .lift__track span { transform-origin: right; transform: scaleX(var(--p, 0)); }
 }
+/* phones (portrait): only the title + floor label, at the top over the ceiling; the view stays clear */
+@media (max-width: 760px) and (orientation: portrait) {
+  .descent__copy { top: calc(var(--header-h) + var(--safe-t) + 14px); bottom: auto; }
+  .descent__cap { margin-top: 8px; }
+  .descent__cap[data-k="1"] { font-size: 0; max-width: none; }
+  .descent__cap[data-k="1"] b { margin-bottom: 0; }
+  .descent__facts { display: none; }
+  .descent__shade { background: linear-gradient(to bottom, rgba(14,18,26,.62) 0%, rgba(14,18,26,.34) 18%, rgba(14,18,26,.1) 30%, rgba(14,18,26,0) 40%); }
+  .lift { bottom: calc(10px + var(--safe-b)); bottom: calc(10px + var(--safe-b) + (100lvh - 100svh)); padding: 5px; border-radius: 16px; }
+  .lift__hint, .lift__now, .lift__track { display: none; }
+  .lift__body { gap: 0; }
+  .lift__btns { gap: 5px; }
+  .lift__btns button { min-width: 52px; min-height: 44px; height: 44px; font-size: 18px; padding: 0 10px; border-radius: 11px; }
+  .lift__btns button[data-k="0"] { font-size: 14px; }
+}
 
 /* =========================================================
    4 · RESIDENCES — full-screen panels: pinned horizontal (desktop), snap carousel (phones)
@@ -526,6 +541,19 @@ figcaption { font-size: 13px; color: var(--ink-2); margin-top: 14px; }
   .rpanel__actions { margin-top: 20px; }
   .res__bar { bottom: 18px; }
   .mats__strip { grid-template-columns: 1fr 1fr; gap: 28px 14px; }
+}
+/* phones (portrait): image on top, fully clear; the copy sits below it on the dark page */
+@media (max-width: 900px) and (orientation: portrait) {
+  .rpanel { height: auto; min-height: 0; display: flex; flex-direction: column; background: var(--bg); }
+  .rpanel::after { display: none; }
+  .rpanel img { position: relative; inset: auto; height: 55svh; flex: none; }
+  .rpanel__info { position: relative; right: auto; left: auto; bottom: auto; width: auto;
+    padding: 18px var(--gutter) calc(30px + 54px + var(--safe-b)); }
+  .rpanel__num { font-size: clamp(64px, 18vw, 84px); }
+  .rpanel__name { margin-top: 8px; font-size: clamp(24px, 7vw, 30px); }
+  .rpanel__facts { margin-top: 12px; }
+  .rpanel__facts div { padding: 8px 0; }
+  .rpanel__actions { margin-top: 16px; gap: 12px 24px; }
 }
 
 /* =========================================================
@@ -966,7 +994,11 @@ figcaption, .plan__note { font-size: 15px; }
   background: radial-gradient(closest-side, rgba(14,18,26,.72), rgba(14,18,26,.45) 55%, rgba(14,18,26,0));
 }
 @media (max-width: 760px) {
-  .chapter--scrim::before { inset: -110px calc(-1 * var(--gutter)) calc(-40px - var(--safe-b)); background: linear-gradient(to top, rgba(14,18,26,.84) 35%, rgba(14,18,26,0)); }
+  /* no box on phones: a very soft full-bleed bottom wash (overshoots every edge and is clipped by the
+     stage, so it never shows a border) + a soft shadow on the type */
+  .chapter--scrim::before { inset: -46vh calc(-1 * var(--gutter) - 40px) calc(-60px - var(--safe-b) - 20vh);
+    background: linear-gradient(to top, rgba(14,18,26,.5) 0%, rgba(14,18,26,.42) 22%, rgba(14,18,26,.24) 45%, rgba(14,18,26,.09) 68%, rgba(14,18,26,0) 100%); }
+  .chapter--scrim { text-shadow: 0 1px 2px rgba(10,13,19,.55), 0 2px 16px rgba(10,13,19,.6); }
 }
 
 
