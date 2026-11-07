@@ -1,4 +1,4 @@
-// Extracts the hero image sequence from assets/aura.mp4 into WebP frame sets.
+﻿// Extracts the hero image sequence from assets/aura.mp4 into WebP frame sets.
 // Frame density varies with camera speed (measured with tblend/signalstats):
 // static time-lapse stretches are sampled sparsely, fast camera moves densely.
 // Usage: node tools/extract-frames.mjs [quality-desktop] [quality-mobile]
@@ -8,20 +8,20 @@ import { join } from 'node:path';
 
 const SRC = 'assets/aura.mp4';
 const DURATION = 31;
-const qD = +(process.argv[2] || 62), qM = +(process.argv[3] || 60);
+const qD = +(process.argv[2] || 70), qM = +(process.argv[3] || 43);
 
 // [startSec, endSec, samplesPerSec]
 const SETS = {
   d: {
-    vf: 'scale=1920:-2',
+    vf: 'scale=1280:-2',
     q: qD,
-    segs: [[0, 11, 6], [11, 13, 16], [13, 21, 6], [21, 25, 12], [25, 26, 6], [26, 30, 12], [30, 31, 6]],
+    segs: [[0, 11, 3], [11, 13, 14], [13, 21, 4], [21, 25, 7], [25, 26, 3], [26, 30, 7], [30, 31, 3]],
   },
-  // Portrait set: centre crop at native resolution, extra frames where the camera moves fast.
+  // Portrait set: centre crop scaled to 720 wide, extra frames where the camera moves fast (~140 frames, <=3.5 MB).
   m: {
-    vf: 'crop=1000:1098:460:0',
+    vf: 'crop=1000:1098:460:0,scale=720:-2',
     q: qM,
-    segs: [[0, 11, 4], [11, 13, 20], [13, 21, 5], [21, 25, 12], [25, 26, 4], [26, 30, 16], [30, 31, 4]],
+    segs: [[0, 11, 3], [11, 13, 14], [13, 21, 3.5], [21, 25, 6], [25, 26, 3], [26, 30, 5], [30, 31, 3]],
   },
 };
 

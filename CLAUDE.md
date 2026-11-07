@@ -29,7 +29,7 @@ Page order: hero → views → residences → floors → day → location → co
 - Shared CSS (reveals, buttons, dialogs) ~292; footer ~846; "POLISH PASS" overrides ~882 (check here before editing a section's rules)
 
 ## Media
-- `frames/d/` (landscape, 254) and `frames/m/` (portrait crop, 244): `0001.webp`… hero sequence; timings in `frames/manifest.json`.
+- `frames/d/` (landscape 1280w, 155, ~8 MB) and `frames/m/` (portrait crop 720w, 139, ~3.4 MB): `0001.webp`… hero sequence; timings in `frames/manifest.json`. Hero keeps frames as Blobs and decodes only drawn ones (ImageBitmap LRU); the loader gate is ~20 frames, the rest stream at low priority. Page images use native `loading="lazy"` (no data-src).
 - `img/new/<CODE>-{640,1024,1672}.webp` (codes A1…V3, referenced via `srcs(code)` in main.js); `img/` also has older stills, `map-static.webp`, `poster.webp`, `og-aura.jpg`.
 - `assets/` = untracked source video/PNGs; regenerate with `tools/extract-frames.mjs` / `optimize-images.mjs` (see README).
 

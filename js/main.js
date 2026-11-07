@@ -144,7 +144,7 @@
     if (stripFor === idx) return;
     stripFor = idx;
     sampleX.clearRect(0, 0, 64, 2);
-    sampleX.drawImage(img, 0, 0, img.naturalWidth, 4, 0, 0, 64, 2);
+    sampleX.drawImage(img, 0, 0, img.width, 4, 0, 0, 64, 2);
     let src;
     try { src = sampleX.getImageData(0, 0, 64, 2).data; } catch (e) { stripFor = -2; return; }
     const out = stripX.createImageData(64, 1);
@@ -192,26 +192,28 @@
     if (!set || !cw) return;
     const t = interp(PACE, progress);
     const i = frameIndexAt(t);
-    const a = nearestReady(i);
-    if (a < 0) return;
+    const a0 = nearestReady(i);
+    if (a0 < 0) return;
+    // frames are kept as compressed blobs; only the ones being drawn are decoded (ImageBitmap, small LRU)
+    let a = a0, img = getBmp(a0);
+    if (!img) { a = nearestBmp(a0); if (a < 0) return; img = bmps.get(a); }
     // cross-dissolve to the next frame for sub-frame smoothness
-    let b = -1, f = 0;
-    if (a === i && i < times.length - 1 && ready[i + 1]) {
+    let b = -1, f = 0, imgB = null;
+    if (a0 === i && a === i && i < times.length - 1 && ready[i + 1]) {
       f = clamp((t - times[i]) / (times[i + 1] - times[i]), 0, 1);
-      if (f > 0.02) b = i + 1;
+      if (f > 0.02) { imgB = getBmp(i + 1); if (imgB) b = i + 1; }
     }
     const key = a + ':' + b + ':' + f.toFixed(2) + ':' + t.toFixed(2);
     if (key === lastDrawKey) return;
     lastDrawKey = key;
-    const img = frames[a];
-    const iw = img.naturalWidth, ih = img.naturalHeight;
+    const iw = img.width, ih = img.height;
     const pl = placement(iw, ih, t);
     if (pl.dy > 0.5) { ctx.fillStyle = '#C9C6DA'; ctx.fillRect(0, 0, cw, Math.ceil(pl.dy) + 1); }
     ctx.globalAlpha = 1;
     ctx.drawImage(img, pl.dx, pl.dy, iw * pl.s, ih * pl.s);
-    if (b >= 0) { ctx.globalAlpha = f; ctx.drawImage(frames[b], pl.dx, pl.dy, iw * pl.s, ih * pl.s); }
+    if (b >= 0) { ctx.globalAlpha = f; ctx.drawImage(imgB, pl.dx, pl.dy, iw * pl.s, ih * pl.s); }
     ctx.globalAlpha = 1;
-    if (pl.dy > 0.5) { buildStrip(b >= 0 && f > 0.5 ? frames[b] : img, b >= 0 && f > 0.5 ? b : a); drawSky(pl, iw); }
+    if (pl.dy > 0.5) { buildStrip(b >= 0 && f > 0.5 ? imgB : img, b >= 0 && f > 0.5 ? b : a); drawSky(pl, iw); }
   }
 
   // Light arc: golden hour (ink on light veil) → blue hour (cream on dusk veil)
@@ -241,94 +243,67 @@
     hero.classList.toggle('is-ending', progress >= 0.985);
   }
 
-  // Phones: only frames around the current one stay decoded (± KEEP) plus a coarse anchor every 24;
-  // the rest are released and fetched again as the scroll approaches.
-  const KEEP = 30;
-  let windowed = false, winCenter = -999, winActive = 0, winQ = [];
-  const winLoading = new Set();
+  // Frames stay compressed (Blob per frame). Only the frames being drawn are decoded into ImageBitmaps,
+  // kept in a tiny LRU and closed when evicted, so memory stays low on phones.
+  const blobs = [], bmps = new Map(), decoding = new Set(), BMP_MAX = 8;
   const frameUrl = (k) => `frames/${setKey}/${String(k + 1).padStart(4, '0')}.webp`;
-  function winPump() {
-    while (winActive < 4 && winQ.length) {
-      const k = winQ.shift();
-      if (ready[k] || winLoading.has(k) || Math.abs(k - winCenter) > KEEP) continue;
-      winLoading.add(k); winActive++;
-      const img = new Image(); img.decoding = 'async';
-      const fin = (ok) => {
-        winLoading.delete(k); winActive--;
-        if (ok && (Math.abs(k - winCenter) <= KEEP || k % 24 === 0)) {
-          frames[k] = img; ready[k] = true;
-          if (Math.abs(k - winCenter) <= 2) { lastDrawKey = ''; draw(); }
-        }
-        winPump();
-      };
-      img.onload = () => (img.decode ? img.decode().catch(() => {}) : Promise.resolve()).then(() => fin(true));
-      img.onerror = () => fin(false);
-      img.src = frameUrl(k);
+  const decodeBlob = (blob) => window.createImageBitmap ? createImageBitmap(blob) : new Promise((res, rej) => {
+    const u = URL.createObjectURL(blob), im = new Image();
+    im.onload = () => { URL.revokeObjectURL(u); res(im); }; im.onerror = rej; im.src = u;
+  });
+  function getBmp(k) {
+    const b = bmps.get(k);
+    if (b) { bmps.delete(k); bmps.set(k, b); return b; }
+    if (blobs[k] && !decoding.has(k)) {
+      decoding.add(k);
+      decodeBlob(blobs[k]).then((bm) => {
+        decoding.delete(k); bmps.set(k, bm);
+        while (bmps.size > BMP_MAX) { const [ok, ob] = bmps.entries().next().value; bmps.delete(ok); if (ob.close) ob.close(); }
+        lastDrawKey = ''; draw();
+      }).catch(() => decoding.delete(k));
     }
+    return null;
   }
-  function winMaintain(c) {
-    if (!windowed || !set || c === winCenter) return;
-    winCenter = c;
-    const n = set.count;
-    for (let k = 0; k < n; k++) {
-      if (ready[k] && (k < c - KEEP || k > c + KEEP) && k % 24 !== 0) {
-        const im = frames[k]; im.onload = im.onerror = null; im.src = '';
-        frames[k] = undefined; ready[k] = false;
-      }
-    }
-    winQ = [];
-    for (let d = 0; d <= KEEP; d++) {
-      [c + d, c - d].forEach((k, j) => { if ((d || !j) && k >= 0 && k < n && !ready[k]) winQ.push(k); });
-    }
-    winPump();
+  function nearestBmp(i) {
+    let best = -1;
+    bmps.forEach((_, k) => { if (best < 0 || Math.abs(k - i) < Math.abs(best - i)) best = k; });
+    return best;
   }
 
-  function setProgress(p) {
-    progress = clamp(p, 0, 1);
-    if (windowed) winMaintain(frameIndexAt(interp(PACE, progress)));
-    draw(); updateUI();
-  }
+  function setProgress(p) { progress = clamp(p, 0, 1); draw(); updateUI(); }
 
   // -------- preloading --------
+  // Loader gate: the opening frames plus a coarse pass over the whole film. Every other frame keeps
+  // downloading in the background at low priority (so images further down the page are not starved).
   function loadFrames() {
     const portrait = innerWidth / innerHeight < 1;
     setKey = portrait ? 'm' : 'd';
     return fetch('frames/manifest.json').then((r) => r.json()).then((m) => {
       set = m.sets[setKey];
       times = set.t;
-      frames = new Array(set.count);
       ready = new Array(set.count).fill(false);
       const n = set.count;
-      // priority: opening frames → coarse pass across the whole film → the rest
       const order = [], seen = new Set();
       const push = (i) => { if (i >= 0 && i < n && !seen.has(i)) { seen.add(i); order.push(i); } };
-      for (let i = 0; i < 12; i++) push(i);
-      for (let i = 0; i < n; i += 24) push(i);
+      for (let i = 0; i < 8; i++) push(i);
+      for (let i = 0; i < n; i += 14) push(i);
       const gate = order.length;
-      windowed = portrait || matchMedia('(pointer: coarse)').matches;
-      if (!windowed) for (let i = 0; i < n; i++) push(i);   // phones stream a window instead (see winMaintain)
+      for (let i = 0; i < n; i++) push(i);
 
-      let loaded = 0, gateLoaded = 0, cursor = 0, released = false;
+      let gateLoaded = 0, cursor = 0, released = false;
       const bar = $('#loaderBar'), pct = $('#loaderPct');
       return new Promise((resolve) => {
         const release = () => { if (!released) { released = true; resolve(); } };
-        // after the gate, the rest of the film waits for the first sign of intent (or idle time)
-        let resumed = false, parked = 0;
-        const resume = () => { if (resumed) return; resumed = true; const k = Math.max(parked, 4); parked = 0; for (let c = 0; c < k; c++) next(); };
-        ['scroll', 'wheel', 'touchstart', 'keydown', 'pointerdown'].forEach((ev) => addEventListener(ev, resume, { once: true, passive: true }));
-        setTimeout(resume, 6000);
         const next = () => {
           if (cursor >= order.length) return;
-          if (cursor >= gate && !resumed) { parked++; return; }
           const idx = order[cursor];
           const isGate = cursor < gate;
           cursor++;
-          const img = new Image();
-          img.decoding = 'async';
-          img.src = `frames/${setKey}/${String(idx + 1).padStart(4, '0')}.webp`;
-          const done = (ok) => {
-            if (ok) { frames[idx] = img; ready[idx] = true; }
-            loaded++;
+          const get = (tries) => fetch(frameUrl(idx), isGate ? undefined : { priority: 'low' })
+            .then((r) => { if (!r.ok) throw 0; return r.blob(); })
+            .catch((e) => (tries > 0 ? get(tries - 1) : null));
+          get(1).then((blob) => {
+            if (blob) { blobs[idx] = blob; ready[idx] = true; }
             if (isGate) {
               gateLoaded++;
               const p = gateLoaded / gate;
@@ -336,19 +311,20 @@
               pct.textContent = Math.round(p * 100);
               if (gateLoaded === gate) release();
             }
-            if (ok && Math.abs(interp(PACE, progress) - times[idx]) < 1.5) { lastDrawKey = ''; draw(); }
+            if (blob && Math.abs(interp(PACE, progress) - times[idx]) < 1.5) { lastDrawKey = ''; draw(); }
             next();
-          };
-          img.onload = () => (img.decode ? img.decode().catch(() => {}) : Promise.resolve()).then(() => done(true));
-          img.onerror = () => done(false);
+          });
         };
-        for (let c = 0; c < 6; c++) next();
-        setTimeout(release, 12000); // never trap the visitor behind the loader
+        for (let c = 0; c < 4; c++) next();
+        setTimeout(release, 20000); // never trap the visitor behind the loader
       });
     });
   }
 
   function hideLoader() {
+    // the descent panels move by transform, so native lazy-loading can reach them late: once the hero's
+    // first frames are in, let them start loading (their src/srcset are already real; this only lifts "lazy")
+    $$('#views img').forEach((im) => { im.loading = 'eager'; });
     loader.classList.add('is-done');
     document.body.classList.remove('is-loading');
     setTimeout(() => loader.remove(), 1400);
@@ -511,11 +487,6 @@
     const n = m.sets[key] && m.sets[key].count;
     if (n && home) home.src = `frames/${key}/${String(n).padStart(4, '0')}.webp`;
   }).catch(() => {});
-  new IntersectionObserver(([en], obs) => {
-    if (!en.isIntersecting) return;
-    $$('img[data-src]', stage).forEach((im) => { im.srcset = im.dataset.srcset; im.src = im.dataset.src; im.removeAttribute('data-src'); });
-    obs.disconnect();
-  }, { rootMargin: '1600px 0px' }).observe(sec);
 
   // scroll drives only penthouse → slab → floor 12 (section is 100vh + 260vh tall);
   // floors 7 and 3 are reached through the elevator, which animates the stage without moving the page
