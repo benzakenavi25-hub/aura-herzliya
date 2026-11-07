@@ -356,8 +356,9 @@
   [$('#contact'), $('.footer')].forEach((n) => { if (n) waIO.observe(n); });
   function onScroll() {
     const y = scrollY;
-    // header and contact bar stay away until the descent through the floors is over
-    const intro = $('#views') || hero;
+    // header and contact bar stay away until the descent through the floors (and the interlude after it) is over
+    const ilu = $('#interlude');
+    const intro = (ilu && ilu.offsetHeight > 0 ? ilu : null) || $('#views') || hero;
     const heroEnd = intro.offsetTop + intro.offsetHeight - innerHeight * (root.classList.contains('reduced') ? 0.3 : 1);
     const past = y > heroEnd;
     if (header) header.classList.toggle('is-visible', past);
@@ -408,7 +409,7 @@
       if (en.isIntersecting) navLinks.forEach((l) => l.setAttribute('aria-current', String(l.getAttribute('href') === '#' + en.target.id)));
     });
   }, { rootMargin: '-45% 0px -50% 0px' });
-  ['views', 'residences', 'floors', 'day', 'contact'].forEach((id) => { const s = $('#' + id); if (s) io2.observe(s); });
+  ['views', 'residences', 'contact'].forEach((id) => { const s = $('#' + id); if (s) io2.observe(s); });
 
   // one rAF-throttled scroll loop shared by the scroll-linked sections below
   const scrollJobs = new Set();
@@ -484,8 +485,19 @@
   measure(); addEventListener('resize', () => { measure(); paint(); });
   // hand-off: the moment the hero's stage would release, hide it — the identical frame is pinned beneath
   const hero = $('#top');
-  const handOff = () => { if (hero) hero.classList.toggle('is-handed', scrollY >= sec.offsetTop - 1); };
-  addEventListener('scroll', handOff, { passive: true }); handOff();
+  // …and the same at the other end: the interlude opens on this V3 frame, pinned beneath the stage.
+  // Over the last ~35vh before the release the captions, shade and elevator fade out, so the frames match.
+  const ilu = window.gsap && window.ScrollTrigger ? $('#interlude') : null;
+  let out = 0;
+  const handOff = () => {
+    if (hero) hero.classList.toggle('is-handed', scrollY >= sec.offsetTop - 1);
+    if (!ilu) return;
+    const end = ilu.offsetTop, span = innerHeight * .35;
+    const o = clamp((scrollY - (end - span)) / span, 0, 1);
+    sec.classList.toggle('is-handed', scrollY >= end);
+    if (o !== out) { out = o; stage.style.setProperty('--out', o.toFixed(3)); stage.classList.toggle('is-leaving', o > .3); paint(); }
+  };
+  addEventListener('scroll', handOff, { passive: true });
 
   // what's on screen = scroll position (0…1) + an elevator offset (−1…+2) animated by the panel
   let base = 0, extra = 0, lastF = 0, dir = 1, tween = null;
@@ -504,7 +516,7 @@
     const near = Math.round(f), atLanding = Math.abs(f - near) < .06;
     // captions only while a floor view has landed; each floor has its own
     const vis = near >= 1 ? clamp(1 - Math.abs(f - near) / .18, 0, 1) : 0;
-    shade.style.opacity = vis.toFixed(3);
+    shade.style.opacity = (vis * (1 - out)).toFixed(3);
     caps.forEach((c) => c.classList.toggle('is-on', vis > .55 && +c.dataset.k === near));
     title.classList.toggle('is-on', vis > .55 && near === 1);
     btns.forEach((b) => { const on = +b.dataset.k === near; b.classList.toggle('is-active', on); if (on) b.setAttribute('aria-current', 'true'); else b.removeAttribute('aria-current'); });
@@ -561,7 +573,7 @@
     const tick = () => { const t = unitsFromScroll(); cur += (t - cur) * 0.12; if (Math.abs(t - cur) < .0005) cur = t; setBase(camera(cur)); requestAnimationFrame(tick); };
     tick();
   }
-  base = camera(unitsFromScroll()); paint();
+  base = camera(unitsFromScroll()); paint(); handOff();
 
   // elevator buttons: play the descent/ascent inside the pinned stage — the page does not move
   btns.forEach((b, i) => {
@@ -753,64 +765,33 @@
   });
 
   /* =======================================================
-     Interlude — residences → day: pinned stage, sharp → blurred crossfade, veil, one line
+     Interlude — views → residences: opens on the descent's floor-12 frame (V3), pinned for 150vh:
+     sharp → blurred crossfade, warm vignette, two serif lines, then the bg veil while residences rise over it
      ======================================================= */
   section("Interlude", () => {
   const sec = $('#interlude');
   if (!sec) return;
   if (!(window.gsap && window.ScrollTrigger)) { sec.classList.add('no-gsap'); return; }
   gsap.registerPlugin(ScrollTrigger);
-  const stage = $('.interlude__stage', sec);
-  $$('img', sec).forEach((im) => { im.loading = 'eager'; });   // ready before the pin starts
-  const imgs = $$('.interlude__img', sec);
+  const q = (s) => $(s, sec);
+  const stage = q('.interlude__stage');
+  // ready before the pin starts (the sharp frame is the descent's own V3, already in cache)
+  new IntersectionObserver(([en], obs) => { if (en.isIntersecting) { $$('img', sec).forEach((im) => { im.loading = 'eager'; }); obs.disconnect(); } }, { rootMargin: '2000px 0px' }).observe(sec);
+  const lines = [q('.interlude__l1'), q('.interlude__l2')];
   const tl = gsap.timeline({
     defaults: { ease: 'none' },
     scrollTrigger: { trigger: sec, start: 'top top', end: '+=150%', pin: stage, scrub: 0.8, invalidateOnRefresh: true },
   });
-  // 0 → 1 timeline units = the whole 150vh of pinned scroll
-  tl.to(imgs, { scale: 1.04, duration: 0.55 }, 0)
-    .to('.interlude__blur', { opacity: 1, duration: 0.4 }, 0)
-    .to('.interlude__veil', { opacity: 0.7, duration: 0.4 }, 0)
-    .to('.interlude__line', { opacity: 1, y: 0, duration: 0.18, ease: 'power2.out' }, 0.2)
-    .to('.interlude__line', { opacity: 0, y: -12, duration: 0.17, ease: 'power1.in' }, 0.72)
-    .to('.interlude__veil', { opacity: 1, duration: 0.3 }, 0.7);
+  // 0 → 1 timeline units = the whole 150vh of pinned scroll. Residences start rising over the stage at ~0.67.
+  tl.fromTo(q('.interlude__media'), { scale: 1 }, { scale: 1.06, duration: 1 }, 0)
+    .to(q('.interlude__blur'), { opacity: 1, duration: 0.42, ease: 'power1.inOut' }, 0.02)
+    .to(q('.interlude__vignette'), { opacity: 1, duration: 0.46, ease: 'power1.inOut' }, 0.02)
+    .to(lines[0], { opacity: 1, y: 0, duration: 0.2, ease: 'power2.out' }, 0.12)
+    .to(lines[1], { opacity: 1, y: 0, duration: 0.2, ease: 'power2.out' }, 0.3)
+    // hold 0.5 → 0.62, then both lines leave together as the room goes to the page background
+    .to(lines, { opacity: 0, y: -18, duration: 0.2, ease: 'power1.in' }, 0.62)
+    .to(q('.interlude__veil'), { opacity: 1, duration: 0.36, ease: 'power2.out' }, 0.64);
   tl.set({}, {}, 1);   // pad to exactly 1 unit
-  });
-
-  /* =======================================================
-     8 · A day at AURA — pinned horizontal (desktop), snap carousel (phones)
-     ======================================================= */
-  section("8 · A day at AURA", () => {
-  const day = $('#day'), track = $('#dayTrack'), dayVP = $('.day__viewport');
-  const cards = $$('.day__card', track);
-  const HOURS = cards.map((c) => +c.dataset.t);
-  const hh = $('.day__hh'), mh = $('.day__mh'), nowEl = $('#dayNow'), bar = $('#dayBar');
-  new IntersectionObserver(([en], obs) => { if (en.isIntersecting) { $$('img', track).forEach((im) => { im.loading = 'eager'; }); obs.disconnect(); } }, { rootMargin: '1200px 0px' }).observe(day);
-  function setDay(p) {
-    const seg = p * (HOURS.length - 1), k = Math.min(Math.floor(seg), HOURS.length - 2);
-    const h = lerp(HOURS[k], HOURS[k + 1], seg - k);
-    const hour = Math.floor(h), min = Math.round(((h - hour) * 60) / 5) * 5 % 60;
-    nowEl.textContent = `${String(hour).padStart(2, '0')}:${String(min).padStart(2, '0')}`;
-    hh.style.transform = `rotate(${((h % 12) / 12) * 360}deg)`;
-    mh.style.transform = `rotate(${(h % 1) * 360}deg)`;
-    bar.parentElement.style.setProperty('--p', p.toFixed(3));
-  }
-  function dayDesktop() {
-    if (!desktopMQ.matches) return;
-    const r = day.getBoundingClientRect();
-    const p = clamp(-r.top / (r.height - innerHeight), 0, 1);
-    const max = track.scrollWidth - dayVP.clientWidth;
-    track.style.transform = `translate3d(${(p * max).toFixed(1)}px, 0, 0)`;   // RTL: content travels right
-    setDay(p);
-  }
-  whileVisible(day, dayDesktop, '0px');
-  dayVP.addEventListener('scroll', () => {
-    if (desktopMQ.matches) return;
-    const max = dayVP.scrollWidth - dayVP.clientWidth;
-    setDay(max > 0 ? clamp(Math.abs(dayVP.scrollLeft) / max, 0, 1) : 0);
-  }, { passive: true });
-  desktopMQ.addEventListener('change', () => { track.style.transform = ''; requestJobs(); });
-  setDay(0);
   });
 
   /* =======================================================

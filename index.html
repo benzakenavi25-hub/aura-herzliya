@@ -20,7 +20,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;1,6..96,400&family=Frank+Ruhl+Libre:wght@300;400&family=IBM+Plex+Sans+Hebrew:wght@300;400;500&display=swap">
 <link rel="preload" href="frames/manifest.json" as="fetch" crossorigin>
-<link rel="stylesheet" href="css/style.css?v=202611080007">
+<link rel="stylesheet" href="css/style.css?v=202611080032">
 <script>document.documentElement.classList.add('js');</script>
 </head>
 <body>
@@ -42,7 +42,6 @@
     <nav class="header__nav" aria-label="ניווט ראשי">
       <a href="#views">הנוף</a>
       <a href="#residences">הדירות</a>
-      <a href="#day">יום ב־AURA</a>
     </nav>
     <a class="header__cta" href="#contact">תיאום פגישה</a>
     <button class="header__menu" id="menuBtn" aria-expanded="false" aria-controls="mobileNav"><span class="sr-only">תפריט</span><i></i><i></i></button>
@@ -52,7 +51,6 @@
   <nav class="mnav__links" aria-label="ניווט ראשי (נייד)">
     <a href="#views">הנוף</a>
     <a href="#residences">הדירות</a>
-    <a href="#day">יום ב־AURA</a>
     <a href="#contact">תיאום פגישה</a>
   </nav>
   <div class="mnav__foot">
@@ -177,6 +175,22 @@
   </div>
 </section>
 
+<!-- ============ Interlude: views → residences (pinned, scroll-driven) ============ -->
+<!-- Overlaps the descent's last screen and sits beneath it: it opens on the same floor-12 frame (V3),
+     so when the descent stage releases there is no visible cut. -->
+<section class="interlude" id="interlude" aria-label="מעבר">
+  <div class="interlude__stage">
+    <div class="interlude__media">
+      <img class="interlude__img interlude__sharp" src="img/new/V3-1024.webp" srcset="img/new/V3-640.webp 640w, img/new/V3-1024.webp 1024w, img/new/V3-1672.webp 1672w" sizes="100vw" alt="" loading="lazy" decoding="async" width="1672" height="941">
+      <img class="interlude__img interlude__blur" src="img/new/V3-blur.webp" alt="" loading="lazy" decoding="async" width="900" height="506">
+    </div>
+    <div class="interlude__vignette" aria-hidden="true"></div>
+    <div class="interlude__veil" aria-hidden="true"></div>
+    <div class="interlude__text">
+      <p class="interlude__line"><span class="interlude__l1">יש בתים שרואים מהם את הים.</span> <span class="interlude__l2">ויש בתים שחיים איתו.</span></p>
+    </div>
+  </div>
+</section>
 
 <!-- ============ 4 · RESIDENCES (pinned horizontal on desktop, snap carousel on phones) ============ -->
 <section class="res" id="residences" aria-labelledby="res-title">
@@ -256,66 +270,6 @@
       </div>
       <div class="res__bar" aria-hidden="true"><span></span></div>
     </div>
-  </div>
-</section>
-
-<!-- ============ Interlude: residences → day (pinned, scroll-driven) ============ -->
-<section class="interlude" id="interlude" aria-label="מעבר">
-  <div class="interlude__stage">
-    <img class="interlude__img interlude__sharp" src="img/09-living-room-1024.webp" srcset="img/09-living-room-640.webp 640w, img/09-living-room-1024.webp 1024w, img/09-living-room-1672.webp 1672w" sizes="100vw" alt="" loading="lazy" decoding="async" width="1672" height="941">
-    <img class="interlude__img interlude__blur" src="img/09-living-room-blur.webp" alt="" loading="lazy" decoding="async" width="400" height="225">
-    <div class="interlude__veil" aria-hidden="true"></div>
-    <p class="interlude__line">יש בתים שרואים מהם את הים.<br>ויש בתים שחיים איתו.</p>
-  </div>
-</section>
-
-<!-- ============ 8 · A DAY AT AURA (pinned horizontal) ============ -->
-<section class="day" id="day" aria-labelledby="day-title">
-  <div class="day__pin">
-    <div class="day__head wrap">
-      <h2 class="day__title" id="day-title">יום ב־AURA</h2>
-      <div class="day__clock" aria-hidden="true">
-        <svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="18.5"/><line class="day__hh" x1="20" y1="20" x2="20" y2="11"/><line class="day__mh" x1="20" y1="20" x2="20" y2="6"/><circle cx="20" cy="20" r="1.4" class="day__pivot"/></svg>
-        <span class="day__now" id="dayNow">07:00</span>
-      </div>
-    </div>
-    <div class="day__viewport">
-      <ol class="day__track" id="dayTrack">
-        <li class="day__card" data-t="6.5">
-          <img src="img/new/A1-1024.webp" srcset="img/new/A1-640.webp 640w, img/new/A1-1024.webp 1024w, img/new/A1-1672.webp 1672w" sizes="(min-width: 900px) 62vw, 86vw" alt="חדר כושר מואר עם מכשיר פילאטיס מעץ, הליכון ואופני כושר, פתוח לגן זיתים" loading="lazy" decoding="async" width="1672" height="941">
-          <p class="day__cap"><span class="day__t">06:30</span>פילאטיס בחדר הכושר, מול גן הזיתים.</p>
-        </li>
-        <li class="day__card" data-t="7">
-          <img src="img/new/P2-1024.webp" srcset="img/new/P2-640.webp 640w, img/new/P2-1024.webp 1024w, img/new/P2-1672.webp 1672w" sizes="(min-width: 900px) 62vw, 86vw" alt="מטבח מואר בבוקר: אי שיש, ארונות אלון ושולחן ערוך מול חלון לים" loading="lazy" decoding="async" width="1672" height="941">
-          <p class="day__cap"><span class="day__t">07:00</span>בוקר במטבח, והים כבר בחלון.</p>
-        </li>
-        <li class="day__card" data-t="9.5">
-          <img src="img/new/L2-1024.webp" srcset="img/new/L2-640.webp 640w, img/new/L2-1024.webp 1024w, img/new/L2-1672.webp 1672w" sizes="(min-width: 900px) 62vw, 86vw" alt="זוג הולך יחף לאורך קו המים בחוף רחב, צוק אבן חול ודקלים ברקע" loading="lazy" decoding="async" width="1672" height="941">
-          <p class="day__cap"><span class="day__t">09:30</span>ארבע דקות הליכה, והחול עדיין קריר.</p>
-        </li>
-        <li class="day__card" data-t="13">
-          <img src="img/new/P1-1024.webp" srcset="img/new/P1-640.webp 640w, img/new/P1-1024.webp 1024w, img/new/P1-1672.webp 1672w" sizes="(min-width: 900px) 62vw, 86vw" alt="לובי בגובה כפול עם עץ זית עתיק מתחת לחלון גג, קירות טרוורטין ודלפק אבן" loading="lazy" decoding="async" width="1672" height="941">
-          <p class="day__cap"><span class="day__t">13:00</span>הזית בלובי, והקונסיירז׳ כבר אסף את החבילות.</p>
-        </li>
-        <li class="day__card" data-t="16">
-          <img src="img/new/P5-1024.webp" srcset="img/new/P5-640.webp 640w, img/new/P5-1024.webp 1024w, img/new/P5-1672.webp 1672w" sizes="(min-width: 900px) 62vw, 86vw" alt="סלון דירת גן נפתח אל גינה עם עצי זית ולבנדר באור אחר הצהריים" loading="lazy" decoding="async" width="1672" height="941">
-          <p class="day__cap"><span class="day__t">16:00</span>צל של זית בגינה, ואור אחר הצהריים.</p>
-        </li>
-        <li class="day__card" data-t="17.5">
-          <img src="img/new/A2-1024.webp" srcset="img/new/A2-640.webp 640w, img/new/A2-1024.webp 1024w, img/new/A2-1672.webp 1672w" sizes="(min-width: 900px) 62vw, 86vw" alt="ספא עם בריכה מקורה, מיטות שיזוף מעץ, סאונה וקירות טרוורטין מוארים" loading="lazy" decoding="async" width="1672" height="941">
-          <p class="day__cap"><span class="day__t">17:30</span>בריכה חמימה וסאונה, שתי קומות מתחת לרחוב.</p>
-        </li>
-        <li class="day__card" data-t="19">
-          <img src="img/new/L3-1024.webp" srcset="img/new/L3-640.webp 640w, img/new/L3-1024.webp 1024w, img/new/L3-1672.webp 1672w" sizes="(min-width: 900px) 62vw, 86vw" alt="חברים סביב שולחן ארוחת ערב מתחת לפרגולת ברונזה על הגג, נרות ובריכה מוארת" loading="lazy" decoding="async" width="1672" height="941">
-          <p class="day__cap"><span class="day__t">19:00</span>ארוחת ערב על הגג, כשהשמש נוגעת במים.</p>
-        </li>
-        <li class="day__card" data-t="22">
-          <img src="img/new/P4-1024.webp" srcset="img/new/P4-640.webp 640w, img/new/P4-1024.webp 1024w, img/new/P4-1672.webp 1672w" sizes="(min-width: 900px) 62vw, 86vw" alt="אמבט טרוורטין מול חלון ענק, הים ואורות המפרץ בשעת לילה מוקדמת" loading="lazy" decoding="async" width="1672" height="941">
-          <p class="day__cap"><span class="day__t">22:00</span>אמבט אבן מול האורות של המפרץ.</p>
-        </li>
-      </ol>
-    </div>
-    <div class="day__bar wrap" aria-hidden="true"><span id="dayBar"></span></div>
   </div>
 </section>
 
@@ -483,6 +437,6 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
-<script src="js/main.js?v=202611080007" defer></script>
+<script src="js/main.js?v=202611080032" defer></script>
 </body>
 </html>

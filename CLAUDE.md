@@ -14,14 +14,14 @@
 - `tools/` — `serve.mjs` (local server), `bump-version.mjs`, `shots.mjs` + `check-*.mjs` (Playwright), media scripts.
 
 ## Sections (index.html id → CSS banner → main.js banner / key functions)
-Page order: hero → views → residences → floors → day → location → contact → footer. Each block in CSS and JS starts with a `/* ====` banner; grep the title.
+Page order: hero → views → interlude → residences → contact → footer (floors, day, location removed). Each block in CSS and JS starts with a `/* ====` banner; grep the title.
 - Palette: `:root` tokens (`--bg`, `--panel`, `--text`, `--text-2`, `--bronze`; legacy `--stone`/`--ink` = light text). `.hero, .loader` keep the old light tokens.
 - Loader/header/menu: `#header`, `#mbar` → CSS "header" ~120 → JS "Header / floating contact / mobile nav" ~338: `onScroll`, `setMenu`, `whileVisible`
 - Hero `#top` → "HERO" ~182 → JS "HERO" ~28: `loadFrames`, `initScrub`, `draw`, `placement`, `drawSky`, `updateUI`, `setProgress`, `hideLoader`; scroll pacing in `PACE` table
 - Descent `#views` (+ elevator `#lift`; floor-12 caption holds the project line + facts) → "1 · THE DESCENT" ~374 → JS "1 · The descent" ~444: `render`, `goFloor`, `setBase`, `animateExtra`, `camera`
 - Residences `#residences` (4 full-screen `.rpanel`s in `#resTrack`, pinned via `#resScroll` on desktop / snap carousel on phones; materials strip `.mats` below) → "4 · RESIDENCES" ~468 → JS ~582: `PLANS` data, `resDesktop`, `markRes`, `renderPlan`; `[data-plan]` opens `#planDlg`, `[data-apt]` pre-selects the form type
 - Floor finder `#floors` → "5 · FLOOR FINDER" ~509 → JS ~772: data `FLOORS`/`BANDS`, `light`, `drawPlate`, `openPlan`, `closePlan`, `showCard`, `closeCard`
-- Day `#day` (8 timed cards incl. gym/lobby/spa) → "8 · A DAY AT AURA" ~694 → JS ~1009: `setDay`, `dayDesktop`
+- Interlude `#interlude` (between views and residences; overlaps the descent's last screen and opens on its V3 frame, pinned 150vh: blur crossfade `V3-blur.webp`, warm vignette, two lines, bg veil; residences overlap its last 50vh; descent fades `--out` + `.is-handed` at the hand-off; header/contact stay hidden until it ends) → CSS "INTERLUDE" → JS "Interlude"; check: `tools/check-interlude.mjs`
 - Location `#location` (full-bleed N1, 5 `.lpin`s lit by scroll, `#locList` = SR list / phone list, "לניווט" Google Maps link; no map library) → "9 · LOCATION" ~748 → JS ~1029: `locProgress`, `locPins`
 - Finale `#contact` (N2 at night, `.finale__line`, form on light `.finale__card`, `#brochureBtn`) → CSS "CONTACT" (form rules) + "FINALE" → JS "Forms": `wireForm`, `check`, `normPhone`; dialogs JS ~761
 - Footer: one row (logo, legal links, demo line) → CSS "FOOTER"
