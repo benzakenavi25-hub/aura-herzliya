@@ -24,6 +24,39 @@
   function openDlg(d) { d.showModal(); root.classList.add('menu-open'); }
   const bridge = {};   // cross-section hooks (e.g. the floor finder opens the residences plan dialog)
 
+  // Smooth scrolling (Lenis) on mouse/trackpad devices; touch keeps native momentum scrolling.
+  // Lenis drives the real window scroll, so every scroll listener, sticky stage and ScrollTrigger
+  // keeps working; ScrollTrigger updates on each Lenis frame and GSAP's ticker drives Lenis.
+  let lenis = null;
+  function scrollToY(y, immediate) {
+    if (lenis) lenis.scrollTo(y, { immediate: !!immediate, force: true });
+    else window.scrollTo({ top: y, behavior: immediate ? 'instant' : 'smooth' });
+  }
+  section("Smooth scroll", () => {
+    if (!window.Lenis || !matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+    lenis = new window.Lenis({ lerp: 0.1, smoothWheel: true, syncTouch: false });
+    if (window.gsap && window.ScrollTrigger) {
+      gsap.registerPlugin(ScrollTrigger);
+      lenis.on('scroll', ScrollTrigger.update);
+      gsap.ticker.add((t) => lenis.raf(t * 1000));
+      gsap.ticker.lagSmoothing(0);
+    } else {
+      const raf = (t) => { lenis.raf(t); requestAnimationFrame(raf); };
+      requestAnimationFrame(raf);
+    }
+    // hold the page while the loader, a dialog or the menu is up
+    let held = null;
+    const sync = () => {
+      const hold = root.classList.contains('menu-open') || document.body.classList.contains('is-loading');
+      if (hold === held) return;
+      held = hold; if (hold) lenis.stop(); else lenis.start();
+    };
+    const mo = new MutationObserver(sync);
+    mo.observe(root, { attributes: true, attributeFilter: ['class'] });
+    mo.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    sync();
+  });
+
   /* =======================================================
      HERO — scroll-scrubbed image sequence
      ======================================================= */
@@ -396,7 +429,7 @@
     const el = $(id); if (!el) return;
     e.preventDefault();
     const top = id === '#top' ? 0 : el.getBoundingClientRect().top + scrollY - (id === '#contact' ? 0 : 0);
-    window.scrollTo({ top, behavior: 'smooth' });
+    scrollToY(top);
     history.replaceState(null, '', id);
   }));
   });
@@ -689,7 +722,7 @@
     const pnl = e.target.closest('.rpanel');
     if (!pnl || !desktopMQ.matches) return;
     const y = resScroll.offsetTop + (resScroll.offsetHeight - innerHeight) * (+pnl.dataset.i / (N - 1));
-    window.scrollTo({ top: Math.round(y), behavior: 'instant' });
+    scrollToY(Math.round(y), true);
   });
   markRes(0);
   $$('[data-plan]', resTrack).forEach((b) => b.addEventListener('click', () => { renderPlan(PLANS[+b.dataset.plan]); openDlg(planDlg); }));
@@ -1096,6 +1129,175 @@
   const brDlg = $('#brochureDlg'), brForm = $('#brForm'), brBtn = $('#brochureBtn');
   if (brBtn && brDlg) brBtn.addEventListener('click', () => openDlg(brDlg));
   if (brForm) wireForm(brForm, ['name', 'phone'], () => { brForm.hidden = true; const s = $('#brSuccess'); s.hidden = false; s.focus(); });
+  });
+
+  /* =======================================================
+     Motion layer — scrubbed word/image reveals, cursor, drift, magnetic buttons, drag,
+     marquee, section tone, progress + counter. Transform / opacity / clip-path only.
+     Everything is visible without it: initial states are only applied by GSAP.
+     ======================================================= */
+  section("Motion layer", () => {
+  if (!window.gsap || !window.ScrollTrigger) return;
+  gsap.registerPlugin(ScrollTrigger);
+  const fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+  // headlines: each word rises out of its own mask, scrubbed (reverses on the way back)
+  function splitWords(el) {
+    const walk = (node) => [...node.childNodes].forEach((n) => {
+      if (n.nodeType === 3) {
+        const frag = document.createDocumentFragment();
+        n.textContent.split(/(\s+)/).forEach((p) => {
+          if (!p) return;
+          if (/^\s+$/.test(p)) { frag.appendChild(document.createTextNode(p)); return; }
+          const w = document.createElement('span'); w.className = 'w';
+          const i = document.createElement('span'); i.className = 'w__i'; i.textContent = p;
+          w.appendChild(i); frag.appendChild(w);
+        });
+        n.replaceWith(frag);
+      } else if (n.nodeType === 1 && n.tagName !== 'BR') walk(n);
+    });
+    walk(el);
+    return $$('.w__i', el);
+  }
+  $$('[data-split]').forEach((h) => {
+    gsap.fromTo(splitWords(h), { yPercent: 115 }, {
+      yPercent: 0, ease: 'none', stagger: 0.12,
+      scrollTrigger: { trigger: h, start: 'top 92%', end: 'top 50%', scrub: 0.6 },
+    });
+  });
+
+  // images: clip-path inset 12% → 0 and scale 1.12 → 1 while entering; the image drifts slower (parallax)
+  function mediaReveal(box, img, { trigger = box, end = 'top 35%', parallax = true } = {}) {
+    if (!box) return;
+    const st = { trigger, start: 'top 96%', end, scrub: 0.6 };
+    gsap.fromTo(box, { clipPath: 'inset(12% 12% 12% 12%)' }, { clipPath: 'inset(0% 0% 0% 0%)', ease: 'none', scrollTrigger: st });
+    if (!img) return;
+    gsap.fromTo(img, { scale: 1.12 }, { scale: 1, ease: 'none', scrollTrigger: { ...st } });
+    if (parallax) gsap.fromTo(img, { yPercent: -5 }, { yPercent: 5, ease: 'none', scrollTrigger: { trigger, start: 'top bottom', end: 'bottom top', scrub: true } });
+  }
+  $$('.mats__media').forEach((m) => mediaReveal(m, $('img', m)));
+  mediaReveal($('#locStage'), $('.loc__img'), { trigger: $('#locScroll'), end: 'top 10%', parallax: false });
+  mediaReveal($('.finale__media'), $('.finale__bg'), { trigger: $('#contact'), end: 'top 15%' });
+  mediaReveal($('#resVP'), null, { trigger: $('#resScroll'), end: 'top 10%' });
+
+  // one tone change: the day section sits on the lighter panel colour, blended in and out (opacity only)
+  const tone = $('.tone'), daySec = $('#day');
+  if (tone && daySec) {
+    gsap.timeline({ scrollTrigger: { trigger: daySec, start: 'top 85%', end: 'bottom 15%', scrub: true } })
+      .fromTo(tone, { opacity: 0 }, { opacity: 1, ease: 'none', duration: 0.12 })
+      .to(tone, { opacity: 1, duration: 0.76 })
+      .to(tone, { opacity: 0, ease: 'none', duration: 0.12 });
+  }
+
+  // progress line + section counter (hidden during the hero)
+  const pbar = $('.progress span'), counter = $('#secCount'), secNow = $('#secNow');
+  const secs = ['views', 'residences', 'floors', 'day', 'location', 'contact'].map((id) => $('#' + id)).filter(Boolean);
+  let tops = [], shownSec = -1;
+  const cacheTops = () => { tops = secs.map((s) => s.getBoundingClientRect().top + scrollY); };
+  ScrollTrigger.addEventListener('refresh', cacheTops); cacheTops();
+  ScrollTrigger.create({
+    start: 0, end: 'max',
+    onUpdate: (self) => {
+      pbar.style.transform = `scaleX(${self.progress.toFixed(4)})`;
+      const y = scrollY + innerHeight * 0.5;
+      let i = -1; tops.forEach((t, n) => { if (t <= y) i = n; });
+      if (i !== shownSec) { shownSec = i; counter.classList.toggle('is-on', i >= 0); counter.classList.toggle('is-form', i === secs.length - 1); if (i >= 0) secNow.textContent = String(i + 1).padStart(2, '0'); }
+    },
+  });
+
+  // marquee: speed and direction follow scroll velocity
+  const mq = $('.marquee'), mqTrack = $('.marquee__track');
+  if (mq && mqTrack) {
+    let x = 0, dir = -1, lastY = scrollY, vel = 0, on = false, half = 1;
+    const measureMq = () => { half = mqTrack.scrollWidth / 2 || 1; };
+    measureMq(); addEventListener('resize', measureMq); document.fonts?.ready.then(measureMq);
+    new IntersectionObserver(([en]) => { on = en.isIntersecting; }, { rootMargin: '120px 0px' }).observe(mq);
+    gsap.ticker.add((t, dt) => {
+      const y = scrollY, d = y - lastY; lastY = y;
+      if (!on) return;
+      vel += (d - vel) * 0.12;
+      if (Math.abs(d) > 0.5) dir = d > 0 ? -1 : 1;
+      x += dir * (0.5 + Math.min(Math.abs(vel) * 0.4, 28)) * (dt / 16.67);
+      if (x <= -half) x += half; else if (x > 0) x -= half;
+      mqTrack.style.transform = `translate3d(${x.toFixed(2)}px, 0, 0)`;
+    });
+  }
+
+  if (!fine) return;   // everything below is for a real mouse only
+  root.classList.add('has-cursor');
+
+  // cursor: a dot that follows (lerped), a circle with a label over images and horizontal sections
+  const cursor = $('#cursor'), label = $('#cursorLabel');
+  let mx = innerWidth / 2, my = innerHeight / 2, cx = mx, cy = my;
+  addEventListener('pointermove', (e) => {
+    if (e.pointerType !== 'mouse') return;
+    mx = e.clientX; my = e.clientY;
+    if (!cursor.classList.contains('is-on')) { cx = mx; cy = my; cursor.classList.add('is-on'); }
+  }, { passive: true });
+  document.documentElement.addEventListener('mouseleave', () => cursor.classList.remove('is-on'));
+  document.addEventListener('pointerover', (e) => {
+    const t = e.target;
+    const ctl = t.closest('a, button, input, label, select, textarea, summary');
+    const zone = t.closest('[data-cursor]');
+    const mode = ctl ? 'link' : zone ? zone.dataset.cursor : '';
+    if (cursor.dataset.mode === mode) return;
+    cursor.dataset.mode = mode;
+    label.textContent = mode === 'view' ? 'הצג' : mode === 'drag' ? 'גרור' : '';
+  });
+
+  // images and big words drift a few px toward the cursor (lerped; only while on screen)
+  const drift = new Set();
+  const dio = new IntersectionObserver((es) => es.forEach((en) => {
+    if (en.isIntersecting) drift.add(en.target); else { drift.delete(en.target); en.target.style.translate = ''; }
+  }));
+  $$('[data-split], .rpanel__num, .mats__media').forEach((el) => dio.observe(el));
+  let dx = 0, dy = 0;
+  gsap.ticker.add(() => {
+    cx += (mx - cx) * 0.25; cy += (my - cy) * 0.25;
+    cursor.style.transform = `translate3d(${cx.toFixed(1)}px, ${cy.toFixed(1)}px, 0)`;
+    dx += ((mx / innerWidth - 0.5) * 2 - dx) * 0.06;
+    dy += ((my / innerHeight - 0.5) * 2 - dy) * 0.06;
+    drift.forEach((el) => { const k = el.classList.contains('mats__media') ? 8 : 6; el.style.translate = `${(dx * k).toFixed(2)}px ${(dy * k).toFixed(2)}px`; });
+  });
+
+  // magnetic buttons: pulled toward the cursor while it is over them, spring back on leave
+  $$('.btn, .btn-line, .header__cta, .loc__nav, .mats__spec, .finale__brochure, .link-arrow').forEach((b) => {
+    let tx = 0, ty = 0, gx = 0, gy = 0, raf = 0;
+    const loop = () => {
+      tx += (gx - tx) * 0.2; ty += (gy - ty) * 0.2;
+      b.style.translate = `${tx.toFixed(2)}px ${ty.toFixed(2)}px`;
+      raf = Math.abs(gx - tx) + Math.abs(gy - ty) > 0.05 ? requestAnimationFrame(loop) : 0;
+    };
+    const kick = () => { if (!raf) raf = requestAnimationFrame(loop); };
+    b.addEventListener('pointermove', (e) => {
+      if (e.pointerType !== 'mouse') return;
+      const r = b.getBoundingClientRect();
+      gx = clamp((e.clientX - (r.left + r.width / 2 - tx)) * 0.3, -12, 12);
+      gy = clamp((e.clientY - (r.top + r.height / 2 - ty)) * 0.4, -8, 8);
+      kick();
+    });
+    b.addEventListener('pointerleave', () => { gx = 0; gy = 0; kick(); });
+  });
+
+  // drag the horizontal sections (desktop): dragging right moves the content right = scrolling down
+  [[$('#resVP'), $('#resScroll'), $('#resTrack')], [$('.day__viewport'), $('#day'), $('#dayTrack')]].forEach(([vp, sc, tr]) => {
+    if (!vp || !sc || !tr) return;
+    let x0 = null, y0 = 0;
+    vp.addEventListener('pointerdown', (e) => {
+      if (e.pointerType !== 'mouse' || e.button !== 0 || !desktopMQ.matches || e.target.closest('a, button')) return;
+      e.preventDefault();
+      x0 = e.clientX; y0 = scrollY;
+      vp.setPointerCapture(e.pointerId);
+      root.classList.add('is-dragging');
+    });
+    vp.addEventListener('pointermove', (e) => {
+      if (x0 === null) return;
+      const max = Math.max(1, tr.scrollWidth - vp.clientWidth);
+      scrollToY(y0 + (e.clientX - x0) * ((sc.offsetHeight - innerHeight) / max) * 1.4, true);
+    });
+    const end = () => { x0 = null; root.classList.remove('is-dragging'); };
+    vp.addEventListener('pointerup', end); vp.addEventListener('pointercancel', end);
+  });
   });
 
 })();

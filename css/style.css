@@ -1014,3 +1014,74 @@ figcaption, .plan__note { font-size: 15px; }
 }
 
 }
+/* =========================================================
+   MOTION — Lenis, word masks, image masks, cursor, marquee, tone, progress, hovers
+   (initial states are set by GSAP only, so the page reads fine without JS)
+   ========================================================= */
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+.lenis.lenis-stopped { overflow: hidden; }
+
+/* words rise out of a mask (padding keeps Hebrew ascenders/descenders inside the mask) */
+.w { display: inline-block; overflow: hidden; vertical-align: top; padding: .08em .03em .16em; margin: -.08em -.03em -.16em; }
+.w__i { display: inline-block; will-change: transform; }
+
+/* image masks */
+.mats__media { position: relative; overflow: hidden; aspect-ratio: 4 / 5; will-change: clip-path; }
+.mats__media img, .mats__strip .mats__media img { position: absolute; left: 0; top: -6%; width: 100%; height: 112%; aspect-ratio: auto; object-fit: cover; }
+.finale__media { position: absolute; inset: 0; z-index: -2; overflow: hidden; }
+.finale__media .finale__bg { z-index: auto; top: -6%; bottom: auto; height: 112%; }
+.day__media { position: relative; overflow: hidden; }
+
+/* one scrubbed tone change: the day sits on the panel colour (fixed layer, opacity only) */
+.tone { position: fixed; inset: 0; z-index: -1; background: var(--panel); opacity: 0; pointer-events: none; }
+.day { background: transparent; }
+
+/* progress line + section counter */
+.progress { position: fixed; inset: 0 0 auto 0; z-index: 96; height: 2px; pointer-events: none; }
+.progress span { display: block; height: 100%; background: var(--bronze); transform-origin: right; transform: scaleX(0); }
+/* desktop: left edge, above the floating WhatsApp pill (the right side carries the form and section bars) */
+.sec-count { position: fixed; z-index: 85; left: calc(18px + env(safe-area-inset-left, 0px)); bottom: calc(18px + 52px + 14px + var(--safe-b)); padding: 6px 12px;
+  font-family: var(--f-en); font-size: 14px; letter-spacing: .08em; font-variant-numeric: tabular-nums; direction: ltr; color: var(--text);
+  background: rgba(18,22,29,.66); border: 1px solid var(--line); pointer-events: none; opacity: 0; transform: translateY(8px);
+  transition: opacity .4s var(--ease-out), transform .4s var(--ease-out); }
+.sec-count.is-on { opacity: 1; transform: none; }
+html.menu-open .sec-count { opacity: 0; }
+@media (max-width: 760px) {
+  .sec-count { left: auto; right: calc(var(--gutter) + env(safe-area-inset-right, 0px)); bottom: calc(54px + 12px + var(--safe-b)); font-size: 13px; padding: 4px 10px; }
+  .sec-count.is-form { opacity: 0; }   /* phones: stay off the full-width form card */
+}
+
+/* marquee: one outlined serif line between the day and the location */
+.marquee { overflow: hidden; padding-block: clamp(28px, 5vw, 72px); }
+.marquee__track { display: flex; width: max-content; will-change: transform; }
+.marquee__track span { font-family: var(--f-en); font-weight: 400; font-size: clamp(72px, 13vw, 210px); line-height: 1; white-space: nowrap;
+  color: transparent; -webkit-text-stroke: 1px var(--bronze); padding-inline-end: .3em; }
+
+/* custom cursor (mouse only) */
+.cursor { display: none; }
+html.has-cursor .cursor { display: block; position: fixed; left: 0; top: 0; z-index: 300; pointer-events: none; opacity: 0; transition: opacity .3s ease; }
+html.has-cursor .cursor.is-on { opacity: 1; }
+.cursor__ring { position: absolute; left: -40px; top: -40px; width: 80px; height: 80px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--bronze); transform: scale(.1); transition: transform .45s var(--ease-out), background .3s ease; }
+.cursor[data-mode="link"] .cursor__ring { transform: scale(.42); background: rgba(176,138,90,.4); }
+.cursor[data-mode="view"] .cursor__ring, .cursor[data-mode="drag"] .cursor__ring { transform: scale(1); background: rgba(176,138,90,.94); }
+.cursor__label { font-family: var(--f-he); font-size: 14px; font-weight: 500; color: var(--bg); opacity: 0; transition: opacity .25s ease; }
+.cursor[data-mode="view"] .cursor__label, .cursor[data-mode="drag"] .cursor__label { opacity: 1; transition-delay: .1s; }
+html.has-cursor, html.has-cursor * { cursor: none !important; }
+html.has-cursor input[type="text"], html.has-cursor input[type="tel"], html.has-cursor input[type="email"] { cursor: text !important; }
+html.has-cursor.menu-open .cursor { opacity: 0; }
+html.has-cursor.menu-open, html.has-cursor.menu-open * { cursor: auto !important; }
+html.is-dragging, html.is-dragging * { user-select: none; -webkit-user-select: none; }
+.rpanel > img, .day__media img { -webkit-user-drag: none; }
+
+/* hover: slow image zoom + a thin line that draws in (residence panels, day cards) */
+@media (hover: hover) and (pointer: fine) {
+  .rpanel > img, .day__media img { transition: transform 1.8s var(--ease-out); }
+  .rpanel:hover > img, .day__card:hover .day__media img { transform: scale(1.05); }
+  .rpanel__info::before { content: ""; display: block; width: 72px; height: 1px; margin-bottom: 18px; background: var(--bronze); transform: scaleX(0); transform-origin: right; transition: transform .9s var(--ease-out); }
+  .rpanel:hover .rpanel__info::before { transform: scaleX(1); }
+  .day__media::after { content: ""; position: absolute; inset: auto 0 0 0; height: 2px; background: var(--bronze); transform: scaleX(0); transform-origin: right; transition: transform .9s var(--ease-out); }
+  .day__card:hover .day__media::after { transform: scaleX(1); }
+}

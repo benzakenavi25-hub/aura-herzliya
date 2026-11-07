@@ -20,10 +20,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;1,6..96,400&family=Frank+Ruhl+Libre:wght@300;400&family=IBM+Plex+Sans+Hebrew:wght@300;400;500&display=swap">
 <link rel="preload" href="frames/manifest.json" as="fetch" crossorigin>
-<link rel="stylesheet" href="css/style.css?v=202611071805">
+<link rel="stylesheet" href="css/style.css?v=202611071821">
 <script>document.documentElement.classList.add('js');</script>
 </head>
 <body>
+<div class="tone" aria-hidden="true"></div>
+<div class="progress" aria-hidden="true"><span></span></div>
 <a class="skip" href="#main">דילוג לתוכן הראשי</a>
 
 <!-- Loader: warm daylight, matches the golden-hour opening frame -->
@@ -50,7 +52,7 @@
     <button class="header__menu" id="menuBtn" aria-expanded="false" aria-controls="mobileNav"><span class="sr-only">תפריט</span><i></i><i></i></button>
   </div>
 </header>
-<div class="mnav" id="mobileNav" aria-hidden="true" inert>
+<div class="mnav" id="mobileNav" data-lenis-prevent aria-hidden="true" inert>
   <nav class="mnav__links" aria-label="ניווט ראשי (נייד)">
     <a href="#views">הנוף</a>
     <a href="#residences">הדירות</a>
@@ -190,7 +192,7 @@
         <h2 class="res__title" id="res-title">הדירות</h2>
         <p class="res__count" aria-hidden="true"><span id="resNow">01</span> / 04</p>
       </div>
-      <div class="res__viewport" id="resVP">
+      <div class="res__viewport" id="resVP" data-cursor="drag">
         <ol class="res__track" id="resTrack">
           <li class="rpanel" data-i="0" aria-labelledby="rp0">
             <img src="img/new/P6-1024.webp" srcset="img/new/P6-640.webp 640w, img/new/P6-1024.webp 1024w, img/new/P6-1672.webp 1672w" sizes="100vw" alt="סלון דירת 4 חדרים: ספה בהירה, שולחן טרוורטין, פרקט אדרה ויציאה למרפסת מעוגלת מול הים" loading="lazy" decoding="async" width="1672" height="941">
@@ -264,14 +266,14 @@
 
   <div class="mats wrap">
     <div class="mats__head">
-      <h3 class="mats__title">ארבעה חומרים.</h3>
+      <h3 class="mats__title" data-split>ארבעה חומרים.</h3>
       <button class="mats__spec" type="button" id="specBtn" aria-haspopup="dialog">למפרט המלא</button>
     </div>
     <ul class="mats__strip">
-      <li><img src="img/new/M1-480.webp" srcset="img/new/M1-480.webp 480w, img/new/M1-800.webp 800w" sizes="(min-width: 900px) 22vw, 44vw" alt="ברז ברונזה מוברשת וטיפת מים נופלת אל כיור טרוורטין" loading="lazy" decoding="async" width="1122" height="1402"><p><b>ברונזה מוברשת</b>מתבגרת עם הידיים שנוגעות בה.</p></li>
-      <li><img src="img/new/M2-480.webp" srcset="img/new/M2-480.webp 480w, img/new/M2-800.webp 800w" sizes="(min-width: 900px) 22vw, 44vw" alt="פינת אי שיש לבן עם עורקים אפורים, כוס קרמיקה וענף זית" loading="lazy" decoding="async" width="1122" height="1402"><p><b>שיש בהיר</b>עורק אחד רציף, מהאי ועד הרצפה.</p></li>
-      <li><img src="img/new/M3-480.webp" srcset="img/new/M3-480.webp 480w, img/new/M3-800.webp 800w" sizes="(min-width: 900px) 22vw, 44vw" alt="פרקט אלון טבעי בדוגמת אדרה ואור אחר הצהריים עליו" loading="lazy" decoding="async" width="1122" height="1402"><p><b>אלון טבעי</b>בדוגמת אדרה, חם תחת כף הרגל.</p></li>
-      <li><img src="img/new/M4-480.webp" srcset="img/new/M4-480.webp 480w, img/new/M4-800.webp 800w" sizes="(min-width: 900px) 22vw, 44vw" alt="משטח טרוורטין עם פס ברונזה מוברשת לאורך הקצה" loading="lazy" decoding="async" width="1122" height="1402"><p><b>טרוורטין וברונזה</b>המקום שבו האבן פוגשת את המתכת.</p></li>
+      <li data-cursor="view"><div class="mats__media"><img src="img/new/M1-480.webp" srcset="img/new/M1-480.webp 480w, img/new/M1-800.webp 800w" sizes="(min-width: 900px) 22vw, 44vw" alt="ברז ברונזה מוברשת וטיפת מים נופלת אל כיור טרוורטין" loading="lazy" decoding="async" width="1122" height="1402"></div><p><b>ברונזה מוברשת</b>מתבגרת עם הידיים שנוגעות בה.</p></li>
+      <li data-cursor="view"><div class="mats__media"><img src="img/new/M2-480.webp" srcset="img/new/M2-480.webp 480w, img/new/M2-800.webp 800w" sizes="(min-width: 900px) 22vw, 44vw" alt="פינת אי שיש לבן עם עורקים אפורים, כוס קרמיקה וענף זית" loading="lazy" decoding="async" width="1122" height="1402"></div><p><b>שיש בהיר</b>עורק אחד רציף, מהאי ועד הרצפה.</p></li>
+      <li data-cursor="view"><div class="mats__media"><img src="img/new/M3-480.webp" srcset="img/new/M3-480.webp 480w, img/new/M3-800.webp 800w" sizes="(min-width: 900px) 22vw, 44vw" alt="פרקט אלון טבעי בדוגמת אדרה ואור אחר הצהריים עליו" loading="lazy" decoding="async" width="1122" height="1402"></div><p><b>אלון טבעי</b>בדוגמת אדרה, חם תחת כף הרגל.</p></li>
+      <li data-cursor="view"><div class="mats__media"><img src="img/new/M4-480.webp" srcset="img/new/M4-480.webp 480w, img/new/M4-800.webp 800w" sizes="(min-width: 900px) 22vw, 44vw" alt="משטח טרוורטין עם פס ברונזה מוברשת לאורך הקצה" loading="lazy" decoding="async" width="1122" height="1402"></div><p><b>טרוורטין וברונזה</b>המקום שבו האבן פוגשת את המתכת.</p></li>
     </ul>
   </div>
 </section>
@@ -287,7 +289,7 @@
       <!-- building view -->
       <div class="ff__building" id="ffBuilding">
         <div class="ff__copy">
-          <h2 class="ff__title" id="floors-title">בחרו קומה</h2>
+          <h2 class="ff__title" data-split id="floors-title">בחרו קומה</h2>
           <p class="ff__sub">העבירו את הסמן על קומה בבניין או על מספר הקומה. 38 דירות ב־12 קומות.</p>
         </div>
         <figure class="ff__fig" id="ffFig">
@@ -311,7 +313,7 @@
           <p class="ff__plantypes" id="ffPlanTypes"></p>
           <p class="ff__planstat" id="ffPlanStat"></p>
         </div>
-        <div class="ff__planwrap" id="ffPlanWrap">
+        <div class="ff__planwrap" id="ffPlanWrap" data-lenis-prevent>
           <svg class="ff__svg" id="ffSvg" viewBox="0 0 800 520" role="group" aria-labelledby="ffPlanTitle"></svg>
         </div>
         <div class="ff__planfoot">
@@ -345,44 +347,44 @@
 <section class="day" id="day" aria-labelledby="day-title">
   <div class="day__pin">
     <div class="day__head wrap">
-      <h2 class="day__title" id="day-title">יום ב־AURA</h2>
+      <h2 class="day__title" data-split id="day-title">יום ב־AURA</h2>
       <div class="day__clock" aria-hidden="true">
         <svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="18.5"/><line class="day__hh" x1="20" y1="20" x2="20" y2="11"/><line class="day__mh" x1="20" y1="20" x2="20" y2="6"/><circle cx="20" cy="20" r="1.4" class="day__pivot"/></svg>
         <span class="day__now" id="dayNow">07:00</span>
       </div>
     </div>
-    <div class="day__viewport">
+    <div class="day__viewport" data-cursor="drag">
       <ol class="day__track" id="dayTrack">
         <li class="day__card" data-t="6.5">
-          <img src="img/new/A1-1024.webp" srcset="img/new/A1-640.webp 640w, img/new/A1-1024.webp 1024w, img/new/A1-1672.webp 1672w" sizes="(min-width: 900px) 62vw, 86vw" alt="חדר כושר מואר עם מכשיר פילאטיס מעץ, הליכון ואופני כושר, פתוח לגן זיתים" loading="lazy" decoding="async" width="1672" height="941">
+          <div class="day__media"><img src="img/new/A1-1024.webp" srcset="img/new/A1-640.webp 640w, img/new/A1-1024.webp 1024w, img/new/A1-1672.webp 1672w" sizes="(min-width: 900px) 62vw, 86vw" alt="חדר כושר מואר עם מכשיר פילאטיס מעץ, הליכון ואופני כושר, פתוח לגן זיתים" loading="lazy" decoding="async" width="1672" height="941"></div>
           <p class="day__cap"><span class="day__t">06:30</span>פילאטיס בחדר הכושר, מול גן הזיתים.</p>
         </li>
         <li class="day__card" data-t="7">
-          <img src="img/new/P2-1024.webp" srcset="img/new/P2-640.webp 640w, img/new/P2-1024.webp 1024w, img/new/P2-1672.webp 1672w" sizes="(min-width: 900px) 62vw, 86vw" alt="מטבח מואר בבוקר: אי שיש, ארונות אלון ושולחן ערוך מול חלון לים" loading="lazy" decoding="async" width="1672" height="941">
+          <div class="day__media"><img src="img/new/P2-1024.webp" srcset="img/new/P2-640.webp 640w, img/new/P2-1024.webp 1024w, img/new/P2-1672.webp 1672w" sizes="(min-width: 900px) 62vw, 86vw" alt="מטבח מואר בבוקר: אי שיש, ארונות אלון ושולחן ערוך מול חלון לים" loading="lazy" decoding="async" width="1672" height="941"></div>
           <p class="day__cap"><span class="day__t">07:00</span>בוקר במטבח, והים כבר בחלון.</p>
         </li>
         <li class="day__card" data-t="9.5">
-          <img src="img/new/L2-1024.webp" srcset="img/new/L2-640.webp 640w, img/new/L2-1024.webp 1024w, img/new/L2-1672.webp 1672w" sizes="(min-width: 900px) 62vw, 86vw" alt="זוג הולך יחף לאורך קו המים בחוף רחב, צוק אבן חול ודקלים ברקע" loading="lazy" decoding="async" width="1672" height="941">
+          <div class="day__media"><img src="img/new/L2-1024.webp" srcset="img/new/L2-640.webp 640w, img/new/L2-1024.webp 1024w, img/new/L2-1672.webp 1672w" sizes="(min-width: 900px) 62vw, 86vw" alt="זוג הולך יחף לאורך קו המים בחוף רחב, צוק אבן חול ודקלים ברקע" loading="lazy" decoding="async" width="1672" height="941"></div>
           <p class="day__cap"><span class="day__t">09:30</span>ארבע דקות הליכה, והחול עדיין קריר.</p>
         </li>
         <li class="day__card" data-t="13">
-          <img src="img/new/P1-1024.webp" srcset="img/new/P1-640.webp 640w, img/new/P1-1024.webp 1024w, img/new/P1-1672.webp 1672w" sizes="(min-width: 900px) 62vw, 86vw" alt="לובי בגובה כפול עם עץ זית עתיק מתחת לחלון גג, קירות טרוורטין ודלפק אבן" loading="lazy" decoding="async" width="1672" height="941">
+          <div class="day__media"><img src="img/new/P1-1024.webp" srcset="img/new/P1-640.webp 640w, img/new/P1-1024.webp 1024w, img/new/P1-1672.webp 1672w" sizes="(min-width: 900px) 62vw, 86vw" alt="לובי בגובה כפול עם עץ זית עתיק מתחת לחלון גג, קירות טרוורטין ודלפק אבן" loading="lazy" decoding="async" width="1672" height="941"></div>
           <p class="day__cap"><span class="day__t">13:00</span>הזית בלובי, והקונסיירז׳ כבר אסף את החבילות.</p>
         </li>
         <li class="day__card" data-t="16">
-          <img src="img/new/P5-1024.webp" srcset="img/new/P5-640.webp 640w, img/new/P5-1024.webp 1024w, img/new/P5-1672.webp 1672w" sizes="(min-width: 900px) 62vw, 86vw" alt="סלון דירת גן נפתח אל גינה עם עצי זית ולבנדר באור אחר הצהריים" loading="lazy" decoding="async" width="1672" height="941">
+          <div class="day__media"><img src="img/new/P5-1024.webp" srcset="img/new/P5-640.webp 640w, img/new/P5-1024.webp 1024w, img/new/P5-1672.webp 1672w" sizes="(min-width: 900px) 62vw, 86vw" alt="סלון דירת גן נפתח אל גינה עם עצי זית ולבנדר באור אחר הצהריים" loading="lazy" decoding="async" width="1672" height="941"></div>
           <p class="day__cap"><span class="day__t">16:00</span>צל של זית בגינה, ואור אחר הצהריים.</p>
         </li>
         <li class="day__card" data-t="17.5">
-          <img src="img/new/A2-1024.webp" srcset="img/new/A2-640.webp 640w, img/new/A2-1024.webp 1024w, img/new/A2-1672.webp 1672w" sizes="(min-width: 900px) 62vw, 86vw" alt="ספא עם בריכה מקורה, מיטות שיזוף מעץ, סאונה וקירות טרוורטין מוארים" loading="lazy" decoding="async" width="1672" height="941">
+          <div class="day__media"><img src="img/new/A2-1024.webp" srcset="img/new/A2-640.webp 640w, img/new/A2-1024.webp 1024w, img/new/A2-1672.webp 1672w" sizes="(min-width: 900px) 62vw, 86vw" alt="ספא עם בריכה מקורה, מיטות שיזוף מעץ, סאונה וקירות טרוורטין מוארים" loading="lazy" decoding="async" width="1672" height="941"></div>
           <p class="day__cap"><span class="day__t">17:30</span>בריכה חמימה וסאונה, שתי קומות מתחת לרחוב.</p>
         </li>
         <li class="day__card" data-t="19">
-          <img src="img/new/L3-1024.webp" srcset="img/new/L3-640.webp 640w, img/new/L3-1024.webp 1024w, img/new/L3-1672.webp 1672w" sizes="(min-width: 900px) 62vw, 86vw" alt="חברים סביב שולחן ארוחת ערב מתחת לפרגולת ברונזה על הגג, נרות ובריכה מוארת" loading="lazy" decoding="async" width="1672" height="941">
+          <div class="day__media"><img src="img/new/L3-1024.webp" srcset="img/new/L3-640.webp 640w, img/new/L3-1024.webp 1024w, img/new/L3-1672.webp 1672w" sizes="(min-width: 900px) 62vw, 86vw" alt="חברים סביב שולחן ארוחת ערב מתחת לפרגולת ברונזה על הגג, נרות ובריכה מוארת" loading="lazy" decoding="async" width="1672" height="941"></div>
           <p class="day__cap"><span class="day__t">19:00</span>ארוחת ערב על הגג, כשהשמש נוגעת במים.</p>
         </li>
         <li class="day__card" data-t="22">
-          <img src="img/new/P4-1024.webp" srcset="img/new/P4-640.webp 640w, img/new/P4-1024.webp 1024w, img/new/P4-1672.webp 1672w" sizes="(min-width: 900px) 62vw, 86vw" alt="אמבט טרוורטין מול חלון ענק, הים ואורות המפרץ בשעת לילה מוקדמת" loading="lazy" decoding="async" width="1672" height="941">
+          <div class="day__media"><img src="img/new/P4-1024.webp" srcset="img/new/P4-640.webp 640w, img/new/P4-1024.webp 1024w, img/new/P4-1672.webp 1672w" sizes="(min-width: 900px) 62vw, 86vw" alt="אמבט טרוורטין מול חלון ענק, הים ואורות המפרץ בשעת לילה מוקדמת" loading="lazy" decoding="async" width="1672" height="941"></div>
           <p class="day__cap"><span class="day__t">22:00</span>אמבט אבן מול האורות של המפרץ.</p>
         </li>
       </ol>
@@ -391,14 +393,16 @@
   </div>
 </section>
 
+<div class="marquee" aria-hidden="true" dir="ltr"><div class="marquee__track"><span>AURA · HERZLIYA PITUACH · AURA · HERZLIYA PITUACH ·&nbsp;</span><span>AURA · HERZLIYA PITUACH · AURA · HERZLIYA PITUACH ·&nbsp;</span></div></div>
+
 <!-- ============ 9 · LOCATION — one image, pins light up as you scroll ============ -->
 <section class="loc" id="location" aria-labelledby="loc-title">
   <div class="loc__scroll" id="locScroll">
-    <div class="loc__stage" id="locStage">
+    <div class="loc__stage" id="locStage" data-cursor="view">
       <img class="loc__img" src="img/new/N1-1024.webp" srcset="img/new/N1-640.webp 640w, img/new/N1-1024.webp 1024w, img/new/N1-1672.webp 1672w" sizes="100vw" alt="טיילת עץ לאורך מרינה הרצליה, יאכטות ומפרשיות על מים שקטים בשעת ערב" loading="lazy" decoding="async" width="1672" height="941">
       <div class="loc__shade" aria-hidden="true"></div>
       <div class="loc__copy">
-        <h2 class="loc__title" id="loc-title">הים במרחק הליכה.<br>כל השאר — קרוב.</h2>
+        <h2 class="loc__title" data-split id="loc-title">הים במרחק הליכה.<br>כל השאר — קרוב.</h2>
         <a class="loc__nav" href="https://www.google.com/maps/search/?api=1&amp;query=32.1668%2C34.8072" target="_blank" rel="noopener">לניווט<span class="sr-only"> (Google Maps, נפתח בחלון חדש)</span></a>
       </div>
       <ol class="loc__pins" aria-hidden="true">
@@ -422,10 +426,10 @@
 
 <!-- ============ 12 · FINALE + CONTACT ============ -->
 <section class="finale" id="contact" aria-labelledby="contact-title">
-  <img class="finale__bg" src="img/new/N2-1024.webp" srcset="img/new/N2-640.webp 640w, img/new/N2-1024.webp 1024w, img/new/N2-1672.webp 1672w" sizes="100vw" alt="מגדל AURA בלילה, המרפסות מוארות מעל קו החוף" loading="lazy" decoding="async" width="1672" height="941">
+  <div class="finale__media" aria-hidden="true"><img class="finale__bg" src="img/new/N2-1024.webp" srcset="img/new/N2-640.webp 640w, img/new/N2-1024.webp 1024w, img/new/N2-1672.webp 1672w" sizes="100vw" alt="מגדל AURA בלילה, המרפסות מוארות מעל קו החוף" loading="lazy" decoding="async" width="1672" height="941"></div>
   <div class="finale__shade" aria-hidden="true"></div>
   <div class="finale__grid wrap">
-    <h2 class="finale__line" id="contact-title">רק 38 משפחות<br>יגורו כאן.</h2>
+    <h2 class="finale__line" data-split id="contact-title">רק 38 משפחות<br>יגורו כאן.</h2>
     <div class="finale__card">
       <p class="finale__eyebrow">הרשמה מוקדמת · תיאום פגישה במשרדי המכירות</p>
       <form class="form" id="leadForm" novalidate>
@@ -493,6 +497,9 @@
   <span class="wa__label">שיחה עם יועץ</span>
 </a>
 
+<p class="sec-count" id="secCount" aria-hidden="true"><span id="secNow">01</span> / 06</p>
+<div class="cursor" id="cursor" aria-hidden="true"><span class="cursor__ring"><span class="cursor__label" id="cursorLabel"></span></span></div>
+
 <nav class="mbar" id="mbar" aria-label="יצירת קשר מהירה">
   <a class="mbar__main" href="#contact">תיאום פגישה</a>
   <a class="mbar__wa" href="https://wa.me/972500000000?text=%D7%A9%D7%9C%D7%95%D7%9D%2C%20%D7%90%D7%A9%D7%9E%D7%97%20%D7%9C%D7%A9%D7%9E%D7%95%D7%A2%20%D7%A2%D7%9C%20AURA" target="_blank" rel="noopener" aria-label="וואטסאפ (קישור הדגמה)">
@@ -502,7 +509,7 @@
 </nav>
 
 
-<dialog class="sheet" id="specDlg" aria-labelledby="specDlgTitle">
+<dialog data-lenis-prevent class="sheet" id="specDlg" aria-labelledby="specDlgTitle">
   <div class="sheet__inner">
     <header class="sheet__head">
       <h2 class="sheet__title" id="specDlgTitle">המפרט המלא</h2>
@@ -519,7 +526,7 @@
   </div>
 </dialog>
 
-<dialog class="sheet" id="planDlg" aria-labelledby="planDlgTitle">
+<dialog data-lenis-prevent class="sheet" id="planDlg" aria-labelledby="planDlgTitle">
   <div class="sheet__inner">
     <header class="sheet__head">
       <h2 class="sheet__title" id="planDlgTitle">תוכנית הדירה</h2>
@@ -533,7 +540,7 @@
   </div>
 </dialog>
 
-<dialog class="sheet sheet--sm" id="brochureDlg" aria-labelledby="brTitle">
+<dialog data-lenis-prevent class="sheet sheet--sm" id="brochureDlg" aria-labelledby="brTitle">
   <div class="sheet__inner">
     <header class="sheet__head">
       <h2 class="sheet__title" id="brTitle">חוברת הפרויקט</h2>
@@ -564,6 +571,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
-<script src="js/main.js?v=202611071805" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js" defer></script>
+<script src="js/main.js?v=202611071821" defer></script>
 </body>
 </html>

@@ -8,7 +8,9 @@
 
 ## Files
 - `index.html` — whole page; `privacy.html`, `terms.html`, `accessibility.html` legal pages.
-- `css/style.css`, `js/main.js` — single stylesheet / single script (GSAP ScrollTrigger, Leaflet loaded lazily).
+- `css/style.css`, `js/main.js` — single stylesheet / single script (GSAP ScrollTrigger + Lenis 1.1.13 from CDN, no other libs).
+- Scrolling: Lenis runs only on mouse/trackpad devices (touch = native). Scroll programmatically with `scrollToY(y, immediate)`, never `window.scrollTo` (Lenis would pull it back mid-glide). Inner scroll areas need `data-lenis-prevent`.
+- Motion: JS "Motion layer" (last section) + CSS "MOTION" (end of file): `[data-split]` word masks, `mediaReveal` image masks, `.tone` day blend, `.progress` + `#secCount`, `.marquee`, cursor (`[data-cursor]` view/drag), drift, magnetic buttons, drag on horizontal sections. GSAP owns `transform` on revealed images; drift/magnetic use the separate `translate` property.
 - `tools/` — `serve.mjs` (local server), `bump-version.mjs`, `shots.mjs` + `check-*.mjs` (Playwright), media scripts.
 
 ## Sections (index.html id → CSS banner → main.js banner / key functions)
