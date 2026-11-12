@@ -29,7 +29,7 @@ Page order: hero → views → interlude → residences → contact → footer (
 - Shared CSS (reveals, buttons, dialogs) ~292; footer ~846; "POLISH PASS" overrides ~882 (check here before editing a section's rules)
 
 ## Media
-- `frames/d/` (landscape 1280w, 155, ~8 MB) and `frames/m/` (portrait crop 720w, 139, ~3.4 MB): `0001.webp`… hero sequence; timings in `frames/manifest.json`. Hero keeps frames as Blobs and decodes only drawn ones (ImageBitmap LRU); the loader gate is ~20 frames, the rest stream at low priority. Page images use native `loading="lazy"` (no data-src).
+- `frames/d/` (landscape 1920w, 254, ~19.5 MB) and `frames/m/` (portrait crop 1000×1098, 274, ~12.7 MB): `0001.webp`… hero sequence; timings in `frames/manifest.json` (re-export one set: `node tools/extract-frames.mjs 62 60 m`). Desktop holds frames as `<img>`, GSAP `scrub: 0.9`. Touch (`TOUCH`/`USE_BMP` in JS "HERO"): own rAF lerp (0.15) toward the ScrollTrigger progress; frames kept as Blobs, only a window around the playhead decoded to ImageBitmaps (`planDecode`/`pump`, ~18 live), in-between frames decoded first on long flicks; sky/ground extensions cached offscreen. Check: `tools/check-scrub-touch.mjs [url] [webkit|chromium]`. Page images use native `loading="lazy"` (no data-src).
 - `img/new/<CODE>-{640,1024,1672}.webp` (codes A1…V3, referenced via `srcs(code)` in main.js); `img/` also has older stills, `map-static.webp`, `poster.webp`, `og-aura.jpg`.
 - `assets/` = untracked source video/PNGs; regenerate with `tools/extract-frames.mjs` / `optimize-images.mjs` (see README).
 

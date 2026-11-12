@@ -1,14 +1,15 @@
 // Extracts the hero image sequence from assets/aura.mp4 into WebP frame sets.
 // Frame density varies with camera speed (measured with tblend/signalstats):
 // static time-lapse stretches are sampled sparsely, fast camera moves densely.
-// Usage: node tools/extract-frames.mjs [quality-desktop] [quality-mobile]
+// Usage: node tools/extract-frames.mjs [quality-desktop] [quality-mobile] [only-set, e.g. m]
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, rmSync, writeFileSync, readdirSync, statSync } from 'node:fs';
+import { mkdirSync, rmSync, writeFileSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
 const SRC = 'assets/aura.mp4';
 const DURATION = 31;
 const qD = +(process.argv[2] || 62), qM = +(process.argv[3] || 60);
+const ONLY = process.argv[4] || '';
 
 // [startSec, endSec, samplesPerSec]
 const SETS = {
@@ -21,12 +22,14 @@ const SETS = {
   m: {
     vf: 'crop=1000:1098:460:0',
     q: qM,
-    segs: [[0, 11, 4], [11, 13, 20], [13, 21, 5], [21, 25, 12], [25, 26, 4], [26, 30, 16], [30, 31, 4]],
+    segs: [[0, 11, 4], [11, 13, 20], [13, 21, 8], [21, 25, 12], [25, 26, 10], [26, 30, 16], [30, 31, 4]],
   },
 };
 
-const manifest = { duration: DURATION, sets: {} };
+// re-exporting one set keeps the other set's files and manifest entry untouched
+const manifest = ONLY ? JSON.parse(readFileSync('frames/manifest.json', 'utf8')) : { duration: DURATION, sets: {} };
 for (const [key, cfg] of Object.entries(SETS)) {
+  if (ONLY && key !== ONLY) continue;
   const dir = join('frames', key);
   rmSync(dir, { recursive: true, force: true });
   mkdirSync(dir, { recursive: true });

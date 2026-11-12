@@ -63,6 +63,15 @@
   let set = null, times = [], frames = [], ready = [], setKey = 'd';
   let progress = 0, lastDrawKey = '';
   let cw = 0, ch = 0;
+  // Touch devices: frames stay compressed (Blobs) and only a window around the playhead is
+  // decoded to ImageBitmaps off the main thread, so drawing never waits on a decode and an
+  // iPhone holds ~22 decoded frames instead of the whole film. Desktop keeps <img> frames.
+  const TOUCH = matchMedia('(hover: none) and (pointer: coarse)').matches;
+  const USE_BMP = TOUCH && typeof createImageBitmap === 'function';
+  const blobs = [], bmp = [];
+  let scrubTarget = 0, lastA = -1;
+  const src = (i) => (USE_BMP ? bmp[i] : frames[i]);
+  const has = (i) => (USE_BMP ? !!bmp[i] : ready[i]);
 
   function sizeCanvas() {
     const stage = canvas.parentElement;
@@ -84,10 +93,17 @@
     return lo;
   }
   function nearestReady(i) {
-    if (ready[i]) return i;
+    if (has(i)) return i;
+    // touch: while catching up, step through what lies between the frame on screen and the
+    // playhead (never leap past the playhead to an unrelated decoded frame, e.g. the final one)
+    if (USE_BMP && lastA >= 0 && has(lastA)) {
+      const s = lastA < i ? -1 : 1;
+      for (let k = i + s; k !== lastA; k += s) if (has(k)) return k;
+      return lastA;
+    }
     for (let d = 1; d < times.length; d++) {
-      if (i - d >= 0 && ready[i - d]) return i - d;
-      if (i + d < times.length && ready[i + d]) return i + d;
+      if (i - d >= 0 && has(i - d)) return i - d;
+      if (i + d < times.length && has(i + d)) return i + d;
     }
     return -1;
   }
@@ -128,57 +144,82 @@
   // Sky extension: the top rows of the frame, median-filtered horizontally (so the crane
   // tip or a cable never streaks upward), stretched up, deepened slightly toward the
   // zenith, and faded into the top of the image so there is no seam.
+  // Per-frame samples (a 64×1 sky strip, the bottom-row road colour) are taken once per frame
+  // and kept (tiny); the rendered sky and ground layers are cached offscreen per size and
+  // rebuilt only when the geometry or the sampled colours really change.
   const stripC = document.createElement('canvas'); stripC.width = 64; stripC.height = 1;
   const sampleC = document.createElement('canvas'); sampleC.width = 64; sampleC.height = 2;
   const skyC = document.createElement('canvas');
   const sampleX = sampleC.getContext('2d', { willReadFrequently: true });
   const stripX = stripC.getContext('2d');
   const skyX = skyC.getContext('2d');
-  let stripFor = -1;
-  function buildStrip(img, idx) {
-    if (stripFor === idx) return;
-    stripFor = idx;
-    sampleX.clearRect(0, 0, 64, 2);
-    sampleX.drawImage(img, 0, 0, img.naturalWidth, 4, 0, 0, 64, 2);
-    let src;
-    try { src = sampleX.getImageData(0, 0, 64, 2).data; } catch (e) { stripFor = -2; return; }
-    const out = stripX.createImageData(64, 1);
-    // median over a window that slides inward at the edges (clamping would repeat an
-    // edge outlier — e.g. the crane counterweight at the right edge — and let it win)
-    const W = 8;
-    for (let x = 0; x < 64; x++) {
-      const start = clamp(x - W, 0, 63 - 2 * W);
-      for (let c = 0; c < 3; c++) {
-        const win = [];
-        for (let xx = start; xx <= start + 2 * W; xx++) {
-          win.push((src[xx * 4 + c] + src[(64 + xx) * 4 + c]) / 2);
+  const strips = [], grounds = [];
+  function frameStats(idx, img) {
+    if (strips[idx] !== undefined) return;
+    const iw = img.naturalWidth || img.width, ih = img.naturalHeight || img.height;
+    try {
+      sampleX.clearRect(0, 0, 64, 2);
+      sampleX.drawImage(img, 0, 0, iw, 4, 0, 0, 64, 2);
+      const s = sampleX.getImageData(0, 0, 64, 2).data;
+      const out = sampleX.createImageData(64, 1);
+      // median over a window that slides inward at the edges (clamping would repeat an
+      // edge outlier — e.g. the crane counterweight at the right edge — and let it win)
+      const W = 8;
+      for (let x = 0; x < 64; x++) {
+        const start = clamp(x - W, 0, 63 - 2 * W);
+        for (let c = 0; c < 3; c++) {
+          const win = [];
+          for (let xx = start; xx <= start + 2 * W; xx++) win.push((s[xx * 4 + c] + s[(64 + xx) * 4 + c]) / 2);
+          win.sort((p, q) => p - q);
+          out.data[x * 4 + c] = win[W];
         }
-        win.sort((p, q) => p - q);
-        out.data[x * 4 + c] = win[W];
+        out.data[x * 4 + 3] = 255;
       }
-      out.data[x * 4 + 3] = 255;
-    }
-    stripX.putImageData(out, 0, 0);
+      strips[idx] = out;
+    } catch (e) { strips[idx] = null; }
+    try {
+      sampleX.clearRect(0, 0, 64, 2);
+      sampleX.drawImage(img, 0, ih - 4, iw, 4, 0, 0, 64, 2);
+      const d = sampleX.getImageData(0, 0, 64, 2).data;
+      let r = 0, g = 0, bl = 0;
+      for (let n = 0; n < d.length; n += 4) { r += d[n]; g += d[n + 1]; bl += d[n + 2]; }
+      const k = d.length / 4;
+      grounds[idx] = [Math.round(r / k), Math.round(g / k), Math.round(bl / k)];
+    } catch (e) { grounds[idx] = null; }
   }
-  function drawSky(pl, iw) {
+  // colours within 2/255 per channel are indistinguishable: reuse the cached layer
+  const near = (a, b) => {
+    if (a === b) return true;
+    if (!a || !b || a.length !== b.length) return false;
+    for (let n = 0; n < a.length; n++) if (Math.abs(a[n] - b[n]) > 2) return false;
+    return true;
+  };
+  let skyGeo = '', skyStrip = null;
+  function drawSky(pl, iw, idx) {
     const top = Math.ceil(pl.dy);
-    if (top <= 0 || stripFor < 0) return;
+    const strip = strips[idx];
+    if (top <= 0 || !strip) return;
     const fade = Math.round(28 * Math.min(window.devicePixelRatio || 1, 2));
     const h = top + fade;
-    if (skyC.width !== cw || skyC.height !== h) { skyC.width = cw; skyC.height = h; }
-    skyX.globalCompositeOperation = 'source-over';
-    skyX.imageSmoothingEnabled = true;
-    skyX.drawImage(stripC, 0, 0, 64, 1, pl.dx, 0, iw * pl.s, h);
-    // a little deeper toward the zenith, like a real sky
-    const g = skyX.createLinearGradient(0, 0, 0, top);
-    g.addColorStop(0, 'rgba(70, 92, 160, .16)'); g.addColorStop(1, 'rgba(70, 92, 160, 0)');
-    skyX.fillStyle = g; skyX.fillRect(0, 0, cw, top);
-    // feather the bottom edge into the image
-    skyX.globalCompositeOperation = 'destination-out';
-    const f = skyX.createLinearGradient(0, top - 2, 0, h);
-    f.addColorStop(0, 'rgba(0,0,0,0)'); f.addColorStop(1, 'rgba(0,0,0,1)');
-    skyX.fillStyle = f; skyX.fillRect(0, top - 2, cw, h - top + 2);
-    skyX.globalCompositeOperation = 'source-over';
+    const geo = cw + ':' + h + ':' + pl.dx.toFixed(2) + ':' + (iw * pl.s).toFixed(2);
+    if (geo !== skyGeo || !near(strip.data, skyStrip && skyStrip.data)) {
+      skyGeo = geo; skyStrip = strip;
+      stripX.putImageData(strip, 0, 0);
+      if (skyC.width !== cw || skyC.height !== h) { skyC.width = cw; skyC.height = h; } else skyX.clearRect(0, 0, cw, h);
+      skyX.globalCompositeOperation = 'source-over';
+      skyX.imageSmoothingEnabled = true;
+      skyX.drawImage(stripC, 0, 0, 64, 1, pl.dx, 0, iw * pl.s, h);
+      // a little deeper toward the zenith, like a real sky
+      const g = skyX.createLinearGradient(0, 0, 0, top);
+      g.addColorStop(0, 'rgba(70, 92, 160, .16)'); g.addColorStop(1, 'rgba(70, 92, 160, 0)');
+      skyX.fillStyle = g; skyX.fillRect(0, 0, cw, top);
+      // feather the bottom edge into the image
+      skyX.globalCompositeOperation = 'destination-out';
+      const f = skyX.createLinearGradient(0, top - 2, 0, h);
+      f.addColorStop(0, 'rgba(0,0,0,0)'); f.addColorStop(1, 'rgba(0,0,0,1)');
+      skyX.fillStyle = f; skyX.fillRect(0, top - 2, cw, h - top + 2);
+      skyX.globalCompositeOperation = 'source-over';
+    }
     ctx.globalAlpha = 1;
     ctx.drawImage(skyC, 0, 0);
   }
@@ -191,58 +232,64 @@
     if (a < 0) return;
     // cross-dissolve to the next frame for sub-frame smoothness
     let b = -1, f = 0;
-    if (a === i && i < times.length - 1 && ready[i + 1]) {
+    if (a === i && i < times.length - 1 && has(i + 1)) {
       f = clamp((t - times[i]) / (times[i + 1] - times[i]), 0, 1);
+      if (USE_BMP) f = Math.round(f * 16) / 16;   // touch: redraw only when the picture changes
       if (f > 0.02) b = i + 1;
     }
-    const key = a + ':' + b + ':' + f.toFixed(2) + ':' + t.toFixed(2);
+    // touch: placement depends on t only while the framing eases (FOCAL / FIT, 10–13 s)
+    const key = USE_BMP
+      ? a + ':' + b + ':' + f + ':' + (setKey === 'm' && t > 9.95 && t < 13.05 ? t.toFixed(3) : '')
+      : a + ':' + b + ':' + f.toFixed(2) + ':' + t.toFixed(2);
     if (key === lastDrawKey) return;
     lastDrawKey = key;
-    const img = frames[a];
-    const iw = img.naturalWidth, ih = img.naturalHeight;
+    lastA = a;
+    const img = src(a);
+    const iw = img.naturalWidth || img.width, ih = img.naturalHeight || img.height;
     const pl = placement(iw, ih, t);
     // wipe the whole canvas every draw: nothing from a previous frame may survive
     ctx.globalAlpha = 1;
     ctx.fillStyle = '#141A24'; ctx.fillRect(0, 0, cw, ch);
     if (pl.dy > 0.5) { ctx.fillStyle = '#C9C6DA'; ctx.fillRect(0, 0, cw, Math.ceil(pl.dy) + 1); }
     ctx.drawImage(img, pl.dx, pl.dy, iw * pl.s, ih * pl.s);
-    if (b >= 0) { ctx.globalAlpha = f; ctx.drawImage(frames[b], pl.dx, pl.dy, iw * pl.s, ih * pl.s); }
+    if (b >= 0) { ctx.globalAlpha = f; ctx.drawImage(src(b), pl.dx, pl.dy, iw * pl.s, ih * pl.s); }
     ctx.globalAlpha = 1;
     // final frame on screen → hand the descent's first panel an exact pixel copy of this canvas
     if (a === times.length - 1 && b < 0 && window.__homeSync) window.__homeSync(canvas);
-    if (pl.dy > 0.5) { buildStrip(b >= 0 && f > 0.5 ? frames[b] : img, b >= 0 && f > 0.5 ? b : a); drawSky(pl, iw); }
-    drawGround(pl, iw, ih, b >= 0 && f > 0.5 ? frames[b] : img, b >= 0 && f > 0.5 ? b : a);
+    const si = b >= 0 && f > 0.5 ? b : a;
+    if (pl.dy > 0.5 || pl.dy + ih * pl.s < ch - 0.5) frameStats(si, src(si));
+    if (pl.dy > 0.5) drawSky(pl, iw, si);
+    drawGround(pl, ih, si);
   }
 
   // Ground extension: below the (shrunken) frame, continue the road colour of the frame's
   // bottom rows and ease it into the dark page colour, feathered into the image (no seam).
-  let groundFor = -1, groundRGB = '20,26,36';
-  function drawGround(pl, iw, ih, img, idx) {
+  const groundC = document.createElement('canvas');
+  const groundX = groundC.getContext('2d');
+  let groundRGB = [20, 26, 36], groundGeo = '', groundDrawn = null;
+  function drawGround(pl, ih, idx) {
     const bot = pl.dy + ih * pl.s;
     if (bot >= ch - 0.5) return;
-    if (groundFor !== idx) {
-      groundFor = idx;
-      try {
-        sampleX.clearRect(0, 0, 64, 2);
-        sampleX.drawImage(img, 0, ih - 4, iw, 4, 0, 0, 64, 2);
-        const d = sampleX.getImageData(0, 0, 64, 2).data;
-        let r = 0, g = 0, bl = 0;
-        for (let n = 0; n < d.length; n += 4) { r += d[n]; g += d[n + 1]; bl += d[n + 2]; }
-        const k = d.length / 4;
-        groundRGB = `${Math.round(r / k)},${Math.round(g / k)},${Math.round(bl / k)}`;
-      } catch (e) { /* keep the previous colour */ }
-    }
+    if (grounds[idx]) groundRGB = grounds[idx];   // a failed sample keeps the previous colour
     const top = Math.floor(bot);
     const fade = Math.round(18 * Math.min(window.devicePixelRatio || 1, 2));
     const y0 = Math.max(0, top - fade);
-    const gr = ctx.createLinearGradient(0, y0, 0, ch);
-    const at = (top - y0) / Math.max(1, ch - y0);
-    gr.addColorStop(0, `rgba(${groundRGB},0)`);
-    gr.addColorStop(at, `rgba(${groundRGB},1)`);
-    gr.addColorStop(Math.min(1, at + (1 - at) * 0.85), 'rgb(20,26,36)');
-    gr.addColorStop(1, 'rgb(20,26,36)');
+    const gh = ch - y0;
+    const geo = cw + ':' + ch + ':' + top;
+    if (geo !== groundGeo || !near(groundRGB, groundDrawn)) {
+      groundGeo = geo; groundDrawn = groundRGB;
+      if (groundC.width !== cw || groundC.height !== gh) { groundC.width = cw; groundC.height = gh; } else groundX.clearRect(0, 0, cw, gh);
+      const rgb = groundRGB.join(',');
+      const gr = groundX.createLinearGradient(0, 0, 0, gh);
+      const at = (top - y0) / Math.max(1, gh);
+      gr.addColorStop(0, `rgba(${rgb},0)`);
+      gr.addColorStop(at, `rgba(${rgb},1)`);
+      gr.addColorStop(Math.min(1, at + (1 - at) * 0.85), 'rgb(20,26,36)');
+      gr.addColorStop(1, 'rgb(20,26,36)');
+      groundX.fillStyle = gr; groundX.fillRect(0, 0, cw, gh);
+    }
     ctx.globalAlpha = 1;
-    ctx.fillStyle = gr; ctx.fillRect(0, y0, cw, ch - y0);
+    ctx.drawImage(groundC, 0, y0);
   }
 
   // Light arc: golden hour (ink on light veil) → blue hour (cream on dusk veil)
@@ -272,9 +319,67 @@
     hero.classList.toggle('is-ending', progress >= 0.96);
   }
   // let the descent force the hero onto its final frame (scrub smoothing can lag a fast flick) just before the swap
-  window.__heroFinish = () => { if (progress < 1) { lastDrawKey = ''; setProgress(1); } };
+  let onFinish = null;
+  window.__heroFinish = () => { if (progress < 1) { if (onFinish) onFinish(); lastDrawKey = ''; setProgress(1); } };
 
-  function setProgress(p) { progress = clamp(p, 0, 1); draw(); updateUI(); }
+  function setProgress(p) { progress = clamp(p, 0, 1); if (USE_BMP) planDecode(); draw(); updateUI(); }
+
+  // -------- touch: decode window --------
+  // Decoded frames are kept only around the playhead: AHEAD in the direction of travel,
+  // BEHIND the other way, plus the final frame (the hand-off) and whatever is on screen.
+  // Decodes run off the main thread, a few at a time; draw() always uses the nearest decoded
+  // frame, so it never blocks. When the playhead runs ahead of what is decoded (a long flick),
+  // the frames between the one on screen and the playhead are decoded first, in order (evenly
+  // spaced, at most STEPS of them), so the picture plays through them instead of leaping.
+  const AHEAD = 12, BEHIND = 4, STEPS = 8, CAP = 28, CONC = 3;
+  let want = [], keepLo = 0, keepHi = -1, planKey = '', dir = 1, decoding = 0, liveCount = 0;
+  const inflight = new Set();
+  const keeps = (i) => (i >= keepLo && i <= keepHi) || i === times.length - 1 || i === lastA;
+  function planDecode() {
+    if (!set) return;
+    const n = times.length;
+    const ci = frameIndexAt(interp(PACE, progress));
+    const ti = frameIndexAt(interp(PACE, scrubTarget));
+    if (ti !== ci) dir = ti > ci ? 1 : -1;
+    const from = lastA >= 0 ? lastA : ci;
+    const key = ci + ':' + dir + ':' + from;
+    if (key === planKey) return;
+    planKey = key;
+    const list = [];
+    const gap = (ci - from) * dir;
+    if (gap > 1) { const st = Math.ceil(gap / STEPS); for (let k = st; k < gap; k += st) list.push(from + dir * k); }
+    list.push(ci);
+    for (let d = 1; d <= AHEAD; d++) list.push(ci + dir * d);
+    for (let d = 1; d <= BEHIND; d++) list.push(ci - dir * d);
+    list.push(n - 1);
+    want = [...new Set(list.filter((i) => i >= 0 && i < n))];
+    const lo = Math.min(from, ci), hi = Math.max(from, ci);
+    keepLo = lo - (dir > 0 ? BEHIND : AHEAD); keepHi = hi + (dir > 0 ? AHEAD : BEHIND);
+    for (let i = 0; i < n; i++) if (bmp[i] && !keeps(i)) drop(i);
+    // a long span can leave stale bitmaps inside it: hold at most CAP, dropping the farthest
+    if (liveCount > CAP) {
+      const live = [];
+      for (let i = 0; i < n; i++) if (bmp[i] && i !== lastA && i !== n - 1) live.push(i);
+      live.sort((p, q) => Math.abs(q - ci) - Math.abs(p - ci));
+      for (let k = 0; liveCount > CAP && k < live.length; k++) drop(live[k]);
+    }
+    pump();
+  }
+  function drop(i) { bmp[i].close(); bmp[i] = null; liveCount--; }
+  function pump() {
+    for (const i of want) {
+      if (decoding >= CONC) return;
+      if (bmp[i] || inflight.has(i) || !blobs[i]) continue;
+      inflight.add(i); decoding++;
+      createImageBitmap(blobs[i]).then((bm) => {
+        if (!keeps(i) || bmp[i]) { bm.close(); return; }
+        bmp[i] = bm; liveCount++;
+        // sample the sky/road colours now, off the draw path (construction framing only)
+        if (setKey === 'm' && times[i] < FIT_T1 + 1) frameStats(i, bm);
+        draw(); planDecode();   // the picture moved on: re-aim the decodes from there
+      }, () => {}).finally(() => { inflight.delete(i); decoding--; pump(); });
+    }
+  }
 
   // -------- preloading --------
   function loadFrames() {
@@ -310,11 +415,9 @@
           const idx = order[cursor];
           const isGate = cursor < gate;
           cursor++;
-          const img = new Image();
-          img.decoding = 'async';
-          img.src = `frames/${setKey}/${String(idx + 1).padStart(4, '0')}.webp`;
-          const done = (ok) => {
-            if (ok) { frames[idx] = img; ready[idx] = true; }
+          const url = `frames/${setKey}/${String(idx + 1).padStart(4, '0')}.webp`;
+          const done = (ok, img) => {
+            if (ok) { if (img) frames[idx] = img; ready[idx] = true; }
             loaded++;
             if (isGate) {
               gateLoaded++;
@@ -323,10 +426,20 @@
               pct.textContent = Math.round(p * 100);
               if (gateLoaded === gate) release();
             }
-            if (ok && Math.abs(interp(PACE, progress) - times[idx]) < 1.5) { lastDrawKey = ''; draw(); }
+            if (USE_BMP) { if (ok && want.includes(idx)) pump(); }
+            else if (ok && Math.abs(interp(PACE, progress) - times[idx]) < 1.5) { lastDrawKey = ''; draw(); }
             next();
           };
-          img.onload = () => (img.decode ? img.decode().catch(() => {}) : Promise.resolve()).then(() => done(true));
+          if (USE_BMP) {
+            // touch: keep the compressed bytes; the decode window turns them into bitmaps
+            fetch(url).then((r) => (r.ok ? r.blob() : Promise.reject(r.status)))
+              .then((bl) => { blobs[idx] = bl; done(true); }, () => done(false));
+            return;
+          }
+          const img = new Image();
+          img.decoding = 'async';
+          img.src = url;
+          img.onload = () => (img.decode ? img.decode().catch(() => {}) : Promise.resolve()).then(() => done(true, img));
           img.onerror = () => done(false);
         };
         for (let c = 0; c < 6; c++) next();
@@ -345,6 +458,27 @@
     if (window.gsap && window.ScrollTrigger) {
       gsap.registerPlugin(ScrollTrigger);
       ScrollTrigger.config({ ignoreMobileResize: true });
+      if (TOUCH) {
+        // touch: no tween lag; every animation frame the displayed position eases toward the
+        // scroll position, so a fast flick plays through the in-between frames
+        let cur = 0, raf = 0, last = 0;
+        const tick = (now) => {
+          raf = 0;
+          const dt = last ? Math.min(64, now - last) : 16.7; last = now;
+          cur += (scrubTarget - cur) * (1 - Math.pow(1 - 0.15, dt / 16.67));
+          if (Math.abs(scrubTarget - cur) < 0.00004) cur = scrubTarget;
+          setProgress(cur);
+          if (cur !== scrubTarget) raf = requestAnimationFrame(tick); else last = 0;
+        };
+        const st = ScrollTrigger.create({
+          trigger: hero, start: 'top top', end: 'bottom bottom', invalidateOnRefresh: true,
+          onUpdate: (s) => { scrubTarget = s.progress; if (!raf) raf = requestAnimationFrame(tick); },
+        });
+        scrubTarget = cur = st.progress;
+        setProgress(cur);
+        onFinish = () => { cur = 1; };
+        return;
+      }
       const proxy = { p: 0 };
       gsap.to(proxy, {
         p: 1, ease: 'none',
@@ -365,7 +499,10 @@
     document.body.classList.add('is-loading');
     sizeCanvas();
     addEventListener('resize', sizeCanvas);
-    loadFrames().then(() => {
+    loadFrames().then(() => (USE_BMP && blobs[0]
+      // touch: the opening frame is decoded before the loader lifts (no blank canvas)
+      ? createImageBitmap(blobs[0]).then((bm) => { bmp[0] = bm; liveCount++; }, () => {})
+      : null)).then(() => {
       sizeCanvas(); setProgress(0);
       hideLoader();
       initScrub();
