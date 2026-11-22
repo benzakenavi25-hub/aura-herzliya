@@ -14,14 +14,14 @@ Then open http://localhost:5173.
 
 ## Rebuild media
 
-The source files (`assets/aura.mp4` and the PNG stills) are not committed. Put them in `./assets`, install ffmpeg, then run:
+The source files (`assets/aura.mp4`, `assets/vertical/aura-vertical.mp4` and the PNG stills) are not committed. Put them in `./assets`, install ffmpeg, then run:
 
 ```bash
-node tools/extract-frames.mjs 55 58   # frames/d, frames/m, frames/manifest.json
+node tools/extract-frames.mjs 62 50   # frames/d, frames/v, frames/manifest.json
 node tools/optimize-images.mjs        # img/*.webp, OG image, poster
 ```
 
-`extract-frames.mjs` samples the video densely where the camera moves fast and sparsely during the static construction time-lapse. Scroll pacing is set separately, in the `PACE` table in `js/main.js`.
+`extract-frames.mjs` samples the video densely where the camera moves fast and sparsely during the static construction time-lapse. Scroll pacing is set separately, per film, in the `FILMS` table in `js/main.js`.
 
 ## Screenshots (Playwright)
 

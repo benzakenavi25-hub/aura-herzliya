@@ -17,7 +17,7 @@
 Page order: hero → views → interlude → residences → contact → footer (floors, day, location removed). Each block in CSS and JS starts with a `/* ====` banner; grep the title.
 - Palette: `:root` tokens (`--bg`, `--panel`, `--text`, `--text-2`, `--bronze`; legacy `--stone`/`--ink` = light text). `.hero, .loader` keep the old light tokens.
 - Loader/header/menu: `#header`, `#mbar` → CSS "header" ~120 → JS "Header / floating contact / mobile nav" ~338: `onScroll`, `setMenu`, `whileVisible`
-- Hero `#top` → "HERO" ~182 → JS "HERO" ~28: `loadFrames`, `initScrub`, `draw`, `placement`, `drawSky`, `updateUI`, `setProgress`, `hideLoader`; scroll pacing in `PACE` table
+- Hero `#top` → "HERO" ~182 → JS "HERO" ~28: `loadFrames`, `initScrub`, `draw`, `placement`, `updateUI`, `setProgress`, `hideLoader`; scroll pacing per film in `FILMS` table
 - Descent `#views` (+ elevator `#lift`; floor-12 caption holds the project line + facts) → "1 · THE DESCENT" ~374 → JS "1 · The descent" ~444: `render`, `goFloor`, `setBase`, `animateExtra`, `camera`
 - Residences `#residences` (4 full-screen `.rpanel`s in `#resTrack`, pinned via `#resScroll` on desktop / snap carousel on phones; materials strip `.mats` below) → "4 · RESIDENCES" ~468 → JS ~582: `PLANS` data, `resDesktop`, `markRes`, `renderPlan`; `[data-plan]` opens `#planDlg`, `[data-apt]` pre-selects the form type
 - Floor finder `#floors` → "5 · FLOOR FINDER" ~509 → JS ~772: data `FLOORS`/`BANDS`, `light`, `drawPlate`, `openPlan`, `closePlan`, `showCard`, `closeCard`
@@ -29,7 +29,7 @@ Page order: hero → views → interlude → residences → contact → footer (
 - Shared CSS (reveals, buttons, dialogs) ~292; footer ~846; "POLISH PASS" overrides ~882 (check here before editing a section's rules)
 
 ## Media
-- `frames/d/` (landscape 1920w, 254, ~19.5 MB) and `frames/m/` (portrait crop 1000×1098, 274, ~12.7 MB): `0001.webp`… hero sequence; timings in `frames/manifest.json` (re-export one set: `node tools/extract-frames.mjs 62 60 m`). Desktop holds frames as `<img>`, GSAP `scrub: 0.9`. Touch (`TOUCH`/`USE_BMP` in JS "HERO"): own rAF lerp (0.15) toward the ScrollTrigger progress; frames kept as Blobs, only a window around the playhead decoded to ImageBitmaps (`planDecode`/`pump`, ~18 live), in-between frames decoded first on long flicks; sky/ground extensions cached offscreen. Check: `tools/check-scrub-touch.mjs [url] [webkit|chromium]`. Page images use native `loading="lazy"` (no data-src).
+- `frames/d/` (landscape 1920w from `assets/aura.mp4`, 254, ~19 MB) and `frames/v/` (portrait 640×1120 from the 9:16 film `assets/vertical/aura-vertical.mp4`, 135, ~4 MB, plain cover on portrait screens): `0001.webp`… hero sequence; timings in `frames/manifest.json` (re-export one set: `node tools/extract-frames.mjs 62 50 v`); per-film pace/rail/light timings in the `FILMS` table (JS "HERO"). Desktop holds frames as `<img>`, GSAP `scrub: 0.9`. Touch (`TOUCH`/`USE_BMP` in JS "HERO"): own rAF lerp (0.15) toward the ScrollTrigger progress; frames kept as Blobs, only a window around the playhead decoded to ImageBitmaps (`planDecode`/`pump`, ~18 live), in-between frames decoded first on long flicks. Check: `tools/check-scrub-touch.mjs [url] [webkit|chromium]`. Page images use native `loading="lazy"` (no data-src).
 - `img/new/<CODE>-{640,1024,1672}.webp` (codes A1…V3, referenced via `srcs(code)` in main.js); `img/` also has older stills, `map-static.webp`, `poster.webp`, `og-aura.jpg`.
 - `assets/` = untracked source video/PNGs; regenerate with `tools/extract-frames.mjs` / `optimize-images.mjs` (see README).
 

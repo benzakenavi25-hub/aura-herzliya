@@ -272,7 +272,7 @@ html:not(.js) .hero__canvas, .reduced .hero__canvas { display: none; }
   .chapter[data-m="bottom"] { top: auto; bottom: calc(40px + var(--safe-b)); }
   .chapter[data-pos="top"] { left: var(--gutter); width: auto; }
   .chapter[data-pos="top"] .chapter__title { font-size: clamp(28px, 8vw, 36px); }
-  /* construction chapters live in the extended sky above the (smaller) tower frame */
+  /* construction chapters live in the open sky above the rising tower */
   .chapter[data-m="top"] .chapter__num { margin-bottom: 10px; }
   .chapter[data-m="top"] .chapter__text { margin-top: 10px; font-size: 14.5px; line-height: 1.6; }
   .chapter--short .chapter__text, .chapter--lean .chapter__text { display: none; }   /* keep clear of the rising crane */

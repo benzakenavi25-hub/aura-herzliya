@@ -1,5 +1,7 @@
 # Source media stays local (large / unoptimized)
 assets/
+# 9:16 source clips + the joined aura-vertical.mp4
+assets/vertical/
 *.mp4
 *.png
 !apple-touch-icon.png
