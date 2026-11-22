@@ -17,7 +17,7 @@ Then open http://localhost:5173.
 The source files (`assets/aura.mp4`, `assets/vertical/aura-vertical.mp4` and the PNG stills) are not committed. Put them in `./assets`, install ffmpeg, then run:
 
 ```bash
-node tools/extract-frames.mjs 62 50   # frames/d, frames/v, frames/manifest.json
+node tools/extract-frames.mjs 62 66   # frames/d, frames/v, frames/manifest.json
 node tools/optimize-images.mjs        # img/*.webp, OG image, poster
 ```
 

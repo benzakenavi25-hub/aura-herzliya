@@ -8,7 +8,7 @@ import { execFileSync } from 'node:child_process';
 import { mkdirSync, rmSync, writeFileSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
-const qD = +(process.argv[2] || 62), qM = +(process.argv[3] || 50);
+const qD = +(process.argv[2] || 62), qM = +(process.argv[3] || 66);
 const ONLY = process.argv[4] || '';
 
 // [startSec, endSec, samplesPerSec]
@@ -19,13 +19,13 @@ const SETS = {
     q: qD,
     segs: [[0, 11, 6], [11, 13, 16], [13, 21, 6], [21, 25, 12], [25, 26, 6], [26, 30, 12], [30, 31, 6]],
   },
-  // Portrait set: 720w, sparse on the slow time-lapse, dense where the drone moves (21–29 s, 31–34.5 s).
+  // Portrait set: native 768w; 6–10 fps on the time-lapse, 18 fps where the drone moves (20.5–30 s, 31–35 s).
   // The film's very last frame is always appended: it is the descent's first panel.
   v: {
     src: 'assets/vertical/aura-vertical.mp4',
-    vf: 'scale=640:-2',
+    vf: 'scale=768:-2',   // the film's native width: no downscale
     q: qM,
-    segs: [[0, 6, 2], [6, 15, 3.2], [15, 17, 4], [17, 20.5, 2], [20.5, 29.5, 6], [29.5, 31, 2], [31, 34.5, 5.5], [34.5, 36, 1.5]],
+    segs: [[0, 6, 6], [6, 15.5, 8], [15.5, 20.5, 10], [20.5, 30, 18], [30, 31, 10], [31, 35, 18], [35, 36, 6]],
     last: true,
   },
 };
